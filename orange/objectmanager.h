@@ -20,7 +20,7 @@ public:
 	short MakeGuid(CObject* object);
 	void Run();
 
-	static void WINAPI ObjectManagerProc(); //will cleanup each 10 seconds
+	static void WINAPI ObjectManagerProc(CObjectManager* manager); //will cleanup each 10 seconds
 };
 
 extern CObjectManager ObjManager;

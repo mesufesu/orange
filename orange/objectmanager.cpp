@@ -6,7 +6,7 @@ CObjectManager ObjManager;
 CObjectManager::CObjectManager()
 {
 	this->container.clear();
-	this->procHandle = INVALID_HANDLE;
+	this->procHandle = 0;
 }
 
 CPlayer* CObjectManager::FindPlayerBySocket(ServerSocket *socket)
@@ -96,7 +96,7 @@ void CObjectManager::Delete(CObject* object) //useless too, lol
 	}
 }
 
-static void WINAPI CObjectManager::ObjectManagerProc(CObjectManager* mang)
+void WINAPI CObjectManager::ObjectManagerProc(CObjectManager* mang)
 {
 	while(TRUE)
 	{
@@ -134,5 +134,5 @@ static void WINAPI CObjectManager::ObjectManagerProc(CObjectManager* mang)
 void CObjectManager::Run()
 {
 	uint32 id;
-	this->procHandle = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)CObjectManager::ObjectManagerProc, (LPVOID)this, 0, &id);
+	this->procHandle = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)CObjectManager::ObjectManagerProc, (LPVOID)this, 0, (LPDWORD)&id);
 }

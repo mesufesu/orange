@@ -40,13 +40,14 @@ int main(int argc, char* argv[])
 	HANDLE hServerSocketThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ServerSocketProc, (LPVOID)55901, 0, &dwThreadId);
 	HANDLE hCSThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)CSThreadProc, NULL, 0, &dwThreadId);
 	printf_s("Socket Threads created.\n");
+	ObjManager.Run();
 	CObject * newPlayer = new CObject;
-	ObjManager.obj_container.push_back(newPlayer);
+	/*ObjManager.obj_container.push_back(newPlayer);
 	newPlayer->guid = ObjManager.MakeGuid((CObject*)newPlayer);
 	newPlayer->x = 131;
 	newPlayer->y = 133;
 	newPlayer->map = 0;
-	newPlayer->type = OBJECT_EMPTY;
+	newPlayer->type = OBJECT_EMPTY;*/
 	for(uint32 i = 0; i < MAX_MAPS; ++i)
 	{
 		char filename[256];

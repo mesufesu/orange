@@ -14,10 +14,7 @@ ServerSocket::ServerSocket(ISocketHandler &h) : TcpSocket(h)
 void ServerSocket::OnAccept()
 {
 	printf_s("Connected from: %s:%d\n", this->GetRemoteAddress().c_str(), this->GetRemotePort());
-	CPlayer * newPlayer = new CPlayer;
-	newPlayer->socket = this;
-	ObjManager.obj_container.push_back(newPlayer);
-	newPlayer->guid = ObjManager.MakeGuid((CObject*)newPlayer);
+	CPlayer * newPlayer = ObjManager.CreatePlayer(this);
 	newPlayer->status = PLAYER_CONNECTED;
 	TestJoinSend(newPlayer, 1);
 }
@@ -73,23 +70,9 @@ void ServerSocket::OnRead()
 void ServerSocket::OnDisconnect()
 {
 	printf_s("Disconnected: %s:%d\n", this->GetRemoteAddress().c_str(), this->GetRemotePort());
-	CPlayer* pPlayer = 0;
-	for(uint32 i = 0; i < ObjManager.obj_container.size(); ++i)
-	{
-		if((((CObject*)ObjManager.obj_container.at(i))->type == OBJECT_PLAYER))
-		{
-			pPlayer = ((CPlayer*)ObjManager.obj_container.at(i));
-			if(pPlayer->socket == this)
-			{
-				pPlayer->SetStatus(0);
-				pPlayer->type = OBJECT_EMPTY;
-				pPlayer->status = PLAYER_EMPTY;
-				//delete ((CPlayer*)ObjManager.obj_container.at(i));
-				//ObjManager.obj_container.erase(ObjManager.obj_container.begin() + i);
-				break;
-			}
-		}
-	}
+	CPlayer* player = ObjManager.FindPlayerBySocket(this);
+	player->status = PLAYER_EMPTY;
+	player->type = VOID_PLAYER;
 }
 
 void ServerSocket::CThreeHandler()
@@ -132,7 +115,7 @@ void ServerSocket::CThreeHandler()
 	dec_buffer[1]--;
 	ret++;
 	//=====//
-	ProtocolCore(ObjManager.GetPlayerFromSocket(this), headcode, dec_buffer, ret, true, subhead);
+	ProtocolCore(ObjManager.FindPlayerBySocket(this), headcode, dec_buffer, ret, true, subhead);
 }
 
 void ServerSocket::COneHandler()
@@ -165,7 +148,7 @@ void ServerSocket::COneHandler()
 	{
 		return;
 	}
-	ProtocolCore(ObjManager.GetPlayerFromSocket(this), packet_buffer[2], packet_buffer, packet_size, false, -1);
+	ProtocolCore(ObjManager.FindPlayerBySocket(this), packet_buffer[2], packet_buffer, packet_size, false, -1);
 }
 
 void WINAPI ServerSocketProc(port_t port)

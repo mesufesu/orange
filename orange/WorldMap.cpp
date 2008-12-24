@@ -9,8 +9,8 @@ CWorldMap::CWorldMap()
 {
 	ZeroMemory(this->map, sizeof(this->map));
 	//this->objects.resize(300);
-	this->objects.reserve(300);
-	this->objects.clear();
+	//this->objects.reserve(300);
+	this->guids.clear();
 	this->map_number = -1;
 	this->width = -1;
 	this->height = -1;
@@ -39,12 +39,13 @@ void CWorldMap::LoadMap(const char * filename)
 void CWorldMap::UpdateMap()
 {
 	this->obj_mutex.Lock();
-	this->objects.clear();
-	for(uint32 i = 0; i < ObjManager.obj_container.size(); ++i)
+	this->guids.clear();
+	for(std::map<short, CObject*>::iterator it = ObjManager.container.begin(); it != ObjManager.container.end(); ++it)
 	{
-		if((((CObject*)ObjManager.obj_container.at(i))->map == this->map_number) && (((CObject*)ObjManager.obj_container.at(i))->type != OBJECT_EMPTY))
+		CObject* object = it->second;
+		if((object->type > OBJECT_EMPTY) && (object->map == this->map_number))
 		{
-			this->objects.push_back(ObjManager.obj_container.at(i));
+			this->guids.push_back(object->guid);
 		}
 	}
 	this->obj_mutex.Unlock();
@@ -58,11 +59,12 @@ void WINAPI CWorldMap::UpdateProc(CWorldMap* map)
 		if((GetTickCount() - map->last_update) >= 1000)
 		{
 			map->UpdateMap();
-			for(uint32 i = 0; i < map->objects.size(); ++i)
+			for(uint32 i = 0; i < map->guids.size(); ++i)
 			{
-				if(((CObject*)map->objects.at(i))->type == OBJECT_PLAYER)
+				CObject* object = ObjManager.FindByGuid(map->guids.at(i));
+				if((object != NULL) && (object->type == OBJECT_PLAYER))
 				{
-					map->UpdateViewport((CPlayer*)map->objects.at(i));
+					map->UpdateViewport((CPlayer*)object);
 				}
 			}
 			map->last_update = GetTickCount();
@@ -73,7 +75,7 @@ void WINAPI CWorldMap::UpdateProc(CWorldMap* map)
 
 void CWorldMap::UpdateViewport(CPlayer* player)
 {
-	std::vector<void*> new_container;
+	/*std::vector<void*> new_container;
 	new_container.clear();
 	std::vector<void*> trash_container;
 	trash_container.clear();
@@ -136,7 +138,7 @@ void CWorldMap::UpdateViewport(CPlayer* player)
 		size_t unit_cnt = 0;
 		/*unsigned char buffer[] = {0xc2, 0x00, 0x19, 0x13, 0x02, 0x04, 0x93, 0x00, 0x01, 0x83, 0x85, 0x83, 0x85, 0x80, 0x00, 0x04, 0xd3, 0x00, 0x07, 0x86, 0x85, 0x82, 0x87, 0x70, 0x08};
 		player->Send(buffer, 0x19);*/
-		for(uint32 i = 0; i < new_container.size(); ++i)
+		/*for(uint32 i = 0; i < new_container.size(); ++i)
 		{
 			CObject* obj = (CObject*)new_container.at(i);
 			switch(obj->type)
@@ -180,7 +182,7 @@ void CWorldMap::UpdateViewport(CPlayer* player)
 			memcpy(player_buffer, &pcnt_data, sizeof(PWMSG_COUNT));
 			player->Send(player_buffer, size);
 		}
-	}
+	}*/
 }
 
 unsigned char CWorldMap::GetAttr(int x, int y)

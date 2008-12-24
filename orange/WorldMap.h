@@ -13,7 +13,7 @@ public:
 	HANDLE map_handle;
 	CMyMutex obj_mutex;
 	unsigned char map[256][256];
-	std::vector<void*> objects;
+	std::vector<short> guids;
 	int map_number;
 	int width;
 	int height;
