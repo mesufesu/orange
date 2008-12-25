@@ -3,6 +3,7 @@
 #include ".\\DataBase.h"
 #include ".\\packets.h"
 #include ".\\ItemManager.h"
+#include ".\\objectmanager.h"
 #include ".\\player.h"
 
 CPlayer::CPlayer()
@@ -229,11 +230,11 @@ void CPlayer::AssignItem(DATA_ITEM *data)
 	item->m_PetItem_Level = data->petitem_level;
 }
 
-bool CPlayer::InViewport(void *obj)
+bool CPlayer::InViewport(CObject *obj)
 {
 	for(uint32 i = 0; i < this->viewport.size(); ++i)
 	{
-		if(this->viewport.at(i) == obj)
+		if((ObjManager.FindByGuid(this->viewport.at(i)) == obj) && (obj != NULL))
 		{
 			return true;
 		}
@@ -241,7 +242,7 @@ bool CPlayer::InViewport(void *obj)
 	return false;
 }
 
-void CPlayer::DeleteFromViewport(void* obj)
+/*void CPlayer::DeleteFromViewport(void* obj)
 {
 	for(uint32 i = 0; i < this->viewport.size(); ++i)
 	{
@@ -252,15 +253,16 @@ void CPlayer::DeleteFromViewport(void* obj)
 			return;
 		}
 	}
-}
+}*/
 
 void CPlayer::SendToViewport(unsigned char* buffer, size_t len)
 {
 	for(uint32 i = 0; i < this->viewport.size(); ++i)
 	{
-		if(((CObject*)this->viewport.at(i))->type == OBJECT_PLAYER)
+		CObject* object = ObjManager.FindByGuid(this->viewport.at(i));
+		if((object) && (object->type == OBJECT_PLAYER))
 		{
-			((CPlayer*)this->viewport.at(i))->Send(buffer, len);
+			((CPlayer*)object)->Send(buffer, len);
 		}
 	}
 }

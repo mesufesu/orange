@@ -95,7 +95,7 @@ public:
 	DATA_CHARINFO charinfo[5];
 	CItem inventory[108];
 	CMyMutex view_mtx;
-	std::vector<void*> viewport;
+	std::vector<short> viewport;
 	size_t send_serial;
 
 	unsigned char rest;
@@ -106,8 +106,8 @@ public:
 	void SetStatus(unsigned char status);
 	void SendInventory();
 	int LoadCharacters();
-	bool InViewport(void* obj);
-	void DeleteFromViewport(void* obj);
+	bool InViewport(CObject* obj);
+	//void DeleteFromViewport(void* obj);
 	void AssignItem(DATA_ITEM* item);
 	void SendToViewport(unsigned char* buffer, size_t len);
 	bool CheckPosition();
