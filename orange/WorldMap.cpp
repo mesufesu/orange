@@ -83,7 +83,7 @@ void CWorldMap::UpdateViewport(CPlayer* player)
 	for(uint32 i = 0; i < player->viewport.size(); ++i)
 	{
 		CObject * object = ObjManager.FindByGuid(player->viewport.at(i));
-		if((!object) || (object->type < OBJECT_UNIT) || (object->map != player->map) || !((abs(player->x - object->x) <= 9) && (abs(player->y - object->y) <= 8)))
+		if((!object) || (object->type < OBJECT_UNIT) || (object->map != player->map) || !((abs(player->x - object->x) <= 9) && (abs(player->y - object->y) <= 9)))
 		{
 			printf_s("[VIEWPORT] %d deletes %d from viewport\n", player->guid, player->viewport.at(i));
 			view_delete.push_back(player->viewport.at(i));
@@ -93,7 +93,7 @@ void CWorldMap::UpdateViewport(CPlayer* player)
 	for(uint32 i = 0; i < this->guids.size(); ++i)
 	{
 		CObject * object = ObjManager.FindByGuid(this->guids.at(i));
-		if((object) && (object->type > OBJECT_EMPTY) && (!player->InViewport(object)) && (object->map == player->map) && ((abs(player->x - object->x) <= 9) && (abs(player->y - object->y) <= 8)) && (object != (CObject*)player))
+		if((object) && (object->type > OBJECT_EMPTY) && (!player->InViewport(object)) && (object->map == player->map) && ((abs(player->x - object->x) <= 9) && (abs(player->y - object->y) <= 9)) && (object != (CObject*)player))
 		{
 			printf_s("[VIEWPORT] %d inserts in his viewport %d\n", player->guid, this->guids.at(i));
 			view_create.push_back(this->guids.at(i));
@@ -153,8 +153,7 @@ void CWorldMap::UpdateViewport(CPlayer* player)
 						packet.Y = obj_player->y;
 						packet.TX = obj_player->target_x;
 						packet.TY = obj_player->target_y;
-						//packet.ViewSkillState = obj_player->viewskillstate;
-						packet.ViewSkillState = 0;
+						packet.ViewSkillState = obj_player->viewskillstate;
 						packet.DirAndPkLevel = obj_player->dir * 0x10;
 						packet.DirAndPkLevel |= obj_player->pklevel & 0xf;
 						memcpy(packet.Id, obj_player->name, 10);

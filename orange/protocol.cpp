@@ -420,52 +420,31 @@ void World_Move(PMSG_MOVE* data, CPlayer* player)
 {
 	if((GetTickCount() - player->last_move_time) && !player->teleporting)
 	{
-		short x; // = data->X;
-		short y; // = data->Y;
+		uint8 x = data->X;;
+		uint8 y = data->Y;
 		player->rest = 0;
-		player->path_current = 0;
 		player->dir = (data->Path[0] / 0x10);
 		player->path_count = data->Path[0] & 0x0f;
 		if(player->path_count > 15)
 		{
 			return;
 		}
-		for(uint32 i = 0; i < 15; ++i)
+
+		uint8 new_path[16];
+		ZeroMemory(new_path, sizeof(new_path));
+		uint32 n = 0;
+		for(uint32 i = 1; i < 8; ++i)
 		{
-			player->path_original[i] = 0;
-			player->path_x[i] = 0;
-			player->path_y[i] = 0;
+			new_path[n] = (data->Path[i] & 0xf0) / 0x10;
+			new_path[n + 1] = data->Path[i] & 0x0f;
+			n += 2;
 		}
-		player->path_x[0] = data->X;
-		player->path_y[0] = data->Y;
-		x = player->path_x[0];
-		y = player->path_y[0];
-		player->path_dir[0] = player->dir;
-		player->path_start_end = 1;
-		if(player->path_count > 0)
+		for(uint32 i = 0; i < player->path_count; ++i)
 		{
-			player->path_current = 1;
-			player->path_count++; 
+			x += RoadX[new_path[i]];
+			y += RoadY[new_path[i]];
 		}
-		short pathtable = 0;
-		unsigned char * pdata = (unsigned char*)data;
-		for(uint32 i = 1; i < player->path_count; ++i)
-		{
-			if(i % 2 == 1)
-			{
-				pathtable = *(pdata + (i + 1) / 2 + 5) * 0x10;
-			}
-			else
-			{
-				pathtable = *(pdata + (i + 1) / 2 + 5) & 0x0f; //a fucking mess, todo: simplify
-			}
-			x += RoadPathTable[2* pathtable];
-			y += RoadPathTable[1 + 2* pathtable];
-			player->path_original[i - 1] = pathtable;
-			player->path_dir[i] = pathtable;
-			player->path_x[i] = x;
-			player->path_y[i] = y;
-		}
+		printf_s("Got %u:%u, after pathing %u:%u\n", data->X, data->Y, x, y);
 		uint8 attr = WorldMap[player->map].GetAttr(x, y);
 		//Blood castle specific code here
 		if(!(attr & 8) && !(attr & 4))
@@ -483,7 +462,6 @@ void World_Move(PMSG_MOVE* data, CPlayer* player)
 			if(!player->CheckPosition())
 			{
 				player->path_count = 0;
-				player->path_current = 0;
 				player->target_x = player->x;
 				player->target_y = player->y;
 				packet.X = player->x;

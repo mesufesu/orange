@@ -25,6 +25,8 @@ CPlayer::CPlayer()
 	this->last_move_time = GetTickCount();
 	this->check_time = GetTickCount();
 	this->pklevel = 0;
+	this->rest = 0;
+
 	ZeroMemory(this->account, sizeof(this->account));
 	ZeroMemory(this->name, sizeof(this->name));
 	ZeroMemory(this->charset, sizeof(this->charset));

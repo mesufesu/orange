@@ -81,13 +81,13 @@ public:
 	uint32 last_move_time;
 	uint32 check_time;
 
-	int path_current;
-	int path_count;
+	size_t path_count;
+	/*int path_current;
 	short path_original[15];
 	short path_x[15];
 	short path_y[15];
 	unsigned char path_dir[15];
-	unsigned char path_start_end;
+	unsigned char path_start_end;*/
 	unsigned char x_old;
 	unsigned char y_old;
 
