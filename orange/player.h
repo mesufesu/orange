@@ -80,17 +80,21 @@ public:
 	uint32 tick_count;
 	uint32 last_move_time;
 	uint32 check_time;
-	bool teleporting;
 
 	int path_current;
 	int path_count;
 	short path_original[15];
 	short path_x[15];
 	short path_y[15];
+	unsigned char path_dir[15];
+	unsigned char path_start_end;
 	unsigned char x_old;
 	unsigned char y_old;
 
 	char account[10];
+	char name[10];
+	unsigned char charset[18];
+	unsigned char pklevel;
 	unsigned char failed_attempts;
 	DATA_CHARINFO charinfo[5];
 	CItem inventory[108];

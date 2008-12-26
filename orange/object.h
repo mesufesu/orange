@@ -24,6 +24,8 @@ public:
 	unsigned char action;
 	unsigned char viewstate;
 	unsigned char viewskillstate;
+	unsigned char state;
+	bool teleporting;
 	OBJECT_TYPE type;
 	CObject();
 };

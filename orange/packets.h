@@ -1,6 +1,12 @@
 #ifndef _PACKETS_H_
 #define _PACKETS_H_
 
+enum GCHEADCODES
+{
+	GC_VIEW_PLAYER = 0x12,
+	GC_VIEW_DESTROY = 0x14,
+};
+
 struct PBMSG_HEAD
 {
   /*<thisrel this+0x0>*/ /*|0x1|*/ unsigned char c;
@@ -19,6 +25,13 @@ struct PBMSG_HEAD2
   /*<thisrel this+0x2>*/ /*|0x1|*/ unsigned char headcode;
   /*<thisrel this+0x3>*/ /*|0x1|*/ unsigned char subcode;
   void set(/*<regrel ebp+0x8>*/ /*|0x4|*/ unsigned char* lpBuf, /*<regrel ebp+0xc>*/ /*|0x1|*/ unsigned char head, /*<regrel ebp+0x10>*/ /*|0x1|*/ unsigned char sub, /*<regrel ebp+0x14>*/ /*|0x1|*/ unsigned char size);
+};
+// <size 0x4>
+
+struct PBMSG_COUNT
+{
+  /*<thisrel this+0x0>*/ /*|0x3|*/ PBMSG_HEAD h;
+  /*<thisrel this+0x3>*/ /*|0x1|*/ unsigned char count;
 };
 // <size 0x4>
 
@@ -265,6 +278,13 @@ struct PMSG_VIEWPORTCREATE
   /*<thisrel this+0x24>*/ /*|0x1|*/ unsigned char DirAndPkLevel; //03
   /*<thisrel this+0x25>*/ /*|0x1|*/ unsigned char ViewSkillState; //00
 };
+
+struct PMSG_VIEWPORTDESTROY
+{
+  /*<thisrel this+0x0>*/ /*|0x1|*/ unsigned char NumberH;
+  /*<thisrel this+0x1>*/ /*|0x1|*/ unsigned char NumberL;
+};
+// <size 0x2>
 
 struct PMSG_ACTION
 {

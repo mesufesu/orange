@@ -24,7 +24,10 @@ CPlayer::CPlayer()
 	this->tick_count = GetTickCount();
 	this->last_move_time = GetTickCount();
 	this->check_time = GetTickCount();
-	this->teleporting = false;
+	this->pklevel = 0;
+	ZeroMemory(this->account, sizeof(this->account));
+	ZeroMemory(this->name, sizeof(this->name));
+	ZeroMemory(this->charset, sizeof(this->charset));
 }
 
 void CPlayer::Send(unsigned char* buffer, size_t len)

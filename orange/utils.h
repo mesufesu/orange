@@ -5,4 +5,6 @@ bool isFile(const char * file);
 void MsgBox(const char * str);
 void xor3(unsigned char* ptr, unsigned int len);
 
+extern short RoadPathTable[16];
+
 #endif
