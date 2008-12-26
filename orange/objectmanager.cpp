@@ -100,12 +100,15 @@ void WINAPI CObjectManager::ObjectManagerProc(CObjectManager* mang)
 {
 	while(TRUE)
 	{
-		for(std::map<short, CObject*>::iterator it = mang->container.begin(); it != mang->container.end(); ++it)
+		mang->con_mutex.Lock();
+		for(std::map<short, CObject*>::iterator it = mang->container.begin(); it != mang->container.end(); 1)
 		{
-			CObject* object = it->second;
+			std::map<short, CObject*>::iterator to_delete = it;
+			it++;
+			CObject* object = to_delete->second;
 			if((object->type == VOID_EMPTY) || (object->type == VOID_UNIT) || (object->type == VOID_PLAYER))
 			{
-				mang->container.erase(it);
+				mang->container.erase(to_delete);
 				switch(object->type)
 				{
 				case VOID_EMPTY:
@@ -127,6 +130,7 @@ void WINAPI CObjectManager::ObjectManagerProc(CObjectManager* mang)
 				}
 			}
 		}
+		mang->con_mutex.Unlock();
 		Sleep(10000);
 	}
 }

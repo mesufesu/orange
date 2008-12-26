@@ -3,6 +3,7 @@
 
 #include <vector>
 #include ".\\object.h"
+#include ".\\mutex.h"
 #include ".\\player.h"
 
 class CObjectManager
@@ -10,6 +11,7 @@ class CObjectManager
 public:
 	HANDLE procHandle;
 	std::map<short, CObject*> container;
+	CMyMutex con_mutex;
 	CObjectManager();
 	CPlayer* FindPlayerBySocket(ServerSocket* socket);
 	CPlayer* FindPlayerByGuid(short guid);

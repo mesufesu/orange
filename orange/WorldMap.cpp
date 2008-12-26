@@ -40,6 +40,7 @@ void CWorldMap::UpdateMap()
 {
 	this->obj_mutex.Lock();
 	this->guids.clear();
+	ObjManager.con_mutex.Lock();
 	for(std::map<short, CObject*>::iterator it = ObjManager.container.begin(); it != ObjManager.container.end(); ++it)
 	{
 		CObject* object = it->second;
@@ -48,6 +49,7 @@ void CWorldMap::UpdateMap()
 			this->guids.push_back(object->guid);
 		}
 	}
+	ObjManager.con_mutex.Unlock();
 	this->obj_mutex.Unlock();
 	//printf_s("Map %d has %d objects.\n", this->map_number, this->objects.size());
 }
