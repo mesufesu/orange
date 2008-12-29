@@ -1,7 +1,7 @@
 #ifndef _CLASSDEF_H_
 #define _CLASSDEF_H_
 
-#include ".\\deprecated\\zzzitem.h"
+#include ".\\Item.h"
 
 enum ClassNumber
 {

@@ -10,12 +10,10 @@
 #include ".\\HeartbeatServer.h"
 #include ".\\ServerSocket.h"
 #include ".\\DataBase.h"
-#include ".\\deprecated\\zzzitem.h"
+#include ".\\Item.h"
 #include ".\\WorldMap.h"
 #include ".\\objectmanager.h"
 #include ".\\WhatsUpDummyServer.h"
-
-CWorldMap TestMap;
 
 int main(int argc, char* argv[])
 {

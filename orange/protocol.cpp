@@ -3,6 +3,7 @@
 #include ".\\utils.h"
 #include ".\\classdef.h"
 #include ".\\WorldMap.h"
+#include ".\\ItemManager.h"
 #include ".\\protocol.h"
 
 void ProtocolCore(CPlayer* player, unsigned char opcode, unsigned char* buffer, size_t size, bool Encrypt, int serial)
@@ -247,7 +248,6 @@ void Join_GetCharacters(CPlayer* player)
 
 void Join_WorldJoin(PMSG_CHARMAPJOIN* data, CPlayer* player)
 {
-	player->LoadCharacters();
 	int num = -1;
 	for(int i = 0; i < 5; ++i)
 	{
@@ -303,11 +303,17 @@ void Join_WorldJoin(PMSG_CHARMAPJOIN* data, CPlayer* player)
 	memcpy(player->name, data->Name, 10);
 
 	player->map = result.MapNumber;
-	for(uint32 i = 0; i < ch->items.size(); ++i)
-	{
-		player->AssignItem(&ch->items.at(i));
-	}
 	player->Send((unsigned char*)&result, result.h.size);
+
+	for(uint32 i = 0; i < ch->item_guids.size(); ++i)
+	{
+		DATA_ITEM ditem;
+		if(LoadItem(&ditem, ch->item_guids.at(i)))
+		{
+			player->inventory[ditem.slot].Assign(&ditem);
+			ItemManager.Instanciate(&player->inventory[ditem.slot]);
+		}
+	}
 	player->SendInventory();
 	player->status = PLAYER_PLAYING;
 	//and here =)
@@ -326,7 +332,7 @@ void Join_LoginHandler(PMSG_IDPASS* data, CPlayer* player)
 	xor3((unsigned char*)pass, 10);
 	xor3((unsigned char*)account, 10);
 	TestDB.db_mutex.Lock();
-	status = q->get_count(TestDB.AssembleQuery("SELECT `status` FROM `account_test` WHERE `account` = '%s'", account));
+	status = q->get_count(AssembleQuery("SELECT `status` FROM `account_test` WHERE `account` = '%s'", account));
 	TestDB.db_mutex.Unlock();
 	if(status != 0)
 	{
@@ -345,7 +351,7 @@ void Join_LoginHandler(PMSG_IDPASS* data, CPlayer* player)
 	ZeroMemory(temp, sizeof(temp));
 	sprintf_s(temp, sizeof(temp), "SELECT password FROM `test_db`.`account_test` WHERE account = '%s'", account);*/
 	TestDB.db_mutex.Lock();
-	std::string result = q->get_string((TestDB.AssembleQuery("SELECT password FROM `test_db`.`account_test` WHERE account = '%s'", account)));
+	std::string result = q->get_string(AssembleQuery("SELECT password FROM `test_db`.`account_test` WHERE account = '%s'", account));
 	TestDB.db_mutex.Unlock();
 	std::string passw;
 	passw.clear();
@@ -388,7 +394,7 @@ void Join_CreateCharacter(PMSG_CHARCREATE * data, CPlayer* player)
 	uint8 char_class = data->ClassSkin / 16;
 	DEFAULTCLASSTYPE * cl = &DCInfo.DefClass[char_class];
 	Query * q = TestDB.query;
-	q->get_result(TestDB.AssembleQuery("SELECT `id` FROM `characters` WHERE `account` = '%s'", player->account));
+	q->get_result(AssembleQuery("SELECT `id` FROM `characters` WHERE `account` = '%s'", player->account));
 	int have_chars = q->num_rows();
 	q->free_result();
 	if(have_chars >= 5)
@@ -397,7 +403,7 @@ void Join_CreateCharacter(PMSG_CHARCREATE * data, CPlayer* player)
 		player->Send((unsigned char*)&packet, packet.h.size);
 		return;
 	}
-	q->get_result(TestDB.AssembleQuery("SELECT `id` FROM `characters` WHERE `name` = '%s'", data->Name));
+	q->get_result(AssembleQuery("SELECT `id` FROM `characters` WHERE `name` = '%s'", data->Name));
 	int name_used = q->num_rows();
 	q->free_result();
 	if(name_used)
@@ -406,7 +412,7 @@ void Join_CreateCharacter(PMSG_CHARCREATE * data, CPlayer* player)
 		player->Send((unsigned char*)&packet, packet.h.size);
 		return;
 	}
-	q->execute(TestDB.AssembleQuery("INSERT INTO `characters` (`account`, `name`, `position`, `level`, `strength`, `dexterity`, `vitality`, `energy`, `leadership`, `life`, `mana`, `shield`, `bp`, `money`, `inventory_guids`, `class`) values ('%s', '%s', %u, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, '0', %d)",
+	q->execute(AssembleQuery("INSERT INTO `characters` (`account`, `name`, `position`, `level`, `strength`, `dexterity`, `vitality`, `energy`, `leadership`, `life`, `mana`, `shield`, `bp`, `money`, `inventory_guids`, `class`) values ('%s', '%s', %u, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, '0', %d)",
 		player->account, data->Name, 0x82820000, 1, cl->Strength, cl->Dexterity, cl->Vitality, cl->Energy, cl->Leadership, (int)(cl->Life), (int)(cl->Mana), 90, 90, 1000, char_class));
 	packet.Result = 0x01;
 	memcpy(packet.Equipment, Eq, 24);
@@ -414,12 +420,14 @@ void Join_CreateCharacter(PMSG_CHARCREATE * data, CPlayer* player)
 	packet.pos = have_chars;
 	strcpy_s((char*)packet.Name, 10, data->Name);
 	player->Send((unsigned char*)&packet, packet.h.size);
+	player->LoadCharacters();
 }
 
 void World_Move(PMSG_MOVE* data, CPlayer* player)
 {
 	if((GetTickCount() - player->last_move_time) && !player->teleporting)
 	{
+		//todo: skill checks
 		uint8 x = data->X;;
 		uint8 y = data->Y;
 		player->rest = 0;
@@ -465,7 +473,7 @@ void World_Move(PMSG_MOVE* data, CPlayer* player)
 				player->target_x = player->x;
 				player->target_y = player->y;
 				packet.X = player->x;
-				packet.Y = player->y;
+				packet.Y = player->y; //maybe ::SetPosition here?
 			}
 			packet.Path = player->dir * 0x10;
 			player->Send((unsigned char*)&packet, packet.h.size);
@@ -477,10 +485,11 @@ void World_Move(PMSG_MOVE* data, CPlayer* player)
 			player->viewstate = 0;
 			player->last_move_time = GetTickCount();
 		}
-	}
-	else
-	{
-		//nyi
+		else
+		{
+			player->path_count =0;
+			player->SetPosition(player->x, player->y);
+		}
 	}
 }
 

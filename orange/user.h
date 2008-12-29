@@ -5,7 +5,7 @@
 #include ".\\deprecated\\ComboAttack.h"
 #include ".\\deprecated\\GuildClass.h"
 #include ".\\deprecated\\MagicInf.h"
-#include ".\\deprecated\\zzzitem.h"
+#include ".\\Item.h"
 #include ".\\deprecated\\MonsterHerd.h"
 #include ".\\deprecated\\CSAuth\\CSAuth.h"
 #include ".\\deprecated\\SkillDelay.h"
@@ -471,8 +471,8 @@ struct OBJECTSTRUCT
   /*<thisrel this+0x1908>*/ /*|0x4|*/ int m_iMuseElfInfinityArrowSkillTime;
   /*<thisrel this+0x190c>*/ /*|0x4|*/ int m_iSkillDistanceErrorCount;
   /*<thisrel this+0x1910>*/ /*|0x4|*/ unsigned long m_dwSkillDistanceErrorTick;
-  /*<thisrel this+0x1914>*/ /*|0x26|*/ JEWELOFHARMONY_ITEM_EFFECT m_JewelOfHarmonyEffect;
-  /*<thisrel this+0x193a>*/ /*|0x10|*/ ITEMOPTION_FOR380ITEM_EFFECT m_ItemOptionExFor380;
+  /*<thisrel this+0x1914>*/ /*|0x26|*/ //JEWELOFHARMONY_ITEM_EFFECT m_JewelOfHarmonyEffect;
+  /*<thisrel this+0x193a>*/ /*|0x10|*/ //ITEMOPTION_FOR380ITEM_EFFECT m_ItemOptionExFor380;
   /*<thisrel this+0x194c>*/ /*|0x4|*/ int m_bKanturuEntranceByNPC;
   /*<thisrel this+0x1950>*/ /*|0x2|*/ unsigned short m_wItemEffectType;
   /*<thisrel this+0x1954>*/ /*|0x4|*/ int m_iItemEffectValidTime;

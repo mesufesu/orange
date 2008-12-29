@@ -10,6 +10,7 @@ CItem::CItem()
 
 void CItem::Clear()
 {
+	this->guid = 0;
 	this->m_Type = -1;
 	this->m_Level = 0;
 	this->m_Part = 0;
@@ -114,10 +115,6 @@ int CItem::IsFenrirGolden()
 	}
 }
 
-void CItem::Convert(int type, unsigned char Option1, unsigned char Option2, unsigned char Option3, unsigned char Attribute2, unsigned char SetOption, unsigned char ItemEffectEx, unsigned char DbVersion)
-{
-}
-
 int ItemGetNumberMake(int type, int index)
 {
 	int make = index + type * 512;
@@ -209,4 +206,21 @@ void ItemByteConvert(unsigned char* buf, int type, unsigned char Option1, unsign
 
 		[0x13]	0xff 'ÿ'	unsigned char*/
 
+}
+
+void CItem::AssignItem(DATA_ITEM *item_data)
+{
+	this->m_Number = item_data->guid;
+	this->m_Type = item_data->type;
+	this->m_Level = item_data->level;
+	this->m_Durability = (float)item_data->durability;
+	this->m_Option1 = item_data->option1;
+	this->m_Option2 = item_data->option2;
+	this->m_Option3 = item_data->option3;
+	this->m_NewOption = item_data->newoption;
+	this->m_SetOption = item_data->setoption;
+	this->m_JewelOfHarmonyOption = item_data->joh_option;
+	this->m_ItemOptionEx = item_data->optionex;
+	this->m_PetItem_Exp = item_data->petitem_exp;
+	this->m_PetItem_Level = item_data->petitem_level;
 }

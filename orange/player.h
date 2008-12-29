@@ -66,10 +66,9 @@ struct DATA_CHARINFO
 	int MaxAddPoint;
 	int MinusPoint;
 	int MaxMinusPoint;
-	std::vector<int> item_guids;
-	std::vector<DATA_ITEM> items;
-	unsigned char Spell_data[10];
-	unsigned char Guild_data[10];
+	std::vector<uint32> item_guids;
+	DATA_ITEM temp_inv[12];
+	std::vector<uint8> spell_data;
 };
 
 class CPlayer : public CObject
@@ -82,12 +81,6 @@ public:
 	uint32 check_time;
 
 	size_t path_count;
-	/*int path_current;
-	short path_original[15];
-	short path_x[15];
-	short path_y[15];
-	unsigned char path_dir[15];
-	unsigned char path_start_end;*/
 	unsigned char x_old;
 	unsigned char y_old;
 
@@ -116,6 +109,7 @@ public:
 	void SendToViewport(unsigned char* buffer, size_t len);
 	bool CheckPosition();
 	bool CheckPacketTime();
+	void SetPosition(uint8 x, uint8 y);
 };
 
 #endif

@@ -233,6 +233,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Item.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\ItemManager.cpp"
 				>
 			</File>
@@ -372,10 +376,6 @@
 					>
 				</File>
 				<File
-					RelativePath=".\deprecated\zzzitem.cpp"
-					>
-				</File>
-				<File
 					RelativePath=".\deprecated\zzzpath.cpp"
 					>
 				</File>
@@ -454,6 +454,10 @@
 			</File>
 			<File
 				RelativePath=".\HeartbeatServer.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Item.h"
 				>
 			</File>
 			<File
@@ -589,10 +593,6 @@
 				</File>
 				<File
 					RelativePath=".\deprecated\TMonsterSkillElementInfo.h"
-					>
-				</File>
-				<File
-					RelativePath=".\deprecated\zzzitem.h"
 					>
 				</File>
 				<File

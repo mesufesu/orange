@@ -18,17 +18,3 @@ CDatabaseHandler::~CDatabaseHandler()
 	delete this->query;
 	delete this->db;
 }
-
-const std::string CDatabaseHandler::AssembleQuery(const char *format, ...)
-{
-	va_list pArgs;
-	va_start(pArgs, format); 
-	int ret =_vscprintf( format, pArgs ) + 1;
-	char * buf = new char[ret];
-	ZeroMemory(buf, ret);
-	vsprintf_s(buf, ret, format, pArgs);
-	va_end(pArgs);
-	std::string result = buf;
-	delete [] buf;
-	return result;
-}

@@ -19,7 +19,6 @@ public:
 	Query* query;
 	CDatabaseHandler();
 	~CDatabaseHandler();
-	const std::string AssembleQuery(const char * format, ...);
 };
 
 extern CDatabaseHandler TestDB;

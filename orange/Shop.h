@@ -1,7 +1,7 @@
 #ifndef _CSHOP_H_
 #define _CSHOP_H_
 
-#include ".\\deprecated\\zzzitem.h"
+#include ".\\Item.h"
 
 class CShop
 {

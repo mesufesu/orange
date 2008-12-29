@@ -1,10 +1,11 @@
 #ifndef _PACKETS_H_
 #define _PACKETS_H_
 
-enum GCHEADCODES
+enum GCOPCODES
 {
 	GC_VIEW_PLAYER = 0x12,
 	GC_VIEW_DESTROY = 0x14,
+	GC_RECV_POSITION_SET = 0xD6,
 };
 
 struct PBMSG_HEAD
@@ -242,6 +243,15 @@ struct PMSG_RECVMOVE
 };
 // <size 0x8>
 
+struct PMSG_RECV_POSISTION_SET
+{
+  /*<thisrel this+0x0>*/ /*|0x3|*/ PBMSG_HEAD h;
+  /*<thisrel this+0x3>*/ /*|0x1|*/ unsigned char NumberH;
+  /*<thisrel this+0x4>*/ /*|0x1|*/ unsigned char NumberL;
+  /*<thisrel this+0x5>*/ /*|0x1|*/ unsigned char X;
+  /*<thisrel this+0x6>*/ /*|0x1|*/ unsigned char Y;
+};
+// <size 0x7>
 
 struct PWMSG_COUNT
 {

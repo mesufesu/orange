@@ -51,3 +51,17 @@ void xor3(unsigned char* ptr, unsigned int len)
 		ptr[i] ^= xor_table_3byte[i%3];
 	}
 }
+
+const std::string AssembleQuery(const char *format, ...)
+{
+	va_list pArgs;
+	va_start(pArgs, format); 
+	int ret =_vscprintf( format, pArgs ) + 1;
+	char * buf = new char[ret];
+	ZeroMemory(buf, ret);
+	vsprintf_s(buf, ret, format, pArgs);
+	va_end(pArgs);
+	std::string result = buf;
+	delete [] buf;
+	return result;
+}

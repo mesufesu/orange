@@ -1,37 +1,22 @@
 #ifndef _ITEMMANAGER_H_
 #define _ITEMMANAGER_H_
 
-#include <vector>
-#include ".\\deprecated\\zzzitem.h"
-
-struct DATA_ITEM
-{
-  int guid;
-  int slot;
-  int type;
-  int level;
-  double durability;
-  int option1;
-  int option2;
-  int option3;
-  int newoption;
-  int setoption;
-  int setaddstat;
-  int petitem_level;
-  int petitem_exp;
-  int joh_option;
-  int joh_strength;
-  int joh_dexterity;
-  int optionex;
-};
+#include <map>
+#include ".\\mutex.h"
+#include ".\\Item.h"
 
 class CItemManager
 {
 public:
-	std::vector<int> item_guids;
+	CMyMutex con_mutex;
+	std::map<uint32, CItem*> item_container;
 	CItemManager();
 	void LoadCharacterItems();
+	bool Instanciate(const CItem* item);
+	void DeleteInstance(const CItem* item);
 };
+
+extern CItemManager ItemManager;
 
 bool LoadItem(DATA_ITEM* item, int guid);
 

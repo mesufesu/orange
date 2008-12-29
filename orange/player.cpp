@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include ".\\utils.h"
 #include "..\\Deathway\\SimpleModulus\\SimpleModulus.h"
 #include ".\\DataBase.h"
 #include ".\\packets.h"
@@ -16,7 +17,7 @@ CPlayer::CPlayer()
 	this->failed_attempts = NULL;
 	for(int i = 0; i < 108; ++i)
 	{
-		this->inventory[i].m_Type = -1;
+		this->inventory[i].type = -1;
 	}
 	this->send_serial = NULL;
 	this->viewport.resize(100);
@@ -106,7 +107,7 @@ void CPlayer::SetStatus(unsigned char status)
 {
 	Query * q = TestDB.query;
 	TestDB.db_mutex.Lock();
-	q->execute(TestDB.AssembleQuery("UPDATE `account_test` SET `status` = %d WHERE `account` = '%s'", status, this->account));
+	q->execute(AssembleQuery("UPDATE `account_test` SET `status` = %d WHERE `account` = '%s'", status, this->account));
 	TestDB.db_mutex.Unlock();
 }
 
@@ -117,7 +118,7 @@ int CPlayer::LoadCharacters()
 	Query* q = TestDB.query;
 	int count = 0;
 	TestDB.db_mutex.Lock();
-	q->get_result(TestDB.AssembleQuery("SELECT `name`, `class`, `changeup`, `position`, `experience`, `leveluppoint`, `level`, `strength`, `dexterity`, `vitality`, `energy`, `leadership`, `life`, `mana`, `shield`, `bp`, `money`, `pklevel`, `gmlevel`, `addpoint`, `maxaddpoint`, `minuspoint`, `maxminuspoint`, `inventory_guids`, `spell_data`, `guild_data` FROM `characters` WHERE `account` = '%s'", this->account));
+	q->get_result(AssembleQuery("SELECT `name`, `class`, `changeup`, `position`, `experience`, `leveluppoint`, `level`, `strength`, `dexterity`, `vitality`, `energy`, `leadership`, `life`, `mana`, `shield`, `bp`, `money`, `pklevel`, `gmlevel`, `addpoint`, `maxaddpoint`, `minuspoint`, `maxminuspoint`, `inventory_guids`, `spell_data`, `guild_data` FROM `characters` WHERE `account` = '%s'", this->account));
 	while(q->fetch_row() && (count <= 4))
 	{
 		strcpy_s(this->charinfo[count].Account, 11, this->account);
@@ -145,7 +146,6 @@ int CPlayer::LoadCharacters()
 		this->charinfo[count].MinusPoint = q->getval();
 		this->charinfo[count].MaxMinusPoint = q->getval();
 		std::string inventory_guids = q->getstr();
-		//std::vector<int> guid_container;
 		this->charinfo[count].item_guids.clear();
 		char* token = strtok((char*)inventory_guids.c_str(), seps);
 		while(token != NULL)
@@ -155,31 +155,24 @@ int CPlayer::LoadCharacters()
 			this->charinfo[count].item_guids.push_back(guid);
 			token = strtok(NULL, seps);
 		}
-		/*for(int i = 0; i < this->charinfo[count].item_guids.size(); ++i)
-		{
-			DATA_ITEM item;
-			ZeroMemory(&item, sizeof(item));
-			if(LoadItem(&item, this->charinfo[count].item_guids.at(i)))
-			{
-				this->charinfo[count].items.push_back(item);
-			}
-		}*/
-		memcpy(this->charinfo[count].Spell_data, (q->getstr()), 1);
-		memcpy(this->charinfo[count].Guild_data, (q->getstr()), 1);
+		//memcpy(this->charinfo[count].Spell_data, (q->getstr()), 1);
+		//memcpy(this->charinfo[count].Guild_data, (q->getstr()), 1);
+		q->getstr();
+		q->getstr();
 		count++;
 	}
 	q->free_result();
 	TestDB.db_mutex.Unlock();
-	for(int i = 0; i < count; ++i)
+	for(int i = 0; i < count; ++i) //12 items for viewport
 	{
 		printf_s("guids %d\n", this->charinfo[i].item_guids.size());
 		for(uint32 n = 0; n < this->charinfo[i].item_guids.size(); ++n)
 		{
-			DATA_ITEM item;
-			ZeroMemory(&item, sizeof(item));
-			if(LoadItem(&item, this->charinfo[i].item_guids.at(n)))
+			DATA_ITEM ditem;
+			bool result = LoadItem(&ditem, this->charinfo[i].item_guids.at(n));
+			if(result && ditem.slot < 12)
 			{
-				this->charinfo[i].items.push_back(item);
+				memcpy(&this->charinfo[i].temp_inv[ditem.slot], &ditem, sizeof(DATA_ITEM));
 			}
 		}
 	}
@@ -202,7 +195,7 @@ void CPlayer::SendInventory()
 			count++;
 			PMSG_INVENTORYLIST data;
 			data.Pos = i;
-			ItemByteConvert(data.ItemInfo, item->m_Type, item->m_Option1, item->m_Option2, item->m_Option3, (unsigned char)item->m_Level, (unsigned char)item->m_Durability, item->m_NewOption, item->m_SetOption, item->m_JewelOfHarmonyOption, item->m_ItemOptionEx);
+			ItemByteConvert(data.ItemInfo, item->type, item->m_Option1, item->m_Option2, item->m_Option3, (unsigned char)item->level, (unsigned char)item->durability, item->m_NewOption, item->m_SetOption, item->m_JewelOfHarmonyOption, item->m_ItemOptionEx);
 			memcpy(&buffer[offs], &data, sizeof(PMSG_INVENTORYLIST));
 			offs += sizeof(PMSG_INVENTORYLIST);
 		}
@@ -220,10 +213,15 @@ void CPlayer::SendInventory()
 void CPlayer::AssignItem(DATA_ITEM *data)
 {
 	CItem * item =  &this->inventory[data->slot];
-	item->m_Number = data->guid;
-	item->m_Type = data->type;
-	item->m_Level = data->level;
-	item->m_Durability = (float)data->durability;
+	if(!ItemManager.Instanciate(item))
+	{
+		item->type = -1;
+		return;
+	}
+	item->guid = data->guid;
+	item->type = data->type;
+	item->level = data->level;
+	item->durability = (float)data->durability;
 	item->m_Option1 = data->option1;
 	item->m_Option2 = data->option2;
 	item->m_Option3 = data->option3;
@@ -239,7 +237,7 @@ bool CPlayer::InViewport(CObject *obj)
 {
 	for(uint32 i = 0; i < this->viewport.size(); ++i)
 	{
-		if((ObjManager.FindByGuid(this->viewport.at(i)) == obj) && (obj != NULL))
+		if((ObjManager.FindByGuid(this->viewport.at(i)) == obj) && (obj != NULL) && (obj->type > OBJECT_EMPTY))
 		{
 			return true;
 		}
@@ -288,4 +286,34 @@ bool CPlayer::CheckPacketTime()
 		return true;
 	}
 	return false;
+}
+
+void CPlayer::SetPosition(uint8 _x, uint8 _y)
+{
+	if((this->type != OBJECT_PLAYER) || (!this->CheckPacketTime()) || (this->teleporting))
+	{
+		return;
+	}
+	this->x = _x;
+	this->y = _y;
+	if(!((this->map >= 18) && (this->map <= 23))) //ChaosCastle Specific check here (blow time)
+	{
+		PMSG_RECV_POSISTION_SET data;
+		data.h.c = 0xC1;
+		data.h.size = sizeof(PMSG_RECV_POSISTION_SET);
+		data.h.headcode = GC_RECV_POSITION_SET;
+		data.NumberH = HIBYTE(this->guid);
+		data.NumberL = LOBYTE(this->guid);
+		data.X = _x;
+		data.Y = _y;
+		this->target_x = _x;
+		this->target_y = _y;
+		if(this->CheckPosition())
+		{
+			this->Send((uint8*)&data, sizeof(PMSG_RECV_POSISTION_SET));
+			this->SendToViewport((uint8*)&data, sizeof(PMSG_RECV_POSISTION_SET));
+			this->x_old = this->target_x;
+			this->y_old = this->target_y;
+		}
+	}
 }

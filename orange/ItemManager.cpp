@@ -1,14 +1,55 @@
 #include "stdafx.h"
+#include ".\\utils.h"
 #include ".\\DataBase.h"
 #include ".\\ItemManager.h"
 
+CItemManager ItemManager;
+
 CItemManager::CItemManager()
 {
-	this->item_guids.clear();
+	this->item_container.clear();
 }
 
-void CItemManager::LoadCharacterItems()
+bool CItemManager::Instanciate(const CItem* item)
 {
+	std::pair<std::map<uint32, CItem*>::iterator, bool> pr;
+	this->con_mutex.Lock();
+	pr = this->item_container.insert(std::make_pair<uint32, CItem*>(item->guid, (CItem*)item));
+	this->con_mutex.Unlock();
+	if(pr.second == true)
+	{
+		printf_s("[DEBUG] %d %d\n", pr.first->first, pr.first->second->guid);
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+void CItemManager::DeleteInstance(const CItem* item)
+{
+	bool deleted = false;
+	this->con_mutex.Lock();
+	for(std::map<uint32, CItem*>::iterator it = this->item_container.begin(); it != this->item_container.end(); true)
+	{
+		std::map<uint32, CItem*>::iterator to_delete = it;
+		it++;
+		if(to_delete->first == item->guid)
+		{
+			this->item_container.erase(to_delete);
+			deleted = true;
+		}
+	}
+	this->con_mutex.Unlock();
+	if(!deleted)
+	{
+		printf_s("Item was not deleted: %u\n", item->guid);
+	}
+	else
+	{
+		printf_s("Item %u was deleted from instance container.\n", item->guid);
+	}
 }
 
 bool LoadItem(DATA_ITEM* item, int guid)
@@ -18,7 +59,7 @@ bool LoadItem(DATA_ITEM* item, int guid)
 	if(item)
 	{
 		TestDB.db_mutex.Lock();
-		q->get_result(TestDB.AssembleQuery("SELECT `slot`, `type`, `level`, `durability`, `option1`, `option2`, `option3`, `newoption`, `setoption`, `setaddstat`, `petitem_level`, `petitem_exp`, `joh_option`, `joh_strength`, `joh_dexterity`, `optionex` FROM `character_items` WHERE `guid` = %d", guid));
+		q->get_result(AssembleQuery("SELECT `slot`, `type`, `level`, `durability`, `option1`, `option2`, `option3`, `newoption`, `setoption`, `petitem_level`, `petitem_exp`, `joh_option`, `optionex` FROM `character_items` WHERE `guid` = %d", guid));
 		while(q->fetch_row())
 		{
 			exist = true;
@@ -32,12 +73,9 @@ bool LoadItem(DATA_ITEM* item, int guid)
 			item->option3 = q->getval();
 			item->newoption = q->getval();
 			item->setoption = q->getval();
-			item->setaddstat = q->getval();
 			item->petitem_level = q->getval();
 			item->petitem_exp = q->getval();
 			item->joh_option = q->getval();
-			item->joh_strength = q->getval();
-			item->joh_dexterity = q->getval();
 			item->optionex = q->getval();
 			break;
 		}

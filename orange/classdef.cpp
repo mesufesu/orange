@@ -38,7 +38,7 @@ void classdef::SetCharacter(int Class, int Str, int Dex, int Vit, int Energy, fl
 
 void classdef::SetEquipment(int Class)
 {
-	int def_type = 0;
+	/*int def_type = 0;
 	int right_type = 0;
 	for(int i = 0; i < 14; ++ i)
 	{
@@ -91,7 +91,7 @@ void classdef::SetEquipment(int Class)
 				break;
 			}
 		}
-	}
+	}*/
 }
 
 int classdef::GetDefPoint(int char_class)

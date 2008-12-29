@@ -73,6 +73,7 @@ void ServerSocket::OnDisconnect()
 	CPlayer* player = ObjManager.FindPlayerBySocket(this);
 	player->status = PLAYER_EMPTY;
 	player->type = VOID_PLAYER;
+	player->SetStatus(0);
 }
 
 void ServerSocket::CThreeHandler()

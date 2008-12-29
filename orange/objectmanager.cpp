@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include ".\\ItemManager.h"
 #include ".\\objectmanager.h"
 
 CObjectManager ObjManager;
@@ -124,6 +125,13 @@ void WINAPI CObjectManager::ObjectManagerProc(CObjectManager* mang)
 				case VOID_PLAYER:
 					{
 						CPlayer* player = (CPlayer*)object;
+						for(uint32 i = 0; i < 108; ++i)
+						{
+							if(player->inventory[i].IsItem())
+							{
+								ItemManager.DeleteInstance(&player->inventory[i]);
+							}
+						}
 						delete player;
 						break;
 					}
