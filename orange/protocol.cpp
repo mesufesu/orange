@@ -331,10 +331,9 @@ void Join_WorldJoin(PMSG_CHARMAPJOIN* data, CPlayer* player)
 	for(uint32 i = 0; i < ch->item_guids.size(); ++i)
 	{
 		DATA_ITEM ditem;
-		if(LoadItem(&ditem, ch->item_guids.at(i)))
+		if((LoadItem(&ditem, ch->item_guids.at(i))) && (ItemManager.Instanciate(&player->inventory[ditem.slot])))
 		{
 			player->inventory[ditem.slot].Assign(&ditem);
-			ItemManager.Instanciate(&player->inventory[ditem.slot]);
 		}
 	}
 	player->SendInventory();

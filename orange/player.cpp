@@ -340,11 +340,11 @@ bool CPlayer::SavePlayer()
 	this->last_save_time = GetTickCount();
 	Query* q = TestDB.query;
 	uint32 position = this->dir;
-	position |= this->map * 100;
-	position |= this->y * 10000;
-	position |= this->x * 1000000;
+	position |= this->map * 0x100;
+	position |= this->y * 0x10000;
+	position |= this->x * 0x1000000;
 	TestDB.db_mutex.Lock();
-	bool result = q->execute(AssembleQuery("UPDATE `characters` SET `class` = %u, `changeup` = %u, `position` = %u, `experience` = %I64u, `leveluppoint` = %u, `level` = %u, `strength` = %u, `dexterity` = %u, `vitality` = %u, `energy` = %u, `leadership` = %u, `life` = %u, `mana` = %u, `shield` = %u, `bp` = %u, `money` = %u, `pklevel` = %u, `gmlevel` = %u, `addpoint` = %u, `maxaddpoint` = %u, `minuspoint` = %u, `maxminuspoint` = %u;", this->Class, this->changeup, position, this->experience, this->leveluppoint, this->level, this->strength, this->dexterity, this->vitality, this->energy, this->leadership, (uint32)this->life, (uint32)this->mana, (uint32)this->shield, (uint32)this->bp, this->money, this->pklevel, this->gmlevel, this->addpoint, this->maxaddpoint, this->minuspoint, this->maxminuspoint));
+	bool result = q->execute(AssembleQuery("UPDATE `characters` SET `class` = %u, `changeup` = %u, `position` = %u, `experience` = %I64u, `leveluppoint` = %u, `level` = %u, `strength` = %u, `dexterity` = %u, `vitality` = %u, `energy` = %u, `leadership` = %u, `life` = %u, `mana` = %u, `shield` = %u, `bp` = %u, `money` = %u, `pklevel` = %u, `gmlevel` = %u, `addpoint` = %u, `maxaddpoint` = %u, `minuspoint` = %u, `maxminuspoint` = %u WHERE `account` = '%s' AND `name` = '%s';", this->Class, this->changeup, position, this->experience, this->leveluppoint, this->level, this->strength, this->dexterity, this->vitality, this->energy, this->leadership, (uint32)this->life, (uint32)this->mana, (uint32)this->shield, (uint32)this->bp, this->money, this->pklevel, this->gmlevel, this->addpoint, this->maxaddpoint, this->minuspoint, this->maxminuspoint, this->account, this->name));
 	TestDB.db_mutex.Unlock();
 	if(result)
 	{
