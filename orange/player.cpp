@@ -14,6 +14,7 @@ CPlayer::CPlayer()
 	this->type = OBJECT_PLAYER;
 	this->guid = -1;
 	this->tick_count = GetTickCount();
+	this->last_save_time = GetTickCount();
 	this->failed_attempts = NULL;
 	for(int i = 0; i < 108; ++i)
 	{
@@ -27,6 +28,18 @@ CPlayer::CPlayer()
 	this->check_time = GetTickCount();
 	this->pklevel = 0;
 	this->rest = 0;
+
+	this->experience = 0;
+	this->leveluppoint = 0;
+	this->money = 0;
+	this->pklevel = 0;
+	this->gmlevel = 0;
+	this->addpoint = 0;
+	this->maxaddpoint = 0;
+	this->minuspoint = 0;
+	this->maxminuspoint = 0;
+	this->Class = 0;
+	this->changeup = 0;
 
 	ZeroMemory(this->account, sizeof(this->account));
 	ZeroMemory(this->name, sizeof(this->name));
@@ -123,28 +136,28 @@ int CPlayer::LoadCharacters()
 	{
 		strcpy_s(this->charinfo[count].Account, 11, this->account);
 		strcpy_s(this->charinfo[count].Name, 11, q->getstr());
-		this->charinfo[count].Class = q->getval();
-		this->charinfo[count].ChangeUp = q->getval();
+		this->charinfo[count].Class = q->getuval();
+		this->charinfo[count].ChangeUp = q->getuval();
 		this->charinfo[count].Position = q->getuval();
-		this->charinfo[count].Exp = q->getval();
-		this->charinfo[count].LevelUpPoint = q->getval();
-		this->charinfo[count].Level = q->getval();
-		this->charinfo[count].Str = q->getval();
-		this->charinfo[count].Dex = q->getval();
-		this->charinfo[count].Vit = q->getval();
-		this->charinfo[count].Energy = q->getval();
-		this->charinfo[count].Leadership = q->getval();
-		this->charinfo[count].Life = q->getval();
-		this->charinfo[count].Mana = q->getval();
-		this->charinfo[count].Shield = q->getval();
-		this->charinfo[count].BP = q->getval();
-		this->charinfo[count].Money = q->getval();
-		this->charinfo[count].PkLevel = q->getval();
-		this->charinfo[count].GMLevel = q->getval();
-		this->charinfo[count].AddPoint = q->getval();
-		this->charinfo[count].MaxAddPoint = q->getval();
-		this->charinfo[count].MinusPoint = q->getval();
-		this->charinfo[count].MaxMinusPoint = q->getval();
+		this->charinfo[count].Exp = q->getbigint();
+		this->charinfo[count].LevelUpPoint = q->getuval();
+		this->charinfo[count].Level = q->getuval();
+		this->charinfo[count].Str = q->getuval();
+		this->charinfo[count].Dex = q->getuval();
+		this->charinfo[count].Vit = q->getuval();
+		this->charinfo[count].Energy = q->getuval();
+		this->charinfo[count].Leadership = q->getuval();
+		this->charinfo[count].Life = q->getuval();
+		this->charinfo[count].Mana = q->getuval();
+		this->charinfo[count].Shield = q->getuval();
+		this->charinfo[count].BP = q->getuval();
+		this->charinfo[count].Money = q->getuval();
+		this->charinfo[count].PkLevel = q->getuval();
+		this->charinfo[count].GMLevel = q->getuval();
+		this->charinfo[count].AddPoint = q->getuval();
+		this->charinfo[count].MaxAddPoint = q->getuval();
+		this->charinfo[count].MinusPoint = q->getuval();
+		this->charinfo[count].MaxMinusPoint = q->getuval();
 		std::string inventory_guids = q->getstr();
 		this->charinfo[count].item_guids.clear();
 		char* token = strtok((char*)inventory_guids.c_str(), seps);
@@ -316,4 +329,52 @@ void CPlayer::SetPosition(uint8 _x, uint8 _y)
 			this->y_old = this->target_y;
 		}
 	}
+}
+
+bool CPlayer::SavePlayer()
+{
+	if(this->type != OBJECT_PLAYER)
+	{
+		return false;
+	}
+	this->last_save_time = GetTickCount();
+	Query* q = TestDB.query;
+	uint32 position = this->dir;
+	position |= this->map * 100;
+	position |= this->y * 10000;
+	position |= this->x * 1000000;
+	TestDB.db_mutex.Lock();
+	bool result = q->execute(AssembleQuery("UPDATE `characters` SET `class` = %u, `changeup` = %u, `position` = %u, `experience` = %I64u, `leveluppoint` = %u, `level` = %u, `strength` = %u, `dexterity` = %u, `vitality` = %u, `energy` = %u, `leadership` = %u, `life` = %u, `mana` = %u, `shield` = %u, `bp` = %u, `money` = %u, `pklevel` = %u, `gmlevel` = %u, `addpoint` = %u, `maxaddpoint` = %u, `minuspoint` = %u, `maxminuspoint` = %u;", this->Class, this->changeup, position, this->experience, this->leveluppoint, this->level, this->strength, this->dexterity, this->vitality, this->energy, this->leadership, (uint32)this->life, (uint32)this->mana, (uint32)this->shield, (uint32)this->bp, this->money, this->pklevel, this->gmlevel, this->addpoint, this->maxaddpoint, this->minuspoint, this->maxminuspoint));
+	TestDB.db_mutex.Unlock();
+	if(result)
+	{
+		std::string inv;
+		inv.clear();
+		for(uint32 i = 0; i < 108; ++i)
+		{
+			if(this->inventory[i].IsItem())
+			{
+				char temp[16];
+				ZeroMemory(temp, sizeof(temp));
+				sprintf_s(temp, sizeof(temp), "%u ", this->inventory[i].guid);
+				if(ItemManager.SaveItem(&(this->inventory[i]), i))
+				{
+					inv.append(temp);
+				}
+			}
+		}
+		TestDB.db_mutex.Lock();
+		result = q->execute(AssembleQuery("UPDATE `characters` SET `inventory_guids` = '%s';", inv.c_str()));
+		TestDB.db_mutex.Unlock();
+		if(!result)
+		{
+			printf_s("Inventory save failed %s:%s\n", this->account, this->name);
+		}
+	}
+	else
+	{
+		printf_s("Character save failed %s:%s\n", this->account, this->name);
+		return false;
+	}
+	return true;
 }

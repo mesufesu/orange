@@ -88,3 +88,47 @@ bool LoadItem(DATA_ITEM* item, int guid)
 	}
 	return false;
 }
+
+bool CItemManager::SaveItem(CItem *item, uint32 slot)
+{
+	Query* q = TestDB.query;
+	bool result = false;
+	if(item->new_item == true)
+	{
+		uint32 new_guid = item->guid;
+		while(TRUE)
+		{
+			TestDB.db_mutex.Lock();
+			q->get_result(AssembleQuery("SELECT `id` FROM `character_items` WHERE `guid` = '%d'", new_guid));
+			if(q->num_rows() == 0)
+			{
+				break;
+			}
+			else
+			{
+				new_guid = rand();
+			}
+			q->free_result();
+			TestDB.db_mutex.Unlock();
+		}
+		this->DeleteInstance(item);
+		item->guid = new_guid;
+		this->Instanciate(item);
+		TestDB.db_mutex.Lock();
+		result = q->execute(AssembleQuery("INSERT IGNORE INTO `character_items` (`guid`, `slot`, `type`, `level`, `durability`, `option1`, `option2`, `option3`, `newoption`, `setoption`, `petitem_level`, `petitem_exp`, `joh_option`, `optionex`) VALUES (%u, %u, %u, %u, %f, %u, %u, %u, %u, %u, %u, %u, %u, %u);", item->guid, slot, item->type, item->level, item->durability, item->m_Option1, item->m_Option2, item->m_Option3, item->m_NewOption, item->m_SetOption, item->m_PetItem_Level, item->m_PetItem_Exp, item->m_JewelOfHarmonyOption, item->m_ItemOptionEx));
+		TestDB.db_mutex.Unlock();
+		item->new_item = false;
+	}
+	else
+	{
+		TestDB.db_mutex.Lock();
+		result = q->execute(AssembleQuery("UPDATE `character_items` SET `slot` = %u, `type` = %u, `level` = %u, `durability` = %f, `option1` = %u, `option2` = %u, `option3` = %u, `newoption` = %u, `setoption` = %u, `petitem_level` = %u, `petitem_exp` = %u, `joh_option` = %u, `optionex` = %u WHERE `guid` = %u;", item->guid, slot, item->type, item->level, item->durability, item->m_Option1, item->m_Option2, item->m_Option3, item->m_NewOption, item->m_SetOption, item->m_PetItem_Level, item->m_PetItem_Exp, item->m_JewelOfHarmonyOption, item->m_ItemOptionEx, item->guid));
+		TestDB.db_mutex.Unlock();
+	}
+	if(!result)
+	{
+		printf_s("Save item failed %u.\n", item->guid);
+		return false;
+	}
+	return true;
+}

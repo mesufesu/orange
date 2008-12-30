@@ -44,28 +44,28 @@ struct DATA_CHARINFO
 {
 	char Account[11];
 	char Name[11];
-	int Class;
-	int ChangeUp;
-	int Position; //mapx mapy map dir
-	int Exp;
-	int LevelUpPoint;
-	int Level;
-	int Str;
-	int Dex;
-	int Vit;
-	int Energy;
-	int Leadership;
-	int Life;
-	int Mana;
-	int Shield;
-	int BP;
-	int Money;
-	int PkLevel;
-	int GMLevel;
-	int AddPoint;
-	int MaxAddPoint;
-	int MinusPoint;
-	int MaxMinusPoint;
+	uint8 Class;
+	uint8 ChangeUp;
+	uint32 Position; //mapx mapy map dir
+	uint64 Exp;
+	uint8 LevelUpPoint;
+	uint16 Level;
+	uint16 Str;
+	uint16 Dex;
+	uint16 Vit;
+	uint16 Energy;
+	uint16 Leadership;
+	uint32 Life;
+	uint32 Mana;
+	uint32 Shield;
+	uint32 BP;
+	uint32 Money;
+	uint8 PkLevel;
+	uint32 GMLevel;
+	uint8 AddPoint;
+	uint8 MaxAddPoint;
+	uint8 MinusPoint;
+	uint8 MaxMinusPoint;
 	std::vector<uint32> item_guids;
 	DATA_ITEM temp_inv[12];
 	std::vector<uint8> spell_data;
@@ -78,6 +78,7 @@ public:
 	PLAYER_STATUS status;
 	uint32 tick_count;
 	uint32 last_move_time;
+	uint32 last_save_time;
 	uint32 check_time;
 
 	size_t path_count;
@@ -87,7 +88,6 @@ public:
 	char account[10];
 	char name[10];
 	unsigned char charset[18];
-	unsigned char pklevel;
 	unsigned char failed_attempts;
 	DATA_CHARINFO charinfo[5];
 	CItem inventory[108];
@@ -96,6 +96,18 @@ public:
 	size_t send_serial;
 
 	unsigned char rest;
+
+	uint64 experience;
+	uint16 leveluppoint;
+	uint32 money;
+	uint8 pklevel;
+	uint32 gmlevel;
+	uint8 addpoint;
+	uint8 maxaddpoint;
+	uint8 minuspoint;
+	uint8 maxminuspoint;
+	uint8 Class;
+	uint8 changeup;
 
 	CPlayer();
 	void Send(unsigned char* buffer, size_t len);
@@ -110,6 +122,7 @@ public:
 	bool CheckPosition();
 	bool CheckPacketTime();
 	void SetPosition(uint8 x, uint8 y);
+	bool SavePlayer();
 };
 
 #endif

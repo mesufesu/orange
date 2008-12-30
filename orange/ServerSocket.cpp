@@ -74,6 +74,7 @@ void ServerSocket::OnDisconnect()
 	player->status = PLAYER_EMPTY;
 	player->type = VOID_PLAYER;
 	player->SetStatus(0);
+	player->SavePlayer();
 }
 
 void ServerSocket::CThreeHandler()

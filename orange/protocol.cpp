@@ -294,12 +294,35 @@ void Join_WorldJoin(PMSG_CHARMAPJOIN* data, CPlayer* player)
 	result.unk3 = 0x005c; //1.3.2 sniffed from war 12 lvl
 	//a lot of trash must be done here
 
+	player->Class = ch->Class;
+	player->changeup = ch->ChangeUp;
 	player->x = result.MapX;
 	player->y = result.MapY;
 	player->x_old = player->x;
 	player->y_old = player->y;
 	player->target_x = player->x;
 	player->target_y = player->y;
+	player->dir = result.Dir;
+	player->experience = ch->Exp;
+	player->leveluppoint = ch->LevelUpPoint;
+	player->level = ch->Level;
+	player->strength = ch->Str;
+	player->dexterity = ch->Dex;
+	player->vitality = ch->Vit;
+	player->energy = ch->Energy;
+	player->leadership = ch->Leadership;
+	player->life = ch->Life;
+	player->maxlife = DCInfo.DefClass[ch->Class].VitalityToLife * ch->Vit + DCInfo.DefClass[ch->Class].LevelLife * ch->Level;
+	player->mana = ch->Mana;
+	player->maxmana = DCInfo.DefClass[ch->Class].EnergyToMana * ch->Energy + DCInfo.DefClass[ch->Class].LevelMana * ch->Level;
+	player->bp = ch->BP;
+	player->maxbp = ch->BP + 10; //lazyness
+	player->shield = ch->Shield;
+	player->maxshield = ch->Shield + 10; //^^,
+	player->money = ch->Money;
+	player->pklevel = ch->PkLevel;
+	player->gmlevel = ch->GMLevel;
+
 	memcpy(player->name, data->Name, 10);
 
 	player->map = result.MapNumber;

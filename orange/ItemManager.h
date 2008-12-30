@@ -14,6 +14,7 @@ public:
 	void LoadCharacterItems();
 	bool Instanciate(const CItem* item);
 	void DeleteInstance(const CItem* item);
+	bool SaveItem(CItem* item, uint32 slot);
 };
 
 extern CItemManager ItemManager;

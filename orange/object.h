@@ -27,6 +27,22 @@ public:
 	unsigned char viewskillstate;
 	bool teleporting;
 	OBJECT_TYPE type;
+
+	uint16 level;
+	uint16 strength;
+	uint16 dexterity;
+	uint16 vitality;
+	uint16 energy;
+	uint16 leadership;
+	float life;
+	float maxlife;
+	float mana;
+	float maxmana;
+	float shield;
+	float maxshield;
+	float bp;
+	float maxbp;
+
 	CObject();
 };
 
