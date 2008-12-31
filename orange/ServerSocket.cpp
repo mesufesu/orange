@@ -71,7 +71,10 @@ void ServerSocket::OnDisconnect()
 {
 	printf_s("Disconnected: %s:%d\n", this->GetRemoteAddress().c_str(), this->GetRemotePort());
 	CPlayer* player = ObjManager.FindPlayerBySocket(this);
-	player->SavePlayer();
+	if(player->status == PLAYER_PLAYING)
+	{
+		player->SavePlayer();
+	}
 	player->SetStatus(0);
 	player->status = PLAYER_EMPTY;
 	player->type = VOID_PLAYER;

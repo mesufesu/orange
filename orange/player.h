@@ -123,6 +123,7 @@ public:
 	bool CheckPacketTime();
 	void SetPosition(uint8 x, uint8 y);
 	bool SavePlayer();
+	void CookCharset();
 };
 
 #endif

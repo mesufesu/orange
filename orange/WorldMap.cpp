@@ -69,13 +69,16 @@ void WINAPI CWorldMap::UpdateProc(CWorldMap* map)
 					map->UpdateViewport((CPlayer*)object);
 					if((GetTickCount() - ((CPlayer*)object)->last_save_time) >= (5 * 1000 * 60))
 					{
-						((CPlayer*)object)->SavePlayer();
+						if(((CPlayer*)object)->status == PLAYER_PLAYING)
+						{
+							((CPlayer*)object)->SavePlayer();
+						}
 					}
 				}
 			}
 			map->last_update = GetTickCount();
 		}
-		Sleep(800);
+		Sleep(100);
 	}
 }
 

@@ -364,7 +364,7 @@ bool CPlayer::SavePlayer()
 			}
 		}
 		TestDB.db_mutex.Lock();
-		result = q->execute(AssembleQuery("UPDATE `characters` SET `inventory_guids` = '%s';", inv.c_str()));
+		result = q->execute(AssembleQuery("UPDATE `characters` SET `inventory_guids` = '%s' WHERE `account` = '%s' AND `name` = '%s';", inv.c_str(), this->account, this->name));
 		TestDB.db_mutex.Unlock();
 		if(!result)
 		{
@@ -377,4 +377,202 @@ bool CPlayer::SavePlayer()
 		return false;
 	}
 	return true;
+}
+
+void CPlayer::CookCharset()
+{
+	ZeroMemory(charset, 18);
+	this->charset[0] = (this->Class * 0x20) & 0xE0; //0x100 - 0x20 = 0xE0
+	this->charset[0] |= (this->changeup * 0x10) & 0x10;
+	if(this->action == 0x80)
+	{
+		this->charset[0] |= 0x02;
+	}
+	else if(this->action == 0x81)
+	{
+		this->charset[0] |= 0x03;
+	}
+	if(this->inventory[WEAPON_01].type >= 0)
+	{
+		this->charset[12] |= (this->inventory[WEAPON_01].type & 0x0f00) / 0x10;  //12 char - highest 4 bits
+		this->charset[1] = (this->inventory[WEAPON_01].type & 0xff); //1 char both 4-bit fields
+	}
+	else //or -1;
+	{
+		this->charset[12] |= 0xf0;
+		this->charset[1] = 0xff;
+	}
+	if(this->inventory[WEAPON_02].type >= 0)
+	{
+		this->charset[13] |= (this->inventory[WEAPON_02].type & 0x0f00) / 0x10;
+		this->charset[2] = (this->inventory[WEAPON_02].type & 0xff);
+	}
+	else
+	{
+		this->charset[13] |= 0xf0;
+		this->charset[2] = 0xff;
+	}
+	if(this->inventory[HELMET].type >= 0)
+	{
+		this->charset[13] |= (this->inventory[HELMET].type & 0x01E0) / 0x20;
+		this->charset[9] |= (this->inventory[HELMET].type & 0x10) * 0x08;
+		this->charset[3] |= (this->inventory[HELMET].type & 0x0f) * 0x10;
+	}
+	else
+	{
+		this->charset[13] |= 0x0f;
+		this->charset[9] |= 0x80;
+		this->charset[3] |= 0xf0;
+	}
+	if(this->inventory[ARMOR].type >= 0)
+	{
+		this->charset[14] |= (this->inventory[ARMOR].type & 0x01E0) / 0x02;
+		this->charset[9] |= (this->inventory[ARMOR].type & 0x10) * 0x04;
+		this->charset[3] |= (this->inventory[ARMOR].type &0x0f);
+	}
+	else
+	{
+		this->charset[14] |= 0xf0;
+		this->charset[9] |= 0x40;
+		this->charset[3] |= 0x0f;
+	}
+	if(this->inventory[PANTS].type >= 0)
+	{
+		this->charset[14] |= (this->inventory[PANTS].type & 0x01E0) / 0x20;
+		this->charset[9] |= (this->inventory[PANTS].type & 0x10) * 0x02;
+		this->charset[4] |= (this->inventory[PANTS].type & 0x0f) * 0x10;
+	}
+	else
+	{
+		this->charset[14] |= 0x0f;
+		this->charset[9] |= 0x20;
+		this->charset[4] |= 0xf0;
+	}
+	if(this->inventory[GLOVES].type >= 0)
+	{
+		this->charset[15] |= (this->inventory[GLOVES].type & 0x01E0) / 0x02;
+		this->charset[9] |= (this->inventory[GLOVES].type & 0x10);
+		this->charset[4] |= (this->inventory[GLOVES].type & 0x0f);
+	}
+	else
+	{
+		this->charset[15] |= 0xf0;
+		this->charset[9] |= 0x10;
+		this->charset[4] |= 0x0f;
+	}
+	if(this->inventory[BOOTS].type >= 0)
+	{
+		this->charset[15] |= (this->inventory[BOOTS].type & 0x01E0) / 0x20;
+		this->charset[9] |= (this->inventory[BOOTS].type & 0x10) / 0x02;
+		this->charset[5] |= (this->inventory[BOOTS].type & 0x0f) * 0x10;
+	}
+	else
+	{
+		this->charset[15] |= 0x0f;
+		this->charset[9] |= 0x08;
+		this->charset[5] |= 0xf0;
+	}
+	uint8 index = 0;
+	if(this->inventory[WINGS].type >= 0)
+	{
+		index |= (this->inventory[WINGS].type & 0x03) * 0x04;
+	}
+	else
+	{
+		index |= 0x0c;
+	}
+	if((this->inventory[GUARDIAN].type >= 0) && !(this->inventory[GUARDIAN].type == 6660))
+	{
+		index |= (this->inventory[GUARDIAN].type & 0x03);
+	}
+	else
+	{
+		index |= 0x03;
+	}
+	this->charset[5] |= index;
+	uint32 levelindex = 0;
+	levelindex = LevelConvert(this->inventory[WEAPON_01].level) & 0xff;
+	levelindex |= (LevelConvert(this->inventory[WEAPON_02].level) & 0xff) * 0x08;
+	levelindex |= (LevelConvert(this->inventory[HELMET].level) & 0xff) * 0x40;
+	levelindex |= (LevelConvert(this->inventory[ARMOR].level) & 0xff) * 0x200;
+	levelindex |= (LevelConvert(this->inventory[PANTS].level) & 0xff) * 0x1000;
+	levelindex |= (LevelConvert(this->inventory[GLOVES].level) & 0xff) * 0x8000;
+	levelindex |= (LevelConvert(this->inventory[BOOTS].level) & 0xff) * 0x40000;
+	this->charset[6] = (levelindex / 0x10000) & 0xff;
+	this->charset[7] = (levelindex / 0x100) & 0xff;
+	this->charset[8] = (levelindex) & 0xff;
+	if(((this->inventory[WINGS].type >= (12 * 512 + 3)) && (this->inventory[WINGS].type <= (12 * 512 + 6))) || (this->inventory[WINGS].type == (13 * 512 + 30)))
+	{
+		this->charset[5] |= 0x0C;
+		if(this->inventory[WINGS].type == (13 * 512 + 30))
+		{
+			this->charset[5] |= 0x05;
+		}
+		else
+		{
+			this->charset[9] |= (this->inventory[WINGS].type - 2) & 0x07;
+		}
+	}
+	this->charset[10] = 0;
+	/*if(lpObj->pInventory[HELMET].IsExtItem())
+	{
+		lpObj->CharSet[10] = 0x80;
+	}
+	if(lpObj->pInventory[ARMOR].IsExtItem())
+	{
+		lpObj->CharSet[10] |= 0x40;
+	}
+	if(lpObj->pInventory[PANTS].IsExtItem())
+	{
+		lpObj->CharSet[10] |= 0x20;
+	}
+	if(lpObj->pInventory[GLOVES].IsExtItem())
+	{
+		lpObj->CharSet[10] |= 0x10;
+	}
+	if(lpObj->pInventory[BOOTS].IsExtItem())
+	{
+		lpObj->CharSet[10] |= 0x8;
+	}
+	if(lpObj->pInventory[WEAPON_01].IsExtItem())
+	{
+		lpObj->CharSet[10] |= 0x4;
+	}
+	if(lpObj->pInventory[WEAPON_02].IsExtItem())
+	{
+		lpObj->CharSet[10] |= 0x2;
+	}*/
+	this->charset[11] = 0;
+	/*if(lpObj->pInventory[HELMET].IsSetItem())
+	{
+		lpObj->CharSet[11] = 0x80;
+	}
+	if(lpObj->pInventory[ARMOR].IsSetItem())
+	{
+		lpObj->CharSet[11] |= 0x40;
+	}
+	if(lpObj->pInventory[PANTS].IsSetItem())
+	{
+		lpObj->CharSet[11] |= 0x20;
+	}
+	if(lpObj->pInventory[GLOVES].IsSetItem())
+	{
+		lpObj->CharSet[11] |= 0x10;
+	}
+	if(lpObj->pInventory[BOOTS].IsSetItem())
+	{
+		lpObj->CharSet[11] |= 0x8;
+	}
+	if(lpObj->pInventory[WEAPON_01].IsSetItem())
+	{
+		lpObj->CharSet[11] |= 0x4;
+	}
+	if(lpObj->pInventory[WEAPON_02].IsSetItem())
+	{
+		lpObj->CharSet[11] |= 0x2;
+	}
+	if(lpObj->IsFullSetItem)
+	{
+		lpObj->CharSet[11] |= 0x01;
+	}*/
 }

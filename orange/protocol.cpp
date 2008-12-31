@@ -335,7 +335,12 @@ void Join_WorldJoin(PMSG_CHARMAPJOIN* data, CPlayer* player)
 		{
 			player->inventory[ditem.slot].Assign(&ditem);
 		}
+		else
+		{
+			player->inventory[ditem.slot].type = -1; //todo: implement correct function
+		}
 	}
+	player->CookCharset();
 	player->SendInventory();
 	player->status = PLAYER_PLAYING;
 	//and here =)
@@ -526,6 +531,8 @@ void World_Action(PMSG_ACTION* data, CPlayer* player)
 	player->action = data->ActionNumber;
 	packet.Dir = player->dir;
 	packet.ActionNumber = player->action;
+	packet.NumberH = HIBYTE(player->guid);
+	packet.NumberL = LOBYTE(player->guid);
 	packet.TargetNumberH = 0;
 	packet.TargetNumberL = 0;
 	switch(player->action)

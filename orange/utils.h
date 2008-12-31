@@ -7,6 +7,7 @@ bool isFile(const char * file);
 void MsgBox(const char * str);
 void xor3(unsigned char* ptr, unsigned int len);
 const std::string AssembleQuery(const char * format, ...);
+unsigned char LevelConvert(unsigned char level);
 
 extern short RoadPathTable[16];
 extern int8 RoadX[8];

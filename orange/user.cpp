@@ -108,3 +108,238 @@ void InitFrustum()
 		FrustumY[i] = (int)(Frustum[i][1] * 0.01f);
 	}
 }
+
+unsigned char lsc(int level)
+{
+	if(level >= 13)
+	{
+		return 7;
+	}
+	if(level == 12)
+	{
+		return 6;
+	}
+	if(level == 11)
+	{
+		return 5;
+	}
+}
+
+/*void Test()
+{
+	/*
+	0 0
+	1 WEAPON_01 (third digit) 1 WEAPON_01 (fourth digit)
+	2 WEAPON_02 (third digit) 2 WEAPON_02 (fourth digit)
+	3 HELMET (fourth digit) 3 ARMOR (fourth digit)
+	4 PANTS (fourth digit) 4 GLOVES (fourth digit)
+	5 BOOTS (fourth digit) 5 WINGS & GUARDIAN
+	6 6 levelindex HIGHWORD
+	7 7 levelindex HIBYTE
+	8 8 levelindex LOBYTE
+	9 HELMET (used on magumsa = 0x80) & ARMOR (=0x40) & PANTS (=0x20) & GLOVES (=0x10) 9 BOOTS (=0x08) & 2nd WINGS
+	10 10
+	11 11
+	12 WEAPON_01 (second digit) 12
+	13 WEAPON_02 (second digit) 13 HELMET (third digit / 2)
+	14 ARMOR (third digit / 2) 14 PANTS (third digit / 2)
+	15 GLOVES (third digit / 2) 15 BOOTS (third digit / 2)
+	16 16
+	17 17*/
+	/*OBJECTSTRUCT* lpObj = &gObj[1];
+	lpObj->CharSet[0] = (lpObj->Class * 0x20) & 0xE0; //0x100 - 0x20 = 0xE0
+	lpObj->CharSet[0] |= (lpObj->CharSet * 0x10) & 0x10;
+	if(lpObj->m_ActionNumber == 0x80)
+	{
+		lpObj->CharSet[0] |= 0x02;
+	}
+	else if(lpObj->m_ActionNumber == 0x81)
+	{
+		lpObj->CharSet[0] |= 0x03;
+	}
+	if(lpObj->Inventory1[WEAPON_01].m_Type >= 0)
+	{
+		lpObj->CharSet[12] |= (lpObj->Inventory1[WEAPON_01].m_Type & 0x0f00) / 0x10;  //12 char - highest 4 bits
+		lpObj->CharSet[1] = (lpObj->Inventory1[WEAPON_01].m_Type & 0xff); //1 char both 4-bit fields
+	}
+	else //or -1;
+	{
+		lpObj->CharSet[12] |= 0xf0;
+		lpObj->CharSet[1] = 0xff;
+	}
+	if(lpObj->Inventory1[WEAPON_02].m_Type >= 0)
+	{
+		lpObj->CharSet[13] |= (lpObj->Inventory1[WEAPON_2].m_Type & 0x0f00) / 0x10;
+		lpObj->CharSet[2] = (lpObj->Inventory1[WEAPON_02].m_Type & 0xff);
+	}
+	else
+	{
+		lpObj->CharSet[13] |= 0xf0;
+		lpObj->CharSet[2] = 0xff;
+	}
+	if(lpObj->Inventory1[HELMET].m_Type >= 0)
+	{
+		lpObj->CharSet[13] |= (lpObj->Inventory1[HELMET].m_Type & 0x01E0) / 0x20;
+		lpObj->CharSet[9] |= (lpObj->Inventory1[HELMET].m_Type & 0x10) * 0x08;
+		lpObj->CharSet[3] |= (lpObj->Inventory1[HELMET].m_Type & 0x0f) * 0x10;
+	}
+	else
+	{
+		lpObj->CharSet[13] |= 0x0f;
+		lpObj->CharSet[9] |= 0x80;
+		lpObj->CharSet[3] |= 0xf0;
+	}
+	if(lpObj->Inventory1[ARMOR].m_Type >= 0)
+	{
+		lpObj->CharSet[14] |= (lpObj->Inventory1[ARMOR].m_Type & 0x01E0) / 0x02;
+		lpObj->CharSet[9] |= (lpObj->Inventory1[ARMOR].m_Type & 0x10) * 0x04;
+		lpObj->CharSet[3] |= (lpObj->Inventory1[ARMOR].m_Type &0x0f);
+	}
+	else
+	{
+		lpObj->CharSet[14] |= 0xf0;
+		lpObj->CharSet[9] |= 0x40;
+		lpObj->CharSet[3] |= 0x0f;
+	}
+	if(lpObj->Inventory1[PANTS].m_Type >= 0)
+	{
+		lpObj->CharSet[14] |= (lpObj->Inventory1[PANTS].m_Type & 0x01E0) / 0x20;
+		lpObj->CharSet[9] |= (lpObj->Inventory1[PANTS].m_Type & 0x10) * 0x02;
+		lpObj->CharSet[4] |= (lpObj->Inventory1[PANTS].m_Type & 0x0f) * 0x10;
+	}
+	else
+	{
+		lpObj->CharSet[14] |= 0x0f;
+		lpObj->CharSet[9] |= 0x20;
+		lpObj->CharSet[4] |= 0xf0;
+	}
+	if(lpObj->Inventory1[GLOVES].m_Type >= 0)
+	{
+		lpObj->CharSet[15] |= (lpObj->Inventory1[GLOVES].m_Type & 0x01E0) / 0x02;
+		lpObj->CharSet[9] |= (lpObj->Inventory1[GLOVES].m_Type & 0x10);
+		lpObj->CharSet[4] |= (lpObj->Inventory1[GLOVES].m_Type & 0x0f);
+	}
+	else
+	{
+		lpObj->CharSet[15] |= 0xf0;
+		lpObj->CharSet[9] |= 0x10;
+		lpObj->CharSet[4] |= 0x0f;
+	}
+	if(lpObj->Inventory1[BOOTS].m_Type >= 0)
+	{
+		lpObj->CharSet[15] |= (lpObj->Inventory1[BOOTS].m_Type & 0x01E0) / 0x20;
+		lpObj->CharSet[9] |= (lpObj->Inventory1[BOOTS].m_Type & 0x10) / 0x02;
+		lpObj->CharSet[5] |= (lpObj->Inventory1[BOOTS].m_Type & 0x0f) * 0x10;
+	}
+	else
+	{
+		lpObj->CharSet[15] |= 0x0f;
+		lpObj->CharSet[9] |= 0x08;
+		lpObj->CharSet[5] |= 0xf0;
+	}
+	uint8 index = 0;
+	if(lpObj->Inventory1[WINGS].m_Type >= 0)
+	{
+		index |= (lpObj->Inventory1[WINGS].m_Type & 0x03) * 0x04;
+	}
+	else
+	{
+		index |= 0x0c;
+	}
+	if((lpObj->Inventory1[GUARDIAN].m_Type >= 0) && !(lpObj->Inventory1[GUARDIAN].m_Type == 6660))
+	{
+		index |= (lpObj->Inventory1[GUARDIAN].m_Type & 0x03);
+	}
+	else
+	{
+		index |= 0x03;
+	}
+	lpObj->CharSet[5] |= index;
+	uint32 levelindex = 0;
+	levelindex = lsc(0) & 0xff;
+	levelindex |= (LevelConvert(1) & 0xff) * 0x08;
+	levelindex |= (LevelConvert(2) & 0xff) * 0x40;
+	levelindex |= (LevelConvert(3) & 0xff) * 0x200;
+	levelindex |= (LevelConvert(4) & 0xff) * 0x1000;
+	levelindex |= (LevelConvert(5) & 0xff) * 0x8000;
+	levelindex |= (LevelConvert(6) & 0xff) * 0x40000;
+	lpObj->CharSet[6] = (levelindex / 0x10000) & 0xff;
+	lpObj->CharSet[7] = (levelindex / 0x100) & 0xff;
+	lpObj->CharSet[8] = (levelindex) & 0xff;
+	if(((lpObj->Inventory1[WINGS].m_Type >= (12 * 512 + 3)) && (lpObj->Inventory1[WINGS].m_Type <= (12 * 512 + 6))) || (lpObj->Inventory1[WINGS].m_Type == (13 * 512 + 30)))
+	{
+		lpObj->CharSet[5] |= 0x0C;
+		if(lpObj->Inventory1[WINGS].m_Type == (13 * 512 + 30))
+		{
+			lpObj->CharSet[5] |= 0x05;
+		}
+		else
+		{
+			lpObj->CharSet[9] |= (lpObj->Inventory1[WINGS].m_Type - 2) & 0x07;
+		}
+	}
+	lpObj->CharSet[10] = 0;
+	if(lpObj->pInventory[HELMET].IsExtItem())
+	{
+		lpObj->CharSet[10] = 0x80;
+	}
+	if(lpObj->pInventory[ARMOR].IsExtItem())
+	{
+		lpObj->CharSet[10] |= 0x40;
+	}
+	if(lpObj->pInventory[PANTS].IsExtItem())
+	{
+		lpObj->CharSet[10] |= 0x20;
+	}
+	if(lpObj->pInventory[GLOVES].IsExtItem())
+	{
+		lpObj->CharSet[10] |= 0x10;
+	}
+	if(lpObj->pInventory[BOOTS].IsExtItem())
+	{
+		lpObj->CharSet[10] |= 0x8;
+	}
+	if(lpObj->pInventory[WEAPON_01].IsExtItem())
+	{
+		lpObj->CharSet[10] |= 0x4;
+	}
+	if(lpObj->pInventory[WEAPON_02].IsExtItem())
+	{
+		lpObj->CharSet[10] |= 0x2;
+	}
+	lpObj->CharSet[11] = 0;
+	if(lpObj->pInventory[HELMET].IsSetItem())
+	{
+		lpObj->CharSet[11] = 0x80;
+	}
+	if(lpObj->pInventory[ARMOR].IsSetItem())
+	{
+		lpObj->CharSet[11] |= 0x40;
+	}
+	if(lpObj->pInventory[PANTS].IsSetItem())
+	{
+		lpObj->CharSet[11] |= 0x20;
+	}
+	if(lpObj->pInventory[GLOVES].IsSetItem())
+	{
+		lpObj->CharSet[11] |= 0x10;
+	}
+	if(lpObj->pInventory[BOOTS].IsSetItem())
+	{
+		lpObj->CharSet[11] |= 0x8;
+	}
+	if(lpObj->pInventory[WEAPON_01].IsSetItem())
+	{
+		lpObj->CharSet[11] |= 0x4;
+	}
+	if(lpObj->pInventory[WEAPON_02].IsSetItem())
+	{
+		lpObj->CharSet[11] |= 0x2;
+	}
+	if(lpObj->IsFullSetItem)
+	{
+		lpObj->CharSet[11] |= 0x01;
+	}
+	//lpObj->Inventory1[GUARDIAN].m_Type & 0x03;
+	//too lazy
+}*/
