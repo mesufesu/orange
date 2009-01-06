@@ -273,6 +273,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ReadMe.txt"
+				>
+			</File>
+			<File
 				RelativePath=".\ServerSocket.cpp"
 				>
 			</File>
@@ -729,10 +733,6 @@
 				</File>
 			</Filter>
 		</Filter>
-		<File
-			RelativePath=".\ReadMe.txt"
-			>
-		</File>
 	</Files>
 	<Globals>
 	</Globals>

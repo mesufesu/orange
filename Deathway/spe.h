@@ -1,3 +1,5 @@
+//Copyright: Deathway
+
 #ifndef SPE_H
 #define SPE_H
 

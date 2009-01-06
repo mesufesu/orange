@@ -1,3 +1,5 @@
+//Copyright: Deathway
+
 #ifndef SIMPLEMODULUS_H
 #define SIMPLEMODULUS_H
 
