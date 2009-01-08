@@ -23,21 +23,24 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include ".\\mutex.h"
-#include "..\\mysql\\mysql.h"
+#include <QtSql\\QtSql>
+/*#include "..\\mysql\\mysql.h"
 #include "..\\mysqlwrapper\\Database.h"
-#include "..\\mysqlwrapper\\Query.h"
+#include "..\\mysqlwrapper\\Query.h"*/
 
 class CDatabaseHandler
 {
-private:
-	Database* db;
 public:
-	CMyMutex db_mutex;
-	Query* query;
+	void Lock();
+	void Unlock();
 	CDatabaseHandler();
 	~CDatabaseHandler();
+	bool Connect();
+private:
+	CMyMutex db_mutex;
+	QSqlDatabase db;
 };
 
-extern CDatabaseHandler TestDB;
+extern CDatabaseHandler MainDB;
 
 #endif

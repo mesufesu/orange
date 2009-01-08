@@ -22,16 +22,31 @@
 #include <stdio.h>
 #include ".\\DataBase.h"
 
-CDatabaseHandler TestDB;
+CDatabaseHandler MainDB;
 
 CDatabaseHandler::CDatabaseHandler()
 {
-	this->db = new Database("localhost", "root", "dagal", "test_db");
-	this->query = new Query(*db);
+	db = QSqlDatabase::addDatabase("QMYSQL");
+}
+
+bool CDatabaseHandler::Connect()
+{
+	this->db.setHostName("localhost");
+	this->db.setUserName("root");
+	this->db.setPassword("dagal");
+	return this->db.open();
 }
 
 CDatabaseHandler::~CDatabaseHandler()
 {
-	delete this->query;
-	delete this->db;
+}
+
+void CDatabaseHandler::Lock()
+{
+	this->db_mutex.Lock();
+}
+
+void CDatabaseHandler::Unlock()
+{
+	this->db_mutex.Unlock();
 }

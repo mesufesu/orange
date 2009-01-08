@@ -24,6 +24,8 @@
 #include ".\\objectmanager.h"
 #include ".\\player.h"
 
+const CItem dummy;
+
 CPlayer::CPlayer()
 {
 	this->socket = NULL;
@@ -35,7 +37,7 @@ CPlayer::CPlayer()
 	this->failed_attempts = NULL;
 	for(int i = 0; i < 108; ++i)
 	{
-		this->inventory[i].type = -1;
+		this->inventory[i] = (CItem*)&dummy;
 	}
 	this->send_serial = NULL;
 	this->viewport.resize(100);
@@ -120,7 +122,6 @@ void CPlayer::Send(unsigned char* buffer, size_t len)
 			break;
 		}
 	}
-	//this->socket->SendBuf((const char*)buffer, len);
 }
 
 void CPlayer::Close()
@@ -135,47 +136,52 @@ void CPlayer::Close()
 
 void CPlayer::SetStatus(unsigned char status)
 {
-	Query * q = TestDB.query;
-	TestDB.db_mutex.Lock();
-	q->execute(AssembleQuery("UPDATE `account_test` SET `status` = %d WHERE `account` = '%s'", status, this->account));
-	TestDB.db_mutex.Unlock();
+	QSqlQuery q;
+	MainDB.Lock();
+	q.prepare("UPDATE `account_test` SET `status` = :status WHERE `account` = ':account'");
+	q.bindValue(":status", status);
+	q.bindValue(":account", this->account);
+	q.exec();
+	MainDB.Unlock();
 }
 
 int CPlayer::LoadCharacters()
 {
 	char seps[] = " ";
 	ZeroMemory(this->charinfo, sizeof(DATA_CHARINFO) * 5);
-	Query* q = TestDB.query;
+	QSqlQuery q;
 	int count = 0;
-	TestDB.db_mutex.Lock();
-	q->get_result(AssembleQuery("SELECT `name`, `class`, `changeup`, `position`, `experience`, `leveluppoint`, `level`, `strength`, `dexterity`, `vitality`, `energy`, `leadership`, `life`, `mana`, `shield`, `bp`, `money`, `pklevel`, `gmlevel`, `addpoint`, `maxaddpoint`, `minuspoint`, `maxminuspoint`, `inventory_guids`, `spell_data`, `guild_data` FROM `characters` WHERE `account` = '%s'", this->account));
-	while(q->fetch_row() && (count <= 4))
+	MainDB.Lock();
+	q.prepare("SELECT `name`, `class`, `changeup`, `position`, `experience`, `leveluppoint`, `level`, `strength`, `dexterity`, `vitality`, `energy`, `leadership`, `life`, `mana`, `shield`, `bp`, `money`, `pklevel`, `gmlevel`, `addpoint`, `maxaddpoint`, `minuspoint`, `maxminuspoint`, `inventory_guids`, `spell_data`, `guild_data` FROM `characters` WHERE `account` = ':account'");
+	q.bindValue(":account", this->account);
+	q.exec();
+	while((q.next()) && (count <= 4))
 	{
 		strcpy_s(this->charinfo[count].Account, 11, this->account);
-		strcpy_s(this->charinfo[count].Name, 11, q->getstr());
-		this->charinfo[count].Class = q->getuval();
-		this->charinfo[count].ChangeUp = q->getuval();
-		this->charinfo[count].Position = q->getuval();
-		this->charinfo[count].Exp = q->getbigint();
-		this->charinfo[count].LevelUpPoint = q->getuval();
-		this->charinfo[count].Level = q->getuval();
-		this->charinfo[count].Str = q->getuval();
-		this->charinfo[count].Dex = q->getuval();
-		this->charinfo[count].Vit = q->getuval();
-		this->charinfo[count].Energy = q->getuval();
-		this->charinfo[count].Leadership = q->getuval();
-		this->charinfo[count].Life = q->getuval();
-		this->charinfo[count].Mana = q->getuval();
-		this->charinfo[count].Shield = q->getuval();
-		this->charinfo[count].BP = q->getuval();
-		this->charinfo[count].Money = q->getuval();
-		this->charinfo[count].PkLevel = q->getuval();
-		this->charinfo[count].GMLevel = q->getuval();
-		this->charinfo[count].AddPoint = q->getuval();
-		this->charinfo[count].MaxAddPoint = q->getuval();
-		this->charinfo[count].MinusPoint = q->getuval();
-		this->charinfo[count].MaxMinusPoint = q->getuval();
-		std::string inventory_guids = q->getstr();
+		strcpy_s(this->charinfo[count].Name, 11, q.value(0).toString().toStdString().c_str());
+		this->charinfo[count].Class = q.value(1).toUInt();
+		this->charinfo[count].ChangeUp = q.value(2).toUInt();
+		this->charinfo[count].Position = q.value(3).toUInt();
+		this->charinfo[count].Exp = q.value(4).toULongLong();
+		this->charinfo[count].LevelUpPoint = q.value(5).toUInt();
+		this->charinfo[count].Level = q.value(6).toUInt();
+		this->charinfo[count].Str = q.value(7).toUInt();
+		this->charinfo[count].Dex = q.value(8).toUInt();
+		this->charinfo[count].Vit = q.value(9).toUInt();
+		this->charinfo[count].Energy = q.value(10).toUInt();
+		this->charinfo[count].Leadership = q.value(11).toUInt();
+		this->charinfo[count].Life = q.value(12).toUInt();
+		this->charinfo[count].Mana = q.value(13).toUInt();
+		this->charinfo[count].Shield = q.value(14).toUInt();
+		this->charinfo[count].BP = q.value(15).toUInt();
+		this->charinfo[count].Money = q.value(16).toUInt();
+		this->charinfo[count].PkLevel = q.value(17).toUInt();
+		this->charinfo[count].GMLevel = q.value(18).toUInt();
+		this->charinfo[count].AddPoint = q.value(19).toUInt();
+		this->charinfo[count].MaxAddPoint = q.value(20).toUInt();
+		this->charinfo[count].MinusPoint = q.value(21).toUInt();
+		this->charinfo[count].MaxMinusPoint = q.value(22).toUInt();
+		std::string inventory_guids = q.value(23).toString().toStdString();
 		this->charinfo[count].item_guids.clear();
 		char* token = strtok((char*)inventory_guids.c_str(), seps);
 		while(token != NULL)
@@ -187,19 +193,18 @@ int CPlayer::LoadCharacters()
 		}
 		//memcpy(this->charinfo[count].Spell_data, (q->getstr()), 1);
 		//memcpy(this->charinfo[count].Guild_data, (q->getstr()), 1);
-		q->getstr();
-		q->getstr();
+		QString stri1 = q.value(24).toString();
+		QString stri2 = q.value(25).toString();
 		count++;
 	}
-	q->free_result();
-	TestDB.db_mutex.Unlock();
-	for(int i = 0; i < count; ++i) //12 items for viewport
+	MainDB.Unlock();
+	for(uint32 i = 0; i < count; ++i) //12 items for viewport
 	{
 		printf_s("guids %d\n", this->charinfo[i].item_guids.size());
 		for(uint32 n = 0; n < this->charinfo[i].item_guids.size(); ++n)
 		{
 			DATA_ITEM ditem;
-			bool result = LoadItem(&ditem, this->charinfo[i].item_guids.at(n));
+			bool result = CItemManager::LoadItem(&ditem, this->charinfo[i].item_guids.at(n));
 			if(result && ditem.slot < 12)
 			{
 				memcpy(&this->charinfo[i].temp_inv[ditem.slot], &ditem, sizeof(DATA_ITEM));
@@ -219,7 +224,7 @@ void CPlayer::SendInventory()
 	int count = 0;
 	for(int i = 0; i < 108; ++i)
 	{
-		CItem * item = &(this->inventory[i]);
+		CItem * item = this->inventory[i];
 		if(item->IsItem())
 		{
 			count++;
@@ -242,12 +247,12 @@ void CPlayer::SendInventory()
 
 void CPlayer::AssignItem(DATA_ITEM *data)
 {
-	CItem * item =  &this->inventory[data->slot];
-	if(!ItemManager.Instanciate(item))
+	CItem * item =  this->inventory[data->slot];
+	/*if(!ItemManager.Instanciate(item))
 	{
 		item->type = -1;
 		return;
-	}
+	}*/
 	item->guid = data->guid;
 	item->type = data->type;
 	item->level = data->level;
@@ -355,37 +360,66 @@ bool CPlayer::SavePlayer()
 		return false;
 	}
 	this->last_save_time = GetTickCount();
-	Query* q = TestDB.query;
 	uint32 position = this->dir;
 	position |= this->map * 0x100;
 	position |= this->y * 0x10000;
 	position |= this->x * 0x1000000;
-	TestDB.db_mutex.Lock();
-	bool result = q->execute(AssembleQuery("UPDATE `characters` SET `class` = %u, `changeup` = %u, `position` = %u, `experience` = %I64u, `leveluppoint` = %u, `level` = %u, `strength` = %u, `dexterity` = %u, `vitality` = %u, `energy` = %u, `leadership` = %u, `life` = %u, `mana` = %u, `shield` = %u, `bp` = %u, `money` = %u, `pklevel` = %u, `gmlevel` = %u, `addpoint` = %u, `maxaddpoint` = %u, `minuspoint` = %u, `maxminuspoint` = %u WHERE `account` = '%s' AND `name` = '%s';", this->Class, this->changeup, position, this->experience, this->leveluppoint, this->level, this->strength, this->dexterity, this->vitality, this->energy, this->leadership, (uint32)this->life, (uint32)this->mana, (uint32)this->shield, (uint32)this->bp, this->money, this->pklevel, this->gmlevel, this->addpoint, this->maxaddpoint, this->minuspoint, this->maxminuspoint, this->account, this->name));
-	TestDB.db_mutex.Unlock();
+	QSqlQuery q;
+	MainDB.Lock();
+	q.prepare("UPDATE `characters` SET `class` = :class, `changeup` = :changeup, `position` = :position, `experience` = :experience, `leveluppoint` = :leveluppoint, `level` = :level, `strength` = :strength, `dexterity` = :dexterity, `vitality` = :vitality, `energy` = :energy, `leadership` = :leadership, `life` = :life, `mana` = :mana, `shield` = :shield, `bp` = :bp, `money` = :money, `pklevel` = :pklevel, `gmlevel` = :gmlevel, `addpoint` = :addpoint, `maxaddpoint` = :maxaddpoint, `minuspoint` = :minuspoint, `maxminuspoint` = :maxminuspoint WHERE `account` = ':account' AND `name` = ':name';");
+	q.bindValue(":class", this->Class);
+	q.bindValue(":changeup", this->changeup);
+	q.bindValue(":position", position);
+	q.bindValue(":experience", this->experience);
+	q.bindValue(":leveluppoint", this->leveluppoint);
+	q.bindValue(":level", this->level);
+	q.bindValue(":strength", this->strength);
+	q.bindValue(":dexterity", this->dexterity);
+	q.bindValue(":vitality", this->vitality);
+	q.bindValue(":energy", this->energy);
+	q.bindValue(":leadership", this->leadership);
+	q.bindValue(":life", (uint32)this->life);
+	q.bindValue(":mana", (uint32)this->mana);
+	q.bindValue(":shield", (uint32)this->shield);
+	q.bindValue(":bp", (uint32)this->bp);
+	q.bindValue(":money", this->money);
+	q.bindValue(":pklevel", this->pklevel);
+	q.bindValue(":gmlevel", this->gmlevel);
+	q.bindValue(":addpoint", this->addpoint);
+	q.bindValue(":maxaddpoint", this->maxaddpoint);
+	q.bindValue(":minuspoint", this->minuspoint);
+	q.bindValue(":maxminuspoint", this->maxminuspoint);
+	q.bindValue(":account", this->account);
+	q.bindValue(":name", this->name);
+	bool result = q.exec();
+	MainDB.Unlock();
 	if(result)
 	{
 		std::string inv;
 		inv.clear();
 		for(uint32 i = 0; i < 108; ++i)
 		{
-			if(this->inventory[i].IsItem())
+			if(this->inventory[i]->IsItem())
 			{
 				char temp[16];
 				ZeroMemory(temp, sizeof(temp));
-				sprintf_s(temp, sizeof(temp), "%u ", this->inventory[i].guid);
-				if(ItemManager.SaveItem(&(this->inventory[i]), i))
+				sprintf_s(temp, sizeof(temp), "%u ", this->inventory[i]->guid);
+				if(ItemManager.SaveItem(this->inventory[i], i))
 				{
 					inv.append(temp);
 				}
 			}
 		}
-		TestDB.db_mutex.Lock();
-		result = q->execute(AssembleQuery("UPDATE `characters` SET `inventory_guids` = '%s' WHERE `account` = '%s' AND `name` = '%s';", inv.c_str(), this->account, this->name));
-		TestDB.db_mutex.Unlock();
+		MainDB.Lock();
+		q.prepare("UPDATE `characters` SET `inventory_guids` = ':inv' WHERE `account` = ':acc' AND `name` = ':name';");
+		q.bindValue(":inv", inv.c_str());
+		q.bindValue(":acc", this->account);
+		q.bindValue(":name", this->name);
+		result = q.exec();
+		MainDB.Unlock();
 		if(!result)
 		{
-			printf_s("Inventory save failed %s:%s\n", this->account, this->name);
+			printf_s("Inventory save failed %s:%s:%u\n", this->account, this->name, q.lastError().type());
 		}
 	}
 	else
@@ -409,31 +443,31 @@ void CPlayer::CookCharset()
 	{
 		this->charset[0] |= 0x03;
 	}
-	if(this->inventory[WEAPON_01].type >= 0)
+	if(this->inventory[WEAPON_01]->type >= 0)
 	{
-		this->charset[12] |= (this->inventory[WEAPON_01].type & 0x0f00) / 0x10;  //12 char - highest 4 bits
-		this->charset[1] = (this->inventory[WEAPON_01].type & 0xff); //1 char both 4-bit fields
+		this->charset[12] |= (this->inventory[WEAPON_01]->type & 0x0f00) / 0x10;  //12 char - highest 4 bits
+		this->charset[1] = (this->inventory[WEAPON_01]->type & 0xff); //1 char both 4-bit fields
 	}
 	else //or -1;
 	{
 		this->charset[12] |= 0xf0;
 		this->charset[1] = 0xff;
 	}
-	if(this->inventory[WEAPON_02].type >= 0)
+	if(this->inventory[WEAPON_02]->type >= 0)
 	{
-		this->charset[13] |= (this->inventory[WEAPON_02].type & 0x0f00) / 0x10;
-		this->charset[2] = (this->inventory[WEAPON_02].type & 0xff);
+		this->charset[13] |= (this->inventory[WEAPON_02]->type & 0x0f00) / 0x10;
+		this->charset[2] = (this->inventory[WEAPON_02]->type & 0xff);
 	}
 	else
 	{
 		this->charset[13] |= 0xf0;
 		this->charset[2] = 0xff;
 	}
-	if(this->inventory[HELMET].type >= 0)
+	if(this->inventory[HELMET]->type >= 0)
 	{
-		this->charset[13] |= (this->inventory[HELMET].type & 0x01E0) / 0x20;
-		this->charset[9] |= (this->inventory[HELMET].type & 0x10) * 0x08;
-		this->charset[3] |= (this->inventory[HELMET].type & 0x0f) * 0x10;
+		this->charset[13] |= (this->inventory[HELMET]->type & 0x01E0) / 0x20;
+		this->charset[9] |= (this->inventory[HELMET]->type & 0x10) * 0x08;
+		this->charset[3] |= (this->inventory[HELMET]->type & 0x0f) * 0x10;
 	}
 	else
 	{
@@ -441,11 +475,11 @@ void CPlayer::CookCharset()
 		this->charset[9] |= 0x80;
 		this->charset[3] |= 0xf0;
 	}
-	if(this->inventory[ARMOR].type >= 0)
+	if(this->inventory[ARMOR]->type >= 0)
 	{
-		this->charset[14] |= (this->inventory[ARMOR].type & 0x01E0) / 0x02;
-		this->charset[9] |= (this->inventory[ARMOR].type & 0x10) * 0x04;
-		this->charset[3] |= (this->inventory[ARMOR].type &0x0f);
+		this->charset[14] |= (this->inventory[ARMOR]->type & 0x01E0) / 0x02;
+		this->charset[9] |= (this->inventory[ARMOR]->type & 0x10) * 0x04;
+		this->charset[3] |= (this->inventory[ARMOR]->type &0x0f);
 	}
 	else
 	{
@@ -453,11 +487,11 @@ void CPlayer::CookCharset()
 		this->charset[9] |= 0x40;
 		this->charset[3] |= 0x0f;
 	}
-	if(this->inventory[PANTS].type >= 0)
+	if(this->inventory[PANTS]->type >= 0)
 	{
-		this->charset[14] |= (this->inventory[PANTS].type & 0x01E0) / 0x20;
-		this->charset[9] |= (this->inventory[PANTS].type & 0x10) * 0x02;
-		this->charset[4] |= (this->inventory[PANTS].type & 0x0f) * 0x10;
+		this->charset[14] |= (this->inventory[PANTS]->type & 0x01E0) / 0x20;
+		this->charset[9] |= (this->inventory[PANTS]->type & 0x10) * 0x02;
+		this->charset[4] |= (this->inventory[PANTS]->type & 0x0f) * 0x10;
 	}
 	else
 	{
@@ -465,11 +499,11 @@ void CPlayer::CookCharset()
 		this->charset[9] |= 0x20;
 		this->charset[4] |= 0xf0;
 	}
-	if(this->inventory[GLOVES].type >= 0)
+	if(this->inventory[GLOVES]->type >= 0)
 	{
-		this->charset[15] |= (this->inventory[GLOVES].type & 0x01E0) / 0x02;
-		this->charset[9] |= (this->inventory[GLOVES].type & 0x10);
-		this->charset[4] |= (this->inventory[GLOVES].type & 0x0f);
+		this->charset[15] |= (this->inventory[GLOVES]->type & 0x01E0) / 0x02;
+		this->charset[9] |= (this->inventory[GLOVES]->type & 0x10);
+		this->charset[4] |= (this->inventory[GLOVES]->type & 0x0f);
 	}
 	else
 	{
@@ -477,11 +511,11 @@ void CPlayer::CookCharset()
 		this->charset[9] |= 0x10;
 		this->charset[4] |= 0x0f;
 	}
-	if(this->inventory[BOOTS].type >= 0)
+	if(this->inventory[BOOTS]->type >= 0)
 	{
-		this->charset[15] |= (this->inventory[BOOTS].type & 0x01E0) / 0x20;
-		this->charset[9] |= (this->inventory[BOOTS].type & 0x10) / 0x02;
-		this->charset[5] |= (this->inventory[BOOTS].type & 0x0f) * 0x10;
+		this->charset[15] |= (this->inventory[BOOTS]->type & 0x01E0) / 0x20;
+		this->charset[9] |= (this->inventory[BOOTS]->type & 0x10) / 0x02;
+		this->charset[5] |= (this->inventory[BOOTS]->type & 0x0f) * 0x10;
 	}
 	else
 	{
@@ -490,17 +524,17 @@ void CPlayer::CookCharset()
 		this->charset[5] |= 0xf0;
 	}
 	uint8 index = 0;
-	if(this->inventory[WINGS].type >= 0)
+	if(this->inventory[WINGS]->type >= 0)
 	{
-		index |= (this->inventory[WINGS].type & 0x03) * 0x04;
+		index |= (this->inventory[WINGS]->type & 0x03) * 0x04;
 	}
 	else
 	{
 		index |= 0x0c;
 	}
-	if((this->inventory[GUARDIAN].type >= 0) && !(this->inventory[GUARDIAN].type == 6660))
+	if((this->inventory[GUARDIAN]->type >= 0) && !(this->inventory[GUARDIAN]->type == 6660))
 	{
-		index |= (this->inventory[GUARDIAN].type & 0x03);
+		index |= (this->inventory[GUARDIAN]->type & 0x03);
 	}
 	else
 	{
@@ -508,26 +542,26 @@ void CPlayer::CookCharset()
 	}
 	this->charset[5] |= index;
 	uint32 levelindex = 0;
-	levelindex = LevelConvert(this->inventory[WEAPON_01].level) & 0xff;
-	levelindex |= (LevelConvert(this->inventory[WEAPON_02].level) & 0xff) * 0x08;
-	levelindex |= (LevelConvert(this->inventory[HELMET].level) & 0xff) * 0x40;
-	levelindex |= (LevelConvert(this->inventory[ARMOR].level) & 0xff) * 0x200;
-	levelindex |= (LevelConvert(this->inventory[PANTS].level) & 0xff) * 0x1000;
-	levelindex |= (LevelConvert(this->inventory[GLOVES].level) & 0xff) * 0x8000;
-	levelindex |= (LevelConvert(this->inventory[BOOTS].level) & 0xff) * 0x40000;
+	levelindex = LevelConvert(this->inventory[WEAPON_01]->level) & 0xff;
+	levelindex |= (LevelConvert(this->inventory[WEAPON_02]->level) & 0xff) * 0x08;
+	levelindex |= (LevelConvert(this->inventory[HELMET]->level) & 0xff) * 0x40;
+	levelindex |= (LevelConvert(this->inventory[ARMOR]->level) & 0xff) * 0x200;
+	levelindex |= (LevelConvert(this->inventory[PANTS]->level) & 0xff) * 0x1000;
+	levelindex |= (LevelConvert(this->inventory[GLOVES]->level) & 0xff) * 0x8000;
+	levelindex |= (LevelConvert(this->inventory[BOOTS]->level) & 0xff) * 0x40000;
 	this->charset[6] = (levelindex / 0x10000) & 0xff;
 	this->charset[7] = (levelindex / 0x100) & 0xff;
 	this->charset[8] = (levelindex) & 0xff;
-	if(((this->inventory[WINGS].type >= (12 * 512 + 3)) && (this->inventory[WINGS].type <= (12 * 512 + 6))) || (this->inventory[WINGS].type == (13 * 512 + 30)))
+	if(((this->inventory[WINGS]->type >= (12 * 512 + 3)) && (this->inventory[WINGS]->type <= (12 * 512 + 6))) || (this->inventory[WINGS]->type == (13 * 512 + 30)))
 	{
 		this->charset[5] |= 0x0C;
-		if(this->inventory[WINGS].type == (13 * 512 + 30))
+		if(this->inventory[WINGS]->type == (13 * 512 + 30))
 		{
 			this->charset[5] |= 0x05;
 		}
 		else
 		{
-			this->charset[9] |= (this->inventory[WINGS].type - 2) & 0x07;
+			this->charset[9] |= (this->inventory[WINGS]->type - 2) & 0x07;
 		}
 	}
 	this->charset[10] = 0;

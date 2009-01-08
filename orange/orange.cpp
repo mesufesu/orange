@@ -33,12 +33,13 @@ int main(int argc, char* argv[])
 {
 	char ip[] = "127.0.0.1";
 
-	if(!TestDB.query->Connected())
+	if(!MainDB.Connect())
 	{
 		printf_s("MySQL connection cannot be established. Closing.\n");
 		return 0;
 	}
-	if(TestDB.query->execute("UPDATE `account_test` SET `status` = 0 WHERE `status` <> 0"))
+	QSqlQuery q;
+	if(q.exec("UPDATE `account_test` SET `status` = 0 WHERE `status` <> 0"))
 	{
 		printf_s("Online status set to 0.\n");
 	}
@@ -53,13 +54,7 @@ int main(int argc, char* argv[])
 	HANDLE hCSThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)CSThreadProc, NULL, 0, &dwThreadId);
 	printf_s("Socket Threads created.\n");
 	ObjManager.Run();
-	CObject * newPlayer = new CObject;
-	/*ObjManager.obj_container.push_back(newPlayer);
-	newPlayer->guid = ObjManager.MakeGuid((CObject*)newPlayer);
-	newPlayer->x = 131;
-	newPlayer->y = 133;
-	newPlayer->map = 0;
-	newPlayer->type = OBJECT_EMPTY;*/
+	ItemManager.Run();
 	for(uint32 i = 0; i < MAX_MAPS; ++i)
 	{
 		char filename[256];

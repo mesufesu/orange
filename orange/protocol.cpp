@@ -193,7 +193,6 @@ void Join_GetCharacters(CPlayer* player)
 	//char temp[2048];
 	//ZeroMemory(temp, sizeof(temp));
 
-	Query* q = TestDB.query;
 	PMSG_CHARLISTCOUNT data;
 	data.h.c = 0xC1;
 	data.h.headcode = 0xF3;
@@ -275,7 +274,6 @@ void Join_WorldJoin(PMSG_CHARMAPJOIN* data, CPlayer* player)
 		}
 	}
 	DATA_CHARINFO * ch = &(player->charinfo[num]);
-	Query* q = TestDB.query;
 	PMSG_CHARMAPJOINRESULT result;
 	ZeroMemory(&result, sizeof(result));
 	result.h.c = 0xC3;
@@ -348,14 +346,24 @@ void Join_WorldJoin(PMSG_CHARMAPJOIN* data, CPlayer* player)
 	for(uint32 i = 0; i < ch->item_guids.size(); ++i)
 	{
 		DATA_ITEM ditem;
-		if((LoadItem(&ditem, ch->item_guids.at(i))) && (ItemManager.Instanciate(&player->inventory[ditem.slot])))
+		CItem* item = NULL;
+		if(CItemManager::LoadItem(&ditem, ch->item_guids.at(i)))
+		{
+			item = ItemManager.InsertItem(ch->item_guids.at(i));
+			if(item)
+			{
+				player->inventory[ditem.slot] = item;
+				player->inventory[ditem.slot]->Assign(&ditem);
+			}
+		}
+		/*if((LoadItem(&ditem, ch->item_guids.at(i))) && (ItemManager.Instanciate(&player->inventory[ditem.slot])))
 		{
 			player->inventory[ditem.slot].Assign(&ditem);
 		}
 		else
 		{
 			player->inventory[ditem.slot].type = -1; //todo: implement correct function
-		}
+		}*/
 	}
 	player->CookCharset();
 	player->SendInventory();
@@ -365,8 +373,8 @@ void Join_WorldJoin(PMSG_CHARMAPJOIN* data, CPlayer* player)
 
 void Join_LoginHandler(PMSG_IDPASS* data, CPlayer* player)
 {
+	QSqlQuery q;
 	int status = -1;
-	Query* q = TestDB.query;
 	char pass[11];
 	char account[11];
 	ZeroMemory(pass, sizeof(pass));
@@ -375,9 +383,15 @@ void Join_LoginHandler(PMSG_IDPASS* data, CPlayer* player)
 	memcpy(account, data->Id, 10);
 	xor3((unsigned char*)pass, 10);
 	xor3((unsigned char*)account, 10);
-	TestDB.db_mutex.Lock();
-	status = q->get_count(AssembleQuery("SELECT `status` FROM `account_test` WHERE `account` = '%s'", account));
-	TestDB.db_mutex.Unlock();
+	MainDB.Lock();
+	q.prepare("SELECT `status` FROM `account_test` WHERE `account` = ':account'");
+	q.bindValue(":account", account);
+	q.exec();
+	if(q.next())
+	{
+		status = q.value(0).toInt();
+	}
+	MainDB.Unlock();
 	if(status != 0)
 	{
 		player->failed_attempts++;
@@ -394,9 +408,16 @@ void Join_LoginHandler(PMSG_IDPASS* data, CPlayer* player)
 	/*char temp[2048];
 	ZeroMemory(temp, sizeof(temp));
 	sprintf_s(temp, sizeof(temp), "SELECT password FROM `test_db`.`account_test` WHERE account = '%s'", account);*/
-	TestDB.db_mutex.Lock();
-	std::string result = q->get_string(AssembleQuery("SELECT password FROM `test_db`.`account_test` WHERE account = '%s'", account));
-	TestDB.db_mutex.Unlock();
+	std::string result;
+	MainDB.Lock();
+	q.prepare("SELECT password FROM `test_db`.`account_test` WHERE account = ':account'");
+	q.bindValue(":account", account);
+	q.exec();
+	if(q.next())
+	{
+		result = q.value(0).toString().toStdString();
+	}
+	MainDB.Unlock();
 	std::string passw;
 	passw.clear();
 	passw = pass;
@@ -437,27 +458,41 @@ void Join_CreateCharacter(PMSG_CHARCREATE * data, CPlayer* player)
 	packet.Level = 1;
 	uint8 char_class = data->ClassSkin / 16;
 	DEFAULTCLASSTYPE * cl = &DCInfo.DefClass[char_class];
-	Query * q = TestDB.query;
-	q->get_result(AssembleQuery("SELECT `id` FROM `characters` WHERE `account` = '%s'", player->account));
-	int have_chars = q->num_rows();
-	q->free_result();
+	QSqlQuery q;
+	int have_chars = 0;
+	MainDB.Lock();
+	q.prepare("SELECT `id` FROM `characters` WHERE `account` = ':account'");
+	q.bindValue(":account", player->account);
+	q.exec();
+	while(q.next())
+	{
+		have_chars++;
+	}
+	MainDB.Unlock();
 	if(have_chars >= 5)
 	{
 		packet.Result = 0;
 		player->Send((unsigned char*)&packet, packet.h.size);
 		return;
 	}
-	q->get_result(AssembleQuery("SELECT `id` FROM `characters` WHERE `name` = '%s'", data->Name));
-	int name_used = q->num_rows();
-	q->free_result();
+	MainDB.Lock();
+	q.prepare("SELECT `id` FROM `characters` WHERE `name` = ':name'");
+	q.bindValue(":name", data->Name);
+	q.exec();
+	int name_used = 0;
+	while(q.next())
+	{
+		name_used++;
+	}
+	MainDB.Unlock();
 	if(name_used)
 	{
 		packet.Result = 2;
 		player->Send((unsigned char*)&packet, packet.h.size);
 		return;
 	}
-	q->execute(AssembleQuery("INSERT INTO `characters` (`account`, `name`, `position`, `level`, `strength`, `dexterity`, `vitality`, `energy`, `leadership`, `life`, `mana`, `shield`, `bp`, `money`, `inventory_guids`, `class`) values ('%s', '%s', %u, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, '0', %d)",
-		player->account, data->Name, 0x82820000, 1, cl->Strength, cl->Dexterity, cl->Vitality, cl->Energy, cl->Leadership, (int)(cl->Life), (int)(cl->Mana), 90, 90, 1000, char_class));
+	q.exec(AssembleQuery("INSERT INTO `characters` (`account`, `name`, `position`, `level`, `strength`, `dexterity`, `vitality`, `energy`, `leadership`, `life`, `mana`, `shield`, `bp`, `money`, `inventory_guids`, `class`) values ('%s', '%s', %u, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, '0', %d)",
+		player->account, data->Name, 0x82820000, 1, cl->Strength, cl->Dexterity, cl->Vitality, cl->Energy, cl->Leadership, (int)(cl->Life), (int)(cl->Mana), 90, 90, 1000, char_class).c_str()); //todo: value bindig, why not now? lazy...
 	packet.Result = 0x01;
 	memcpy(packet.Equipment, Eq, 24);
 	packet.Equipment[0] = data->ClassSkin;

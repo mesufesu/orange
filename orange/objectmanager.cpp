@@ -144,9 +144,9 @@ void WINAPI CObjectManager::ObjectManagerProc(CObjectManager* mang)
 						CPlayer* player = (CPlayer*)object;
 						for(uint32 i = 0; i < 108; ++i)
 						{
-							if(player->inventory[i].IsItem())
+							if(player->inventory[i]->IsItem())
 							{
-								ItemManager.DeleteInstance(&player->inventory[i]);
+								player->inventory[i]->status = ITEM_NOTEXIST;
 							}
 						}
 						delete player;

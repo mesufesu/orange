@@ -107,7 +107,7 @@ public:
 	unsigned char charset[18];
 	unsigned char failed_attempts;
 	DATA_CHARINFO charinfo[5];
-	CItem inventory[108];
+	CItem * inventory[108];
 	CMyMutex view_mtx;
 	std::vector<short> viewport;
 	size_t send_serial;
@@ -142,5 +142,7 @@ public:
 	bool SavePlayer();
 	void CookCharset();
 };
+
+extern const CItem dummy;
 
 #endif

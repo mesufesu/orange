@@ -126,22 +126,6 @@ void InitFrustum()
 	}
 }
 
-unsigned char lsc(int level)
-{
-	if(level >= 13)
-	{
-		return 7;
-	}
-	if(level == 12)
-	{
-		return 6;
-	}
-	if(level == 11)
-	{
-		return 5;
-	}
-}
-
 /*void Test()
 {
 	/*

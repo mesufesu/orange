@@ -19,23 +19,34 @@
 #define _ITEMMANAGER_H_
 
 #include <map>
+#include <unordered_map>
 #include ".\\mutex.h"
 #include ".\\Item.h"
 
 class CItemManager
 {
 public:
-	CMyMutex con_mutex;
-	std::map<uint32, CItem*> item_container;
+	typedef std::tr1::unordered_map<uint32, CItem*> MapType;
+	const CItem* CreateItem();
+	CItem* InsertItem(uint32 guid);
 	CItemManager();
 	void LoadCharacterItems();
-	bool Instanciate(const CItem* item);
-	void DeleteInstance(const CItem* item);
+	void Run();
+	void CleanUp();
+	static void WINAPI ItemProc(CItemManager* mang);
+	static bool LoadItem(DATA_ITEM* item, int guid);
+	//bool Instanciate(const CItem* item);
+	//void DeleteInstance(const CItem* item);
 	bool SaveItem(CItem* item, uint32 slot);
+
+private:
+	HANDLE procHandle;
+	MapType ItemMap;
+	CMyMutex map_mutex;
+	void DeleteItem(CItem* item);
+	void DeleteItem(uint32 guid);
 };
 
 extern CItemManager ItemManager;
-
-bool LoadItem(DATA_ITEM* item, int guid);
 
 #endif

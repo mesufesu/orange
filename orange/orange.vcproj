@@ -60,7 +60,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="WS2_32.lib ..\Include\Sockets.lib ..\mysql\libmySQLd.lib ..\mysqlwrapper\mysqlwrapper_d.lib"
+				AdditionalDependencies="WS2_32.lib ..\Include\Sockets.lib ..\mysql\libmySQLd.lib ..\mysqlwrapper\mysqlwrapper_d.lib QtCored4.lib QtSqld4.lib"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				GenerateMapFile="true"
