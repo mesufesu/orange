@@ -20,6 +20,13 @@
 
 #include "..\\Include\\TcpSocket.h"
 #include "..\\Include\\ISocketHandler.h"
+#include <QtCore\\QThread>
+
+class MainSocketThread : public QThread
+{
+public:
+	void run();
+};
 
 class ServerSocket : public TcpSocket
 {
@@ -32,8 +39,11 @@ public:
 	void CThreeHandler();
 	void COneHandler();
 	void CloseClient();
+	static void StartThread();
 };
 
-void WINAPI ServerSocketProc(port_t port);
+//void WINAPI ServerSocketProc(port_t port);
+
+extern MainSocketThread _SocketThread;
 
 #endif

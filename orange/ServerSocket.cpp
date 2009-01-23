@@ -24,6 +24,25 @@
 #include ".\\protocol.h"
 #include ".\\ServerSocket.h"
 
+MainSocketThread _SocketThread;
+
+void MainSocketThread::run()
+{
+	SocketHandler server_handler;
+	ListenSocket<ServerSocket> server_lsocket(server_handler);
+	if(server_lsocket.Bind(55901))
+	{
+		printf_s("Server socket binding failed.\n");
+		return;
+	}
+	server_handler.Add(&server_lsocket);
+	server_handler.Select(1, 0);
+	while(TRUE)
+	{
+		server_handler.Select(1, 0);
+	}
+}
+
 ServerSocket::ServerSocket(ISocketHandler &h) : TcpSocket(h)
 {
 }
@@ -175,17 +194,4 @@ void ServerSocket::COneHandler()
 
 void WINAPI ServerSocketProc(port_t port)
 {
-	SocketHandler server_handler;
-	ListenSocket<ServerSocket> server_lsocket(server_handler);
-	if(server_lsocket.Bind(port))
-	{
-		printf_s("Server socket binding failed.\n");
-		return;
-	}
-	server_handler.Add(&server_lsocket);
-	server_handler.Select(1, 0);
-	while(TRUE)
-	{
-		server_handler.Select(1, 0);
-	}
 }

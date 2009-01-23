@@ -23,11 +23,14 @@
 bool isFile(const char * file);
 void MsgBox(const char * str);
 void xor3(unsigned char* ptr, unsigned int len);
-const std::string AssembleQuery(const char * format, ...);
+const std::string Query(const char * format, ...);
 unsigned char LevelConvert(unsigned char level);
+void GenerateExp();
+uint8 GetCategory(uint16 type);
 
 extern short RoadPathTable[16];
 extern int8 RoadX[8];
 extern int8 RoadY[8];
+extern uint64 levelexp[401];
 
 #endif

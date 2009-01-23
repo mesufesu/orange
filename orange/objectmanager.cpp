@@ -24,22 +24,25 @@ CObjectManager ObjManager;
 CObjectManager::CObjectManager()
 {
 	this->container.clear();
-	this->procHandle = 0;
 }
 
 CPlayer* CObjectManager::FindPlayerBySocket(ServerSocket *socket)
 {
-	for(std::map<short, CObject*>::iterator it = this->container.begin(); it != this->container.end(); ++it)
+	CPlayer* player = NULL;
+	this->mtx.lock();
+	for(MapType::iterator it = this->container.begin(); it != this->container.end(); ++it)
 	{
 		if((it->second->type == OBJECT_PLAYER) && (((CPlayer*)it->second)->socket == socket))
 		{
-			return ((CPlayer*)it->second);
+			player = (CPlayer*)it->second;
+			break;
 		}
 	}
-	return NULL;
+	this->mtx.unlock();
+	return player;
 }
 
-CPlayer* CObjectManager::FindPlayerByGuid(short guid) //deprecated
+/*CPlayer* CObjectManager::FindPlayerByGuid(short guid) //deprecated
 {
 	for(std::map<short, CObject*>::iterator it = this->container.begin(); it != this->container.end(); ++it)
 	{
@@ -49,12 +52,13 @@ CPlayer* CObjectManager::FindPlayerByGuid(short guid) //deprecated
 		}
 	}
 	return NULL;
-}
+}*/
 
-CObject* CObjectManager::FindByGuid(short guid)
+CObject* CObjectManager::FindByGuid(uint16 guid)
 {
-	std::map<short, CObject*>::iterator it;
-	it = this->container.find(guid);
+	this->mtx.lock();
+	MapType::iterator it = this->container.find(guid);
+	this->mtx.unlock();
 	if(it == this->container.end())
 	{
 		return NULL;
@@ -67,9 +71,11 @@ CPlayer* CObjectManager::CreatePlayer(ServerSocket* socket)
 	CPlayer* player = new CPlayer;
 	while(TRUE)
 	{
-		short new_guid = rand() % 32000;
-		std::pair<std::map<short, CObject*>::iterator, bool> pr;
-		pr = this->container.insert(std::make_pair<short, CObject*>(new_guid, (CObject*)player));
+		uint16 new_guid = rand() % 32000;
+		std::pair<MapType::iterator, bool> pr;
+		this->mtx.lock();
+		pr = this->container.insert(MapType::value_type(new_guid, (CObject*)player));
+		this->mtx.unlock();
 		if(pr.second == true)
 		{
 			player->guid = new_guid;
@@ -86,11 +92,15 @@ CPlayer* CObjectManager::CreatePlayer(ServerSocket* socket)
 
 void CObjectManager::Delete(CObject* object) //useless too, lol
 {
-	for(std::map<short, CObject*>::iterator it = this->container.begin(); it != this->container.end(); ++it)
+	std::vector<MapType::iterator> trash_bin;
+	trash_bin.clear();
+	this->mtx.lock();
+	for(MapType::iterator it = this->container.begin(); it != this->container.end(); ++it)
 	{
 		if(it->second == object)
 		{
-			this->container.erase(it);
+			//this->container.erase(it);
+			trash_bin.push_back(it);
 			switch(object->type)
 			{
 			case VOID_EMPTY:
@@ -112,21 +122,26 @@ void CObjectManager::Delete(CObject* object) //useless too, lol
 			}
 		}
 	}
+	for(uint32 i = 0; i < trash_bin.size(); ++i)
+	{
+		this->container.erase(trash_bin.at(i));
+	}
+	this->mtx.unlock();
 }
 
-void WINAPI CObjectManager::ObjectManagerProc(CObjectManager* mang)
+void CObjectThread::run()
 {
+	std::vector<CObjectManager::MapType::iterator> trash_bin;
 	while(TRUE)
 	{
-		mang->con_mutex.Lock();
-		for(std::map<short, CObject*>::iterator it = mang->container.begin(); it != mang->container.end(); 1)
+		trash_bin.clear();
+		ObjManager.mtx.lock();
+		for(CObjectManager::MapType::iterator it = ObjManager.container.begin(); it != ObjManager.container.end(); ++it)
 		{
-			std::map<short, CObject*>::iterator to_delete = it;
-			it++;
-			CObject* object = to_delete->second;
-			if((object->type == VOID_EMPTY) || (object->type == VOID_UNIT) || (object->type == VOID_PLAYER))
+			CObject* object = it->second;
+			if((object) && ((object->type == VOID_EMPTY) || (object->type == VOID_UNIT) || (object->type == VOID_PLAYER)))
 			{
-				mang->container.erase(to_delete);
+				trash_bin.push_back(it);
 				switch(object->type)
 				{
 				case VOID_EMPTY:
@@ -155,13 +170,21 @@ void WINAPI CObjectManager::ObjectManagerProc(CObjectManager* mang)
 				}
 			}
 		}
-		mang->con_mutex.Unlock();
+		for(uint32 i = 0; i < trash_bin.size(); ++i)
+		{
+			ObjManager.container.erase(trash_bin.at(i));
+		}
+		ObjManager.mtx.unlock();
 		Sleep(10000);
 	}
 }
 
 void CObjectManager::Run()
 {
-	uint32 id;
-	this->procHandle = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)CObjectManager::ObjectManagerProc, (LPVOID)this, 0, (LPDWORD)&id);
+	this->ObjThread.start();
+}
+
+void CObjectManager::Quit()
+{
+	this->ObjThread.quit();
 }

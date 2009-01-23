@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -60,12 +60,12 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="WS2_32.lib ..\Include\Sockets.lib ..\mysql\libmySQLd.lib ..\mysqlwrapper\mysqlwrapper_d.lib QtCored4.lib QtSqld4.lib"
+				AdditionalDependencies="WS2_32.lib ..\Include\Sockets.lib QtCored4.lib QtSqld4.lib QtGuid4.lib"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				GenerateMapFile="true"
 				MapFileName="$(TargetDir)$(TargetName).map"
-				SubSystem="1"
+				SubSystem="2"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -117,7 +117,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="2"
@@ -135,12 +135,12 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="WS2_32.lib ..\Include\Sockets_r.lib ..\Deathway\SimpleModulus.lib"
+				AdditionalDependencies="WS2_32.lib ..\Include\Sockets_r.lib ..\Deathway\SimpleModulus.lib QtCore4.lib QtSql4.lib QtGui4.lib"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				GenerateMapFile="true"
 				MapFileName="$(TargetDir)$(TargetName).map"
-				SubSystem="1"
+				SubSystem="2"
 				OptimizeReferences="1"
 				EnableCOMDATFolding="2"
 				TargetMachine="1"
@@ -213,6 +213,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\commands.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\DataBase.cpp"
 				>
 			</File>
@@ -241,7 +245,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ItemTemplate.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\JoinServer.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\log.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\MainWindow.cpp"
 				>
 			</File>
 			<File
@@ -441,6 +457,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\commands.h"
+				>
+			</File>
+			<File
 				RelativePath=".\DataBase.h"
 				>
 			</File>
@@ -469,7 +489,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\ItemTemplate.h"
+				>
+			</File>
+			<File
 				RelativePath=".\JoinServer.h"
+				>
+			</File>
+			<File
+				RelativePath=".\log.h"
+				>
+			</File>
+			<File
+				RelativePath=".\MainWindow.h"
 				>
 			</File>
 			<File

@@ -220,7 +220,7 @@ struct PMSG_CHARCREATERESULT
   /*<thisrel this+0x5>*/ /*|0xa|*/ unsigned char Name[10];
   /*<thisrel this+0xf>*/ /*|0x1|*/ unsigned char pos; //02
   /*<thisrel this+0x10>*/ /*|0x2|*/ unsigned short Level; //01
-  /*<thisrel this+0x12>*/ /*|0x1|*/ unsigned char Class; //00
+  /*<thisrel this+0x12>*/ /*|0x1|*/ //unsigned char Class; //00
   /*<thisrel this+0x13>*/ /*|0x18|*/ unsigned char Equipment[24];
 };
 // <size 0x2c>
@@ -334,5 +334,13 @@ struct PMSG_ACTIONRESULT
   /*<thisrel this+0x8>*/ /*|0x1|*/ unsigned char TargetNumberL;
 };
 // <size 0x9>
+
+struct PMSG_CHATDATA
+{
+  /*<thisrel this+0x0>*/ /*|0x3|*/ PBMSG_HEAD h;
+  /*<thisrel this+0x3>*/ /*|0xa|*/ char chatid[10];
+  /*<thisrel this+0xd>*/ /*|0x3c|*/ char chatmsg[60];
+};
+// <size 0x49>
 
 #endif

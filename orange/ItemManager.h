@@ -22,6 +22,13 @@
 #include <unordered_map>
 #include ".\\mutex.h"
 #include ".\\Item.h"
+#include <QtCore\\QThread>
+
+class CItemThread : public QThread
+{
+public:
+	void run();
+};
 
 class CItemManager
 {
@@ -32,19 +39,20 @@ public:
 	CItemManager();
 	void LoadCharacterItems();
 	void Run();
+	void Quit();
 	void CleanUp();
 	static void WINAPI ItemProc(CItemManager* mang);
-	static bool LoadItem(DATA_ITEM* item, int guid);
+	static bool LoadItemData(DATA_ITEM* item, int guid);
 	//bool Instanciate(const CItem* item);
 	//void DeleteInstance(const CItem* item);
 	bool SaveItem(CItem* item, uint32 slot);
+	bool HaveGuid(uint32 guid);
+	bool DeleteFromDB(uint32 guid); //hard
 
 private:
-	HANDLE procHandle;
+	CItemThread ItemThread;
 	MapType ItemMap;
 	CMyMutex map_mutex;
-	void DeleteItem(CItem* item);
-	void DeleteItem(uint32 guid);
 };
 
 extern CItemManager ItemManager;

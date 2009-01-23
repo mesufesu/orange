@@ -32,6 +32,10 @@ const CItem* CItemManager::CreateItem()
 	std::pair<MapType::iterator, bool> pr;
 	uint32 guid = 0;
 	CItem* new_item = new CItem;
+	if(!new_item)
+	{
+		return NULL;
+	}
 	while(TRUE)
 	{
 		guid = rand();
@@ -53,6 +57,10 @@ CItem* CItemManager::InsertItem(uint32 guid)
 	if(guid)
 	{
 		CItem* new_item = new CItem;
+		if(!new_item)
+		{
+			return NULL;
+		}
 		std::pair<MapType::iterator, bool> pr;
 		this->map_mutex.Lock();
 		pr = this->ItemMap.insert(MapType::value_type(guid, new_item));
@@ -65,28 +73,10 @@ CItem* CItemManager::InsertItem(uint32 guid)
 	return NULL;
 }
 
-void CItemManager::DeleteItem(CItem *item)
-{
-	if(item)
-	{
-		this->map_mutex.Lock();
-		this->ItemMap.erase(item->guid);
-		this->map_mutex.Unlock();
-	}
-}
-
-void CItemManager::DeleteItem(uint32 guid)
-{
-	if(guid)
-	{
-		this->map_mutex.Lock();
-		this->ItemMap.erase(guid);
-		this->map_mutex.Unlock();
-	}
-}
-
 void CItemManager::CleanUp()
 {
+	std::vector<MapType::iterator> list;
+	list.clear();
 	this->map_mutex.Lock();
 	for(MapType::iterator it = this->ItemMap.begin(); it != this->ItemMap.end(); ++it)
 	{
@@ -96,10 +86,20 @@ void CItemManager::CleanUp()
 			{
 			case ITEM_DELETED:
 				{
+					list.push_back(it);
+					QSqlQuery q;
+					MainDB.Lock();
+					q.exec(Query("DELETE FROM `character_items` WHERE `guid` = %u;", it->second->guid).c_str());
+					MainDB.Unlock();
+					CItem * item = it->second;
+					delete item;
 					break;
 				}
 			case ITEM_NOTEXIST:
 				{
+					list.push_back(it);
+					CItem * item = it->second;
+					delete item;
 					break;
 				}
 			default:
@@ -107,16 +107,21 @@ void CItemManager::CleanUp()
 			}
 		}
 	}
+	for(uint32 i = 0; i < list.size(); ++i)
+	{
+		this->ItemMap.erase(list.at(i));
+	}
+	this->map_mutex.Unlock();
 }
 
-void WINAPI CItemManager::ItemProc(CItemManager* mang)
+void CItemThread::run()
 {
-	uint32 tick_count = GetTickCount();
+	int32 tick_count = GetTickCount();
 	while(TRUE)
 	{
 		if((GetTickCount() - tick_count) >= 5000)
 		{
-			mang->CleanUp();
+			ItemManager.CleanUp();
 		}
 		Sleep(1000);
 	}
@@ -124,20 +129,33 @@ void WINAPI CItemManager::ItemProc(CItemManager* mang)
 
 void CItemManager::Run()
 {
-	uint32 id;
-	this->procHandle = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)CItemManager::ItemProc, (LPVOID)this, 0, (LPDWORD)&id);
+	this->ItemThread.start();
 }
 
-bool CItemManager::LoadItem(DATA_ITEM* item, int guid)
+void CItemManager::Quit()
+{
+	this->ItemThread.quit();
+}
+
+bool CItemManager::HaveGuid(uint32 guid)
+{
+	this->map_mutex.Lock();
+	MapType::iterator it = this->ItemMap.find(guid);
+	if(it != this->ItemMap.end())
+	{
+		return true;
+	}
+	return false;
+}
+
+bool CItemManager::LoadItemData(DATA_ITEM* item, int guid)
 {
 	bool exist = false;
 	QSqlQuery q;
 	if(item)
 	{
 		MainDB.Lock();
-		q.prepare("SELECT `slot`, `type`, `level`, `durability`, `option1`, `option2`, `option3`, `newoption`, `setoption`, `petitem_level`, `petitem_exp`, `joh_option`, `optionex` FROM `character_items` WHERE `guid` = :guid;");
-		q.bindValue(":guid", guid);
-		q.exec();
+		q.exec(Query("SELECT `slot`, `type`, `level`, `durability`, `option1`, `option2`, `option3`, `newoption`, `setoption`, `petitem_level`, `petitem_exp`, `joh_option`, `optionex` FROM `character_items` WHERE `guid` = %u;", guid).c_str());
 		while(q.next())
 		{
 			exist = true;
@@ -210,41 +228,38 @@ void CItemManager::DeleteInstance(const CItem* item)
 
 bool CItemManager::SaveItem(CItem *item, uint32 slot)
 {
+	uint32 old_guid = item->guid;
 	QSqlQuery q;
 	bool result = false;
 	switch(item->status)
 	{
+	case ITEM_CHANGED:
+		{
+			MainDB.Lock();
+			result = q.exec(Query("UPDATE `character_items` SET `slot` = %u, `type` = %u, `level` = %u, `durability` = %f, `option1` = %u, `option2` = %u, `option3` = %u, `newoption` = %u, `setoption` = %u, `petitem_level` = %u, `petitem_exp` = %u, `joh_option` = %u, `optionex` = %u WHERE `guid` = %u;", slot, item->type, item->level, item->durability, item->m_Option1, item->m_Option2, item->m_Option3, item->m_NewOption, item->m_SetOption, item->m_PetItem_Level, item->m_PetItem_Exp, item->m_JewelOfHarmonyOption, item->m_ItemOptionEx, item->guid).c_str());
+			MainDB.Unlock();
+			item->status = ITEM_UNCHANGED;
+			break;
+		}
 	case ITEM_NEW:
 		{
-			uint32 new_guid = item->guid;
+			uint32 new_guid = old_guid;
 			MainDB.Lock();
 			while(TRUE)
 			{
-				q.prepare("SELECT `id` FROM `character_items` WHERE `guid` = ':guid'");
-				q.bindValue(":guid", new_guid);
-				result = q.exec();
+				result = q.exec(Query("SELECT `id` FROM `character_items` WHERE `guid` = %u;", new_guid).c_str());
 				uint32 count = 0;
 				while(q.next())
 				{
 					count++;
 				}
-				if(count == 0)
+				if((count == 0) && (new_guid == old_guid ? true : (!this->HaveGuid(new_guid))))
 				{
 					break;
 				}
 				else
 				{
-					while(TRUE)
-					{
-						new_guid = rand();
-						this->map_mutex.Lock();
-						MapType::iterator it = this->ItemMap.find(new_guid);
-						this->map_mutex.Unlock();
-						if(it == this->ItemMap.end())
-						{
-							break;
-						}
-					}
+					new_guid = rand();
 				}
 			}
 			MainDB.Unlock();
@@ -254,46 +269,9 @@ bool CItemManager::SaveItem(CItem *item, uint32 slot)
 			this->ItemMap.insert(MapType::value_type(new_guid, item));
 			this->map_mutex.Unlock();
 			MainDB.Lock();
-			q.prepare("INSERT IGNORE INTO `character_items` (`guid`, `slot`, `type`, `level`, `durability`, `option1`, `option2`, `option3`, `newoption`, `setoption`, `petitem_level`, `petitem_exp`, `joh_option`, `optionex`) VALUES (:guid, :slot, :type, :level, :durability, :option1, :option2, :option3, :newoption, :setoption, :petlevel, :petexp, :joh, :optionex);");
-			q.bindValue(":guid", item->guid);
-			q.bindValue(":slot", slot);
-			q.bindValue(":type", item->type);
-			q.bindValue(":level", item->level);
-			q.bindValue(":durability", item->durability);
-			q.bindValue(":option1", item->m_Option1);
-			q.bindValue(":option2", item->m_Option2);
-			q.bindValue(":option3", item->m_Option3);
-			q.bindValue(":newoption", item->m_NewOption);
-			q.bindValue(":setoption", item->m_SetOption);
-			q.bindValue(":petlevel", item->m_PetItem_Level);
-			q.bindValue(":petexp", item->m_PetItem_Exp);
-			q.bindValue(":joh", item->m_JewelOfHarmonyOption);
-			q.bindValue(":optionex", item->m_ItemOptionEx);
-			result = q.exec();
+			result = q.exec(Query("INSERT IGNORE INTO `character_items` (`guid`, `slot`, `type`, `level`, `durability`, `option1`, `option2`, `option3`, `newoption`, `setoption`, `petitem_level`, `petitem_exp`, `joh_option`, `optionex`) VALUES (%u, %u, %u, %u, %f, %u, %u, %u, %u, %u, %u, %u, %u, %u);", item->guid, slot, item->type, item->level, item->durability, item->m_Option1, item->m_Option2, item->m_Option3, item->m_NewOption, item->m_SetOption, item->m_PetItem_Level, item->m_PetItem_Exp, item->m_JewelOfHarmonyOption, item->m_ItemOptionEx).c_str());
 			MainDB.Unlock();
 			item->status = ITEM_UNCHANGED;
-			break;
-		}
-	case ITEM_CHANGED:
-		{
-			MainDB.Lock();
-			q.prepare("UPDATE `character_items` SET `slot` = :slot, `type` = :type, `level` = :level, `durability` = :durability, `option1` = :option1, `option2` = :option2, `option3` = :option3, `newoption` = :newoption, `setoption` = :setoption, `petitem_level` = :petlevel, `petitem_exp` = :petexp, `joh_option` = :joh, `optionex` = :optionex WHERE `guid` = :guid;");
-			q.bindValue(":slot", slot);
-			q.bindValue(":type", item->type);
-			q.bindValue(":level", item->level);
-			q.bindValue(":durability", item->durability);
-			q.bindValue(":option1", item->m_Option1);
-			q.bindValue(":option2", item->m_Option2);
-			q.bindValue(":option3", item->m_Option3);
-			q.bindValue(":newoption", item->m_NewOption);
-			q.bindValue(":setoption", item->m_SetOption);
-			q.bindValue(":petlevel", item->m_PetItem_Level);
-			q.bindValue(":petexp", item->m_PetItem_Exp);
-			q.bindValue(":joh", item->m_JewelOfHarmonyOption);
-			q.bindValue(":optionex", item->m_ItemOptionEx);
-			q.bindValue(":guid", item->guid);
-			result = q.exec();
-			MainDB.Unlock();
 			break;
 		}
 	default:
@@ -305,4 +283,17 @@ bool CItemManager::SaveItem(CItem *item, uint32 slot)
 		return false;
 	}
 	return true;
+}
+
+bool CItemManager::DeleteFromDB(uint32 guid)
+{
+	if(guid < 0)
+	{
+		return false;
+	}
+	QSqlQuery q;
+	MainDB.Lock();
+	bool result = q.exec(Query("DELETE FROM `character_items` WHERE `guid` = %u;", guid).c_str());
+	MainDB.Unlock();
+	return result;
 }

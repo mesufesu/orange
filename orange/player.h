@@ -43,8 +43,8 @@ enum OBJECTS
 
 enum PLAYER_WARDROBE
 {
-	WEAPON_01	= 0,	// <--
-	WEAPON_02	= 1,	// <--
+	HAND_LEFT	= 0,	// <--
+	HAND_RIGHT	= 1,	// <--
 	HELMET		= 2,	// <--
 	ARMOR		= 3,	// <--
 	PANTS		= 4,	// <--
@@ -57,16 +57,25 @@ enum PLAYER_WARDROBE
 	RING_02		= 11,	// <--
 };
 
-struct DATA_CHARINFO
+struct SC_CHARINFO
 {
-	char Account[11];
-	char Name[11];
+	std::string name;
 	uint8 Class;
 	uint8 ChangeUp;
+	uint16 level;
+	std::vector<uint32> item_guids;
+	DATA_ITEM temp_inv[12];
+	/*SC_CHARINFO()
+	{
+		ZeroMemory(this, sizeof(SC_CHARINFO));
+	}*/
+};
+
+struct DATA_CHARACTER
+{
 	uint32 Position; //mapx mapy map dir
 	uint64 Exp;
 	uint8 LevelUpPoint;
-	uint16 Level;
 	uint16 Str;
 	uint16 Dex;
 	uint16 Vit;
@@ -78,14 +87,12 @@ struct DATA_CHARINFO
 	uint32 BP;
 	uint32 Money;
 	uint8 PkLevel;
-	uint32 GMLevel;
 	uint8 AddPoint;
 	uint8 MaxAddPoint;
 	uint8 MinusPoint;
 	uint8 MaxMinusPoint;
 	std::vector<uint32> item_guids;
-	DATA_ITEM temp_inv[12];
-	std::vector<uint8> spell_data;
+	//std::vector<uint8> spell_data;
 };
 
 class CPlayer : public CObject
@@ -106,10 +113,10 @@ public:
 	char name[10];
 	unsigned char charset[18];
 	unsigned char failed_attempts;
-	DATA_CHARINFO charinfo[5];
+	SC_CHARINFO sc_charinfo[5];
 	CItem * inventory[108];
 	CMyMutex view_mtx;
-	std::vector<short> viewport;
+	std::vector<uint16> viewport;
 	size_t send_serial;
 
 	unsigned char rest;
@@ -131,7 +138,9 @@ public:
 	void Close();
 	void SetStatus(unsigned char status);
 	void SendInventory();
-	int LoadCharacters();
+	//int LoadCharacters();
+	uint32 LoadSelectionScreen();
+	bool LoadCharacterData(SC_CHARINFO* info);
 	bool InViewport(CObject* obj);
 	//void DeleteFromViewport(void* obj);
 	void AssignItem(DATA_ITEM* item);
@@ -141,6 +150,7 @@ public:
 	void SetPosition(uint8 x, uint8 y);
 	bool SavePlayer();
 	void CookCharset();
+	void LoadItemToInventory(DATA_ITEM * ditem);
 };
 
 extern const CItem dummy;

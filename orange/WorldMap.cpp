@@ -55,24 +55,35 @@ void CWorldMap::LoadMap(const char * filename)
 
 void CWorldMap::UpdateMap()
 {
-	this->obj_mutex.Lock();
+	//this->guids_mutex.lock();
 	this->guids.clear();
-	ObjManager.con_mutex.Lock();
-	for(std::map<short, CObject*>::iterator it = ObjManager.container.begin(); it != ObjManager.container.end(); ++it)
+	ObjManager.mtx.lock();
+	for(CObjectManager::MapType::iterator it = ObjManager.container.begin(); it != ObjManager.container.end(); ++it)
 	{
 		CObject* object = it->second;
-		if((object->type > OBJECT_EMPTY) && (object->map == this->map_number))
+		if((object) && ((object->type > OBJECT_EMPTY) && (object->map == this->map_number)))
 		{
 			this->guids.push_back(object->guid);
 		}
 	}
-	ObjManager.con_mutex.Unlock();
-	this->obj_mutex.Unlock();
+	ObjManager.mtx.unlock();
+	//this->guids_mutex.unlock();
 	//printf_s("Map %d has %d objects.\n", this->map_number, this->objects.size());
 }
 
-void WINAPI CWorldMap::UpdateProc(CWorldMap* map)
+void CWorldMap::Run()
 {
+	this->MapThread.start();
+}
+
+void CWorldMap::Quit()
+{
+	this->MapThread.quit();
+}
+
+void CMapThread::run()
+{
+	CWorldMap * map = (CWorldMap*)lpmap;
 	while(TRUE)
 	{
 		if((GetTickCount() - map->last_update) >= 1000)
@@ -101,8 +112,8 @@ void WINAPI CWorldMap::UpdateProc(CWorldMap* map)
 
 void CWorldMap::UpdateViewport(CPlayer* player)
 {
-	std::vector<short> view_delete;
-	std::vector<short> view_create;
+	std::vector<uint16> view_delete;
+	std::vector<uint16> view_create;
 	view_delete.clear();
 	for(uint32 i = 0; i < player->viewport.size(); ++i)
 	{

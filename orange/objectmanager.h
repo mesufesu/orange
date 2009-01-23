@@ -22,24 +22,37 @@
 #include ".\\object.h"
 #include ".\\mutex.h"
 #include ".\\player.h"
+#include ".\\WorldMap.h"
+#include <QtCore\\QMutex>
+#include <QtCore\\QThread>
+
+class CObjectThread : public QThread
+{
+public:
+	void run();
+};
 
 class CObjectManager
 {
 public:
-	HANDLE procHandle;
-	std::map<short, CObject*> container;
-	CMyMutex con_mutex;
+	friend void CObjectThread::run();
+	friend void CWorldMap::UpdateMap();
+	typedef std::tr1::unordered_map<uint16, CObject*> MapType;
 	CObjectManager();
 	CPlayer* FindPlayerBySocket(ServerSocket* socket);
-	CPlayer* FindPlayerByGuid(short guid);
-	CObject* CObjectManager::FindByGuid(short guid);
+	//CPlayer* FindPlayerByGuid(short guid);
+	CObject* CObjectManager::FindByGuid(uint16 guid);
 	CPlayer* CreatePlayer(ServerSocket* socket);
 	//void DeletePlayer(CPlayer* player);
 	void Delete(CObject* object);
 	short MakeGuid(CObject* object);
 	void Run();
+	void Quit();
 
-	static void WINAPI ObjectManagerProc(CObjectManager* manager); //will cleanup each 10 seconds
+private:
+	QMutex mtx;
+	MapType container;
+	CObjectThread ObjThread;
 };
 
 extern CObjectManager ObjManager;

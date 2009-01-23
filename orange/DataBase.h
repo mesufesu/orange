@@ -18,15 +18,8 @@
 #ifndef _DATABASE_H_
 #define _DATABASE_H_
 
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include ".\\mutex.h"
+#include <QtCore\\QMutex>
 #include <QtSql\\QtSql>
-/*#include "..\\mysql\\mysql.h"
-#include "..\\mysqlwrapper\\Database.h"
-#include "..\\mysqlwrapper\\Query.h"*/
 
 class CDatabaseHandler
 {
@@ -37,7 +30,7 @@ public:
 	~CDatabaseHandler();
 	bool Connect();
 private:
-	CMyMutex db_mutex;
+	QMutex mtx;
 	QSqlDatabase db;
 };
 

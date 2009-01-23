@@ -27,32 +27,46 @@
 #include ".\\Item.h"
 #include ".\\WorldMap.h"
 #include ".\\objectmanager.h"
+#include ".\\ItemTemplate.h"
 #include ".\\WhatsUpDummyServer.h"
+#include ".\\MainWindow.h"
+#include ".\\log.h"
 
-int main(int argc, char* argv[])
+int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
+	UNREFERENCED_PARAMETER(hPrevInstance);
+	UNREFERENCED_PARAMETER(lpCmdLine);
+
+	QApplication orange(nCmdShow, &lpCmdLine);
+	Log.Init("test.log");
+	CMainWindow mwin;
+	mwin.setCentralWidget(Log.texted);
+	mwin.setWindowTitle("Orange");
+	mwin.show();
+
 	char ip[] = "127.0.0.1";
 
 	if(!MainDB.Connect())
 	{
-		printf_s("MySQL connection cannot be established. Closing.\n");
+		Log.String("MySQL connection cannot be established. Closing.");
 		return 0;
 	}
 	QSqlQuery q;
-	if(q.exec("UPDATE `account_test` SET `status` = 0 WHERE `status` <> 0"))
+	if(q.exec("UPDATE `accounts` SET `status` = 0 WHERE `status` <> 0"))
 	{
-		printf_s("Online status set to 0.\n");
+		Log.String("Online status set to 0.");
 	}
-
+	ItemTemplate.Load();
 	//SocketMainInit();
 	GameMainInit();
 	//JoinServerConnect(ip, 1027);
 	//DataServerCli.Connect();
 	DWORD dwThreadId;
 	HANDLE hHBThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)HeartbeatServerProc, (LPVOID)55902, 0, &dwThreadId);
-	HANDLE hServerSocketThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ServerSocketProc, (LPVOID)55901, 0, &dwThreadId);
+	//HANDLE hServerSocketThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ServerSocketProc, (LPVOID)55901, 0, &dwThreadId);
+	_SocketThread.start((QThread::Priority)4);
 	HANDLE hCSThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)CSThreadProc, NULL, 0, &dwThreadId);
-	printf_s("Socket Threads created.\n");
+	Log.String("Socket Threads created.\n");
 	ObjManager.Run();
 	ItemManager.Run();
 	for(uint32 i = 0; i < MAX_MAPS; ++i)
@@ -62,9 +76,9 @@ int main(int argc, char* argv[])
 		sprintf_s(filename, sizeof(filename), ".\\data\\maps\\Terrain%d.att", i + 1);
 		WorldMap[i].map_number = i;
 		WorldMap[i].LoadMap(filename);
-		WorldMap[i].map_handle = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)CWorldMap::UpdateProc, &WorldMap[i], 0, &dwThreadId);
+		WorldMap[i].MapThread.lpmap = (void*)&WorldMap[i];
+		WorldMap[i].Run();
 	}
-	printf_s("WorldMap threads started.\n");
-	WaitForSingleObject(hServerSocketThread, INFINITE);
-	return 0;
+	Log.String("WorldMap threads started.\n");
+	return orange.exec();
 }

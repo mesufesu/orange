@@ -21,27 +21,40 @@
 #include <vector>
 #include ".\\player.h"
 #include ".\\mutex.h"
+#include <QtCore\\QThread>
+#include <QtCore\\QMutex>
 
 #define MAX_MAPS 60
+
+class CMapThread : public QThread
+{
+public:
+	void run();
+	void * lpmap;
+};
 
 class CWorldMap
 {
 public:
-	HANDLE map_handle;
-	CMyMutex obj_mutex;
+	friend void CMapThread::run();
 	unsigned char map[256][256];
-	std::vector<short> guids;
 	int map_number;
 	int width;
 	int height;
-	int last_update;
+	int32 last_update;
+	CMapThread MapThread;
 
 	CWorldMap();
 	void LoadMap(const char * filename);
 	void UpdateMap();
 	void UpdateViewport(CPlayer* player);
-	static void WINAPI UpdateProc(CWorldMap* map);
+	void Run();
+	void Quit();
 	unsigned char GetAttr(int x, int y);
+
+private:
+	std::vector<uint16> guids;
+	QMutex guids_mutex;
 };
 
 extern CWorldMap WorldMap[MAX_MAPS];

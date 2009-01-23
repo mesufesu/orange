@@ -16,10 +16,6 @@
 */
 
 #include "stdafx.h"
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include ".\\DataBase.h"
 
 CDatabaseHandler MainDB;
@@ -34,6 +30,7 @@ bool CDatabaseHandler::Connect()
 	this->db.setHostName("localhost");
 	this->db.setUserName("root");
 	this->db.setPassword("dagal");
+	this->db.setDatabaseName("oranged");
 	return this->db.open();
 }
 
@@ -43,10 +40,10 @@ CDatabaseHandler::~CDatabaseHandler()
 
 void CDatabaseHandler::Lock()
 {
-	this->db_mutex.Lock();
+	this->mtx.lock();
 }
 
 void CDatabaseHandler::Unlock()
 {
-	this->db_mutex.Unlock();
+	this->mtx.unlock();
 }

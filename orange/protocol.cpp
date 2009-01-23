@@ -18,10 +18,11 @@
 #include "stdafx.h"
 #include ".\\DataBase.h"
 #include ".\\utils.h"
-#include ".\\classdef.h"
 #include ".\\WorldMap.h"
 #include ".\\ItemManager.h"
 #include ".\\protocol.h"
+#include ".\\classdef.h"
+#include ".\\commands.h"
 
 void ProtocolCore(CPlayer* player, unsigned char opcode, unsigned char* buffer, size_t size, bool Encrypt, int serial)
 {
@@ -53,9 +54,17 @@ void ProtocolCore(CPlayer* player, unsigned char opcode, unsigned char* buffer, 
 
 	if(size)
 	{
-
 		switch(opcode)
 		{
+		case 0x00:
+			{
+				if(size > sizeof(PMSG_CHATDATA))
+				{
+					printf_s("PMSG_CHATDATA recieved size is larger than defined: %u\n", size);
+				}
+				Player_Chat((PMSG_CHATDATA*)buffer, player);
+				break;
+			}
 		case 0x18:
 			{
 				if(size != sizeof(PMSG_ACTION))
@@ -190,8 +199,12 @@ void Join_GetCharacters(CPlayer* player)
 	ZeroMemory(acc, sizeof(acc));
 	memcpy(acc, player->account, 10);
 
-	//char temp[2048];
-	//ZeroMemory(temp, sizeof(temp));
+	QSqlQuery q;
+	MainDB.Lock();
+	q.exec(Query("SELECT `gmlevel` FROM `accounts` WHERE `account` = '%s';", player->account).c_str());
+	MainDB.Unlock();
+	q.next();
+	player->gmlevel = q.value(0).toInt();
 
 	PMSG_CHARLISTCOUNT data;
 	data.h.c = 0xC1;
@@ -202,20 +215,22 @@ void Join_GetCharacters(CPlayer* player)
 	PMSG_CHARLIST chars[5];
 	ZeroMemory(chars, (sizeof(PMSG_CHARLIST) * 5));
 
-	int count = player->LoadCharacters();
-	for(int i =0; i < count; ++i)
+	uint32 count = player->LoadSelectionScreen();
+	SC_CHARINFO * info = NULL;
+	for(uint32 i = 0; i < count; ++i)
 	{
-		strcpy_s(chars[i].Name, 10, player->charinfo[i].Name);
-		chars[i].Level = player->charinfo[i].Level;
+		info = &(player->sc_charinfo[i]);
+		strcpy_s(chars[i].Name, 10, info->name.c_str());
+		chars[i].Level = info->level;
 		chars[i].Index = i;
-		chars[i].CtlCode = player->charinfo[i].GMLevel; //incorrect, but...
-		chars[i].CharSet[0] = (32 * (char)(player->charinfo[i].Class)) & 0xE0;
-		switch(player->charinfo[i].ChangeUp)
+		chars[i].CtlCode = player->gmlevel; //incorrect, I have different codes :)
+		chars[i].CharSet[0] = (32 * info->Class) & 0xE0; //todo: I DO HAVE charset, but in wrong function \=
+		switch(info->ChangeUp)
 		{
 		case 0:
 		case 1:
 			{
-				chars[i].CharSet[0] |= (16 * (char)(player->charinfo[i].ChangeUp)) & 0x10;
+				chars[i].CharSet[0] |= (16 * info->ChangeUp) & 0x10;
 				break;
 			}
 		case 2:
@@ -254,7 +269,7 @@ void Join_GetCharacters(CPlayer* player)
 	ZeroMemory(buffer, sizeof(buffer));
 	memcpy(&buffer[0], &data, sizeof(PMSG_CHARLISTCOUNT));
 	size_t offs = sizeof(PMSG_CHARLISTCOUNT);
-	for(int i = 0; i < count; ++i)
+	for(uint32 i = 0; i < count; ++i)
 	{
 		memcpy(&buffer[offs], &chars[i], sizeof(PMSG_CHARLIST));
 		offs += sizeof(PMSG_CHARLIST);
@@ -264,16 +279,22 @@ void Join_GetCharacters(CPlayer* player)
 
 void Join_WorldJoin(PMSG_CHARMAPJOIN* data, CPlayer* player)
 {
-	int num = -1;
-	for(int i = 0; i < 5; ++i)
+	int32 num = -1;
+	std::string name = data->Name;
+	for(uint32 i = 0; i < 5; ++i)
 	{
-		if(!strcmp(data->Name, player->charinfo[i].Name))
+		if(name == player->sc_charinfo[i].name)
 		{
 			num = i;
 			break;
 		}
 	}
-	DATA_CHARINFO * ch = &(player->charinfo[num]);
+	SC_CHARINFO * sc = &(player->sc_charinfo[num]);
+	if(!(player->LoadCharacterData(sc)))
+	{
+		player->Close();
+		return;
+	}
 	PMSG_CHARMAPJOINRESULT result;
 	ZeroMemory(&result, sizeof(result));
 	result.h.c = 0xC3;
@@ -281,90 +302,36 @@ void Join_WorldJoin(PMSG_CHARMAPJOIN* data, CPlayer* player)
 	result.h.headcode = 0xF3;
 	result.subcode = 0x03;
 
-	result.MapX = (char)((ch->Position >> 24) & 0x00ffffff);
-	result.MapY = (char)((ch->Position >> 16) & 0x0000ffff);
-	result.MapNumber = (char)((ch->Position >> 8) & 0x000000ff);
-	result.Dir = (char)((ch->Position) & 0x000000ff);
-	result.Exp = ch->Exp;
-	result.NextExp = ch->Exp * 2; //need calculation
-	result.LevelUpPoint = ch->LevelUpPoint;
-	result.Str = ch->Str;
-	result.Dex = ch->Dex;
-	result.Vit = ch->Vit;
-	result.Energy = ch->Energy;
-	result.Life = ch->Life;
-	result.MaxLife = (unsigned short)(DCInfo.DefClass[ch->Class].VitalityToLife * ch->Vit + DCInfo.DefClass[ch->Class].LevelLife * ch->Level);
-	result.Mana = ch->Mana;
-	result.MaxMana = (unsigned short)(DCInfo.DefClass[ch->Class].EnergyToMana * ch->Energy + DCInfo.DefClass[ch->Class].LevelMana * ch->Level);
-	result.wMaxShield = ch->Shield + 10;
-	result.BP = ch->BP;
-	result.MaxBP = ch->BP + 10;
-	result.Money = ch->Money;
-	result.PkLevel = ch->PkLevel;
-	result.CtlCode = ch->GMLevel; //wrong, but for now...
-	result.AddPoint = ch->AddPoint;
-	result.MaxAddPoint = ch->MaxAddPoint;
-	result.wMinusPoint = ch->MinusPoint;
-	result.wMaxMinusPoint = ch->MaxMinusPoint;
+	result.MapX = player->x;
+	result.MapY = player->y;
+	result.MapNumber = player->map;
+	result.Dir = player->dir;
+	result.Exp = player->experience;
+	result.NextExp = levelexp[player->level];
+	result.LevelUpPoint = player->leveluppoint;
+	result.Str = player->strength;
+	result.Dex = player->dexterity;
+	result.Vit = player->vitality;
+	result.Energy = player->energy;
+	result.Life = (uint16)player->life;
+	result.MaxLife = (uint16)player->maxlife;
+	result.Mana = (uint16)player->mana;
+	result.MaxMana = (uint16)player->maxmana;
+	result.wShield = (uint16)player->shield;
+	result.wMaxShield = (uint16)player->maxshield;
+	result.BP = (uint16)player->bp;
+	result.MaxBP = (uint16)player->maxbp;
+	result.Money = player->money;
+	result.PkLevel = player->pklevel;
+	result.CtlCode = 0;
+	result.AddPoint = player->addpoint;
+	result.MaxAddPoint = player->maxaddpoint;
+	result.wMinusPoint = player->minuspoint;
+	result.wMaxMinusPoint = player->maxminuspoint;
 	result.unk3 = 0x005c; //1.3.2 sniffed from war 12 lvl
 	//a lot of trash must be done here
 
-	player->Class = ch->Class;
-	player->changeup = ch->ChangeUp;
-	player->x = result.MapX;
-	player->y = result.MapY;
-	player->x_old = player->x;
-	player->y_old = player->y;
-	player->target_x = player->x;
-	player->target_y = player->y;
-	player->dir = result.Dir;
-	player->experience = ch->Exp;
-	player->leveluppoint = ch->LevelUpPoint;
-	player->level = ch->Level;
-	player->strength = ch->Str;
-	player->dexterity = ch->Dex;
-	player->vitality = ch->Vit;
-	player->energy = ch->Energy;
-	player->leadership = ch->Leadership;
-	player->life = ch->Life;
-	player->maxlife = DCInfo.DefClass[ch->Class].VitalityToLife * ch->Vit + DCInfo.DefClass[ch->Class].LevelLife * ch->Level;
-	player->mana = ch->Mana;
-	player->maxmana = DCInfo.DefClass[ch->Class].EnergyToMana * ch->Energy + DCInfo.DefClass[ch->Class].LevelMana * ch->Level;
-	player->bp = ch->BP;
-	player->maxbp = ch->BP + 10; //lazyness
-	player->shield = ch->Shield;
-	player->maxshield = ch->Shield + 10; //^^,
-	player->money = ch->Money;
-	player->pklevel = ch->PkLevel;
-	player->gmlevel = ch->GMLevel;
-
-	memcpy(player->name, data->Name, 10);
-
-	player->map = result.MapNumber;
 	player->Send((unsigned char*)&result, result.h.size);
-
-	for(uint32 i = 0; i < ch->item_guids.size(); ++i)
-	{
-		DATA_ITEM ditem;
-		CItem* item = NULL;
-		if(CItemManager::LoadItem(&ditem, ch->item_guids.at(i)))
-		{
-			item = ItemManager.InsertItem(ch->item_guids.at(i));
-			if(item)
-			{
-				player->inventory[ditem.slot] = item;
-				player->inventory[ditem.slot]->Assign(&ditem);
-			}
-		}
-		/*if((LoadItem(&ditem, ch->item_guids.at(i))) && (ItemManager.Instanciate(&player->inventory[ditem.slot])))
-		{
-			player->inventory[ditem.slot].Assign(&ditem);
-		}
-		else
-		{
-			player->inventory[ditem.slot].type = -1; //todo: implement correct function
-		}*/
-	}
 	player->CookCharset();
 	player->SendInventory();
 	player->status = PLAYER_PLAYING;
@@ -374,7 +341,7 @@ void Join_WorldJoin(PMSG_CHARMAPJOIN* data, CPlayer* player)
 void Join_LoginHandler(PMSG_IDPASS* data, CPlayer* player)
 {
 	QSqlQuery q;
-	int status = -1;
+	int status = 0;
 	char pass[11];
 	char account[11];
 	ZeroMemory(pass, sizeof(pass));
@@ -384,9 +351,12 @@ void Join_LoginHandler(PMSG_IDPASS* data, CPlayer* player)
 	xor3((unsigned char*)pass, 10);
 	xor3((unsigned char*)account, 10);
 	MainDB.Lock();
-	q.prepare("SELECT `status` FROM `account_test` WHERE `account` = ':account'");
-	q.bindValue(":account", account);
-	q.exec();
+	/*q.prepare("SELECT `status` FROM `accounts` WHERE `account` = '?'");
+	q.bindValue(0, "amb5");
+	q.exec();*/
+	q.exec(Query("SELECT `status` FROM `accounts` WHERE `account` = '%s';", account).c_str());
+	//QSqlError err = q.lastError();
+	//QString query_ = q.lastQuery();
 	if(q.next())
 	{
 		status = q.value(0).toInt();
@@ -410,9 +380,10 @@ void Join_LoginHandler(PMSG_IDPASS* data, CPlayer* player)
 	sprintf_s(temp, sizeof(temp), "SELECT password FROM `test_db`.`account_test` WHERE account = '%s'", account);*/
 	std::string result;
 	MainDB.Lock();
-	q.prepare("SELECT password FROM `test_db`.`account_test` WHERE account = ':account'");
+	/*q.prepare("SELECT password FROM `accounts` WHERE account = ':account'"); //INSERT IGNORE INTO `accounts` (`account`, `password`) VALUES ('amb5', 'test');
 	q.bindValue(":account", account);
-	q.exec();
+	q.exec();*/
+	q.exec(Query("SELECT `password` FROM `accounts` WHERE `account` = '%s'", account).c_str());
 	if(q.next())
 	{
 		result = q.value(0).toString().toStdString();
@@ -447,23 +418,21 @@ void Join_LoginHandler(PMSG_IDPASS* data, CPlayer* player)
 
 void Join_CreateCharacter(PMSG_CHARCREATE * data, CPlayer* player)
 {
-	unsigned char Eq[] = {0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x74};
+	unsigned char Eq[] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x74};
 	PMSG_CHARCREATERESULT packet;
 	ZeroMemory(&packet, sizeof(PMSG_CHARCREATERESULT));
 	packet.h.c = 0xC1;
 	packet.h.size = sizeof(PMSG_CHARCREATERESULT);
 	packet.h.headcode = 0xF3;
 	packet.subcode = 0x01;
-	packet.Class = 0x00;
+	//packet.Class = 0x00;
 	packet.Level = 1;
 	uint8 char_class = data->ClassSkin / 16;
 	DEFAULTCLASSTYPE * cl = &DCInfo.DefClass[char_class];
 	QSqlQuery q;
 	int have_chars = 0;
 	MainDB.Lock();
-	q.prepare("SELECT `id` FROM `characters` WHERE `account` = ':account'");
-	q.bindValue(":account", player->account);
-	q.exec();
+	q.exec(Query("SELECT `id` FROM `characters` WHERE `account` = '%s'", player->account).c_str());
 	while(q.next())
 	{
 		have_chars++;
@@ -476,9 +445,7 @@ void Join_CreateCharacter(PMSG_CHARCREATE * data, CPlayer* player)
 		return;
 	}
 	MainDB.Lock();
-	q.prepare("SELECT `id` FROM `characters` WHERE `name` = ':name'");
-	q.bindValue(":name", data->Name);
-	q.exec();
+	q.exec(Query("SELECT `id` FROM `characters` WHERE `name` = '%s'", data->Name).c_str());
 	int name_used = 0;
 	while(q.next())
 	{
@@ -491,15 +458,23 @@ void Join_CreateCharacter(PMSG_CHARCREATE * data, CPlayer* player)
 		player->Send((unsigned char*)&packet, packet.h.size);
 		return;
 	}
-	q.exec(AssembleQuery("INSERT INTO `characters` (`account`, `name`, `position`, `level`, `strength`, `dexterity`, `vitality`, `energy`, `leadership`, `life`, `mana`, `shield`, `bp`, `money`, `inventory_guids`, `class`) values ('%s', '%s', %u, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, '0', %d)",
-		player->account, data->Name, 0x82820000, 1, cl->Strength, cl->Dexterity, cl->Vitality, cl->Energy, cl->Leadership, (int)(cl->Life), (int)(cl->Mana), 90, 90, 1000, char_class).c_str()); //todo: value bindig, why not now? lazy...
+	bool result = q.exec(Query("INSERT INTO `characters` (`account`, `name`, `position`, `level`, `strength`, `dexterity`, `vitality`, `energy`, `leadership`, `life`, `mana`, `shield`, `bp`, `money`, `inventory_guids`, `class`, `spell_data`, `guild_data`) values ('%s', '%s', %u, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, NULL, %d, NULL, NULL)",
+		player->account, data->Name, 0x82820000, 1, cl->Strength, cl->Dexterity, cl->Vitality, cl->Energy, cl->Leadership, (int)(cl->Life), (int)(cl->Mana), 90, 90, 1000, char_class).c_str());
+	if(!result)
+	{
+		packet.Result = 2;
+		player->Send((unsigned char*)&packet, packet.h.size);
+		return;
+	}
 	packet.Result = 0x01;
 	memcpy(packet.Equipment, Eq, 24);
-	packet.Equipment[0] = data->ClassSkin;
+	packet.Equipment[0] = ((data->ClassSkin / 0x10) * 0x20) & 0xE0;
 	packet.pos = have_chars;
 	strcpy_s((char*)packet.Name, 10, data->Name);
+	unsigned char test[sizeof(packet)];
+	memcpy(test, &packet, sizeof(packet));
 	player->Send((unsigned char*)&packet, packet.h.size);
-	player->LoadCharacters();
+	player->LoadSelectionScreen();
 }
 
 void World_Move(PMSG_MOVE* data, CPlayer* player)
@@ -609,4 +584,33 @@ void World_Action(PMSG_ACTION* data, CPlayer* player)
 		}
 	}
 	player->SendToViewport((unsigned char*)&packet, packet.h.size);
+}
+
+void Player_Chat(PMSG_CHATDATA* data, CPlayer* player)
+{
+	//implemented only for debug commands processing
+	if(data->chatmsg[0] == '.')
+	{
+		std::string chat_string = &(data->chatmsg[1]);
+		char* next_token = NULL;
+		char * teh_string = new char[chat_string.size() + 1];
+		ZeroMemory(teh_string, chat_string.size() + 1);
+		strcpy_s(teh_string, chat_string.size() + 1, chat_string.c_str());
+		std::string cmd = strtok_s(teh_string, " ", &next_token);
+		for(uint32 i = 0; i < MAX_COMMANDS; ++i)
+		{
+			std::string temp = commands[i].cmd;
+			if(temp == cmd)
+			{
+				commands[i].command(player, chat_string);
+				delete[] teh_string;
+				return;
+			}
+		}
+		delete[] teh_string;
+	}
+	else
+	{
+		printf_s("Chat NYI.\n");
+	}
 }

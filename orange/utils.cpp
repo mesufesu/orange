@@ -18,6 +18,8 @@
 #include "stdafx.h"
 #include ".\\utils.h"
 
+uint64 levelexp[401];
+
 int8 RoadX[8] = {-1, 0, 1, 1, 1, 0, -1, -1};
 int8 RoadY[8] = {-1, -1, -1, 0, 1, 1, 1, 0};
 short RoadPathTable[16] = {-1, -1, 0, -1, 1, -1, 1, 0, 1, 1, 0, 1, -1, 1, -1, 0};
@@ -69,7 +71,7 @@ void xor3(unsigned char* ptr, unsigned int len)
 	}
 }
 
-const std::string AssembleQuery(const char *format, ...)
+const std::string Query(const char *format, ...)
 {
 	va_list pArgs;
 	va_start(pArgs, format); 
@@ -111,5 +113,22 @@ unsigned char LevelConvert(unsigned char level)
 		return 1;
 	default:
 		return 0;
+	}
+}
+
+uint8 GetCategory(uint16 type)
+{
+	return (type / 512);
+}
+
+void GenerateExp()
+{
+	for(uint64 i = 0; i < 401; ++i)
+	{
+		levelexp[i] = 10 * i * i * (i + 9);
+		if(i > 255)
+		{
+			levelexp[i] += (i - 255) * (i - 255) * (i - 255 + 9);
+		}
 	}
 }
