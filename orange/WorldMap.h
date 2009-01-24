@@ -47,7 +47,7 @@ public:
 	CWorldMap();
 	void LoadMap(const char * filename);
 	void UpdateMap();
-	void UpdateViewport(CPlayer* player);
+	void UpdateViewport(CObject* pobj);
 	void Run();
 	void Quit();
 	unsigned char GetAttr(int x, int y);

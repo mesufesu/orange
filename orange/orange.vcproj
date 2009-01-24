@@ -181,6 +181,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\bot.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\CAttackEvent.cpp"
 				>
 			</File>
@@ -422,6 +426,10 @@
 			>
 			<File
 				RelativePath=".\BattleSocketManager.h"
+				>
+			</File>
+			<File
+				RelativePath=".\bot.h"
 				>
 			</File>
 			<File

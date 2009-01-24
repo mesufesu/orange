@@ -18,14 +18,18 @@
 #ifndef _OBJECT_H_
 #define _OBJECT_H_
 
+#include <vector>
+
 enum OBJECT_TYPE
 {
+	VOID_BOT = -4,
 	VOID_EMPTY = -3,
 	VOID_UNIT = -2,
 	VOID_PLAYER = -1,
 	OBJECT_EMPTY = 0,
 	OBJECT_UNIT = 1,
 	OBJECT_PLAYER = 2,
+	OBJECT_BOT = 3,
 };
 
 class CObject
@@ -34,6 +38,8 @@ public:
 	short guid;
 	unsigned char x;
 	unsigned char y;
+	uint8 x_old;
+	uint8 y_old;
 	unsigned char target_x;
 	unsigned char target_y;
 	unsigned char map;
@@ -60,7 +66,11 @@ public:
 	float bp;
 	float maxbp;
 
+	std::vector<uint16> viewport;
+
 	CObject();
+	bool InViewport(CObject* obj);
+	void SendToViewport(unsigned char* buffer, size_t len);
 };
 
 #endif

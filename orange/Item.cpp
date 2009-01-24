@@ -67,6 +67,24 @@ bool CItem::IsItem()
 	return false;
 }
 
+bool CItem::IsExtItem()
+{
+	if((this->type >=0) && (this->type != (13 * 512 + 37)) && (this->m_NewOption & 0x7F)) //Horn of fenrir
+	{
+		return true;
+	}
+	return false;
+}
+
+bool CItem::IsSetItem()
+{
+	if((this->type >= 0) && (this->m_SetOption & 3))
+	{
+		return true;
+	}
+	return false;
+}
+
 void ItemByteConvert(unsigned char* buf, int type, unsigned char Option1, unsigned char Option2, unsigned char Option3, unsigned char level, unsigned char dur, unsigned char Noption, unsigned char SetOption, unsigned char JewelOfHarmonyOption, unsigned char ItemEffectEx)
 {
 	ZeroMemory(buf, 12);

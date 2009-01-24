@@ -31,6 +31,7 @@
 #include ".\\WhatsUpDummyServer.h"
 #include ".\\MainWindow.h"
 #include ".\\log.h"
+#include ".\\bot.h"
 
 int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
@@ -38,6 +39,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
 	QApplication orange(nCmdShow, &lpCmdLine);
+	MakeFrustum();
 	Log.Init("test.log");
 	CMainWindow mwin;
 	mwin.setCentralWidget(Log.texted);
@@ -80,5 +82,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		WorldMap[i].Run();
 	}
 	Log.String("WorldMap threads started.\n");
+	CBot* test_bot = ObjManager.CreateBot();
+	test_bot->SetBot("Pwnage", 0, 130, 130);
+	test_bot->Class = 5;
+	test_bot->changeup = 2;
+	test_bot->CookCharset();
+	Log.String("Bot [Pwnage] created at 0,130,130");
 	return orange.exec();
 }

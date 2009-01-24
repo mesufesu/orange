@@ -145,6 +145,8 @@ public:
   _ITEM_STATUS status;
   CItem();
   bool IsItem();
+  bool IsExtItem();
+  bool IsSetItem();
   void Assign(const DATA_ITEM *item_data);
   bool ApplyTemplate(const ITEM_TEMPLATE* it);
 };

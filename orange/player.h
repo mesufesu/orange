@@ -106,8 +106,6 @@ public:
 	uint32 check_time;
 
 	size_t path_count;
-	unsigned char x_old;
-	unsigned char y_old;
 
 	char account[10];
 	char name[10];
@@ -116,7 +114,7 @@ public:
 	SC_CHARINFO sc_charinfo[5];
 	CItem * inventory[108];
 	CMyMutex view_mtx;
-	std::vector<uint16> viewport;
+
 	size_t send_serial;
 
 	unsigned char rest;
@@ -141,10 +139,8 @@ public:
 	//int LoadCharacters();
 	uint32 LoadSelectionScreen();
 	bool LoadCharacterData(SC_CHARINFO* info);
-	bool InViewport(CObject* obj);
 	//void DeleteFromViewport(void* obj);
 	void AssignItem(DATA_ITEM* item);
-	void SendToViewport(unsigned char* buffer, size_t len);
 	bool CheckPosition();
 	bool CheckPacketTime();
 	void SetPosition(uint8 x, uint8 y);

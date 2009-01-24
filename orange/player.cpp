@@ -392,18 +392,6 @@ void CPlayer::AssignItem(DATA_ITEM *data)
 	item->m_PetItem_Level = data->petitem_level;
 }
 
-bool CPlayer::InViewport(CObject *obj)
-{
-	for(uint32 i = 0; i < this->viewport.size(); ++i)
-	{
-		if((ObjManager.FindByGuid(this->viewport.at(i)) == obj) && (obj != NULL) && (obj->type > OBJECT_EMPTY))
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
 /*void CPlayer::DeleteFromViewport(void* obj)
 {
 	for(uint32 i = 0; i < this->viewport.size(); ++i)
@@ -416,18 +404,6 @@ bool CPlayer::InViewport(CObject *obj)
 		}
 	}
 }*/
-
-void CPlayer::SendToViewport(unsigned char* buffer, size_t len)
-{
-	for(uint32 i = 0; i < this->viewport.size(); ++i)
-	{
-		CObject* object = ObjManager.FindByGuid(this->viewport.at(i));
-		if((object) && (object->type == OBJECT_PLAYER))
-		{
-			((CPlayer*)object)->Send(buffer, len);
-		}
-	}
-}
 
 bool CPlayer::CheckPosition()
 {
@@ -660,67 +636,84 @@ void CPlayer::CookCharset()
 		}
 	}
 	this->charset[10] = 0;
-	/*if(lpObj->pInventory[HELMET].IsExtItem())
+	if(this->inventory[HELMET]->IsExtItem())
 	{
-		lpObj->CharSet[10] = 0x80;
+		this->charset[10] = 0x80;
 	}
-	if(lpObj->pInventory[ARMOR].IsExtItem())
+	if(this->inventory[ARMOR]->IsExtItem())
 	{
-		lpObj->CharSet[10] |= 0x40;
+		this->charset[10] |= 0x40;
 	}
-	if(lpObj->pInventory[PANTS].IsExtItem())
+	if(this->inventory[PANTS]->IsExtItem())
 	{
-		lpObj->CharSet[10] |= 0x20;
+		this->charset[10] |= 0x20;
 	}
-	if(lpObj->pInventory[GLOVES].IsExtItem())
+	if(this->inventory[GLOVES]->IsExtItem())
 	{
-		lpObj->CharSet[10] |= 0x10;
+		this->charset[10] |= 0x10;
 	}
-	if(lpObj->pInventory[BOOTS].IsExtItem())
+	if(this->inventory[BOOTS]->IsExtItem())
 	{
-		lpObj->CharSet[10] |= 0x8;
+		this->charset[10] |= 0x8;
 	}
-	if(lpObj->pInventory[WEAPON_01].IsExtItem())
+	if(this->inventory[HAND_LEFT]->IsExtItem())
 	{
-		lpObj->CharSet[10] |= 0x4;
+		this->charset[10] |= 0x4;
 	}
-	if(lpObj->pInventory[WEAPON_02].IsExtItem())
+	if(this->inventory[HAND_RIGHT]->IsExtItem())
 	{
-		lpObj->CharSet[10] |= 0x2;
-	}*/
+		this->charset[10] |= 0x2;
+	}
 	this->charset[11] = 0;
-	/*if(lpObj->pInventory[HELMET].IsSetItem())
+	if(this->inventory[HELMET]->IsSetItem())
 	{
-		lpObj->CharSet[11] = 0x80;
+		this->charset[11] = 0x80;
 	}
-	if(lpObj->pInventory[ARMOR].IsSetItem())
+	if(this->inventory[ARMOR]->IsSetItem())
 	{
-		lpObj->CharSet[11] |= 0x40;
+		this->charset[11] |= 0x40;
 	}
-	if(lpObj->pInventory[PANTS].IsSetItem())
+	if(this->inventory[PANTS]->IsSetItem())
 	{
-		lpObj->CharSet[11] |= 0x20;
+		this->charset[11] |= 0x20;
 	}
-	if(lpObj->pInventory[GLOVES].IsSetItem())
+	if(this->inventory[GLOVES]->IsSetItem())
 	{
-		lpObj->CharSet[11] |= 0x10;
+		this->charset[11] |= 0x10;
 	}
-	if(lpObj->pInventory[BOOTS].IsSetItem())
+	if(this->inventory[BOOTS]->IsSetItem())
 	{
-		lpObj->CharSet[11] |= 0x8;
+		this->charset[11] |= 0x8;
 	}
-	if(lpObj->pInventory[WEAPON_01].IsSetItem())
+	if(this->inventory[HAND_LEFT]->IsSetItem())
 	{
-		lpObj->CharSet[11] |= 0x4;
+		this->charset[11] |= 0x4;
 	}
-	if(lpObj->pInventory[WEAPON_02].IsSetItem())
+	if(this->inventory[HAND_RIGHT]->IsSetItem())
 	{
-		lpObj->CharSet[11] |= 0x2;
+		this->charset[11] |= 0x2;
 	}
-	if(lpObj->IsFullSetItem)
+	/*if(lpObj->IsFullSetItem)
 	{
 		lpObj->CharSet[11] |= 0x01;
 	}*/
+	if((this->inventory[GUARDIAN]->type & 3) && (this->inventory[GUARDIAN]->type >= 0))
+	{
+		this->charset[10] |= 0x01;
+	}
+	this->charset[16] = 0;
+	this->charset[17] = 0;
+	if(this->inventory[GUARDIAN]->type == (13 * 512 + 4)) //1a04
+	{
+		this->charset[12] |= 0x01;
+	}
+	else if(this->inventory[GUARDIAN]->type == 0x1A25) //horn of fenrir
+	{
+		this->charset[10] &= 0xFE;
+		this->charset[12] &= 0xFE;
+		this->charset[12] |= 0x04;
+		//todo: unique fenrir checks
+	}
 }
 
 void CPlayer::LoadItemToInventory(DATA_ITEM *ditem)

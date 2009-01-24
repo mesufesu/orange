@@ -523,11 +523,11 @@ extern OBJECTSTRUCT gObj[OBJ_MAX];
 extern int gObjCount;
 extern int gObjMonCount;
 extern int gObjCallMonCount;
-extern int FrustumX[4];
-extern int FrustumY[4];
+//extern int FrustumX[4];
+//extern int FrustumY[4];
 
 void gObjInit();
-void InitFrustum();
+//void InitFrustum();
 int gObjIsConnected(OBJECTSTRUCT* lpObj, int dbnumber);
 int gObjIsConnected(int aIndex);
 int gObjIsConnected(OBJECTSTRUCT* lpObj);

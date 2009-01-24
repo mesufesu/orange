@@ -17,6 +17,7 @@
 
 #include "stdafx.h"
 #include ".\\object.h"
+#include ".\\objectmanager.h"
 
 CObject::CObject()
 {
@@ -34,6 +35,13 @@ CObject::CObject()
 	this->energy = 0;
 	this->leadership = 0;
 
+	this->x = 0;
+	this->target_x = 0;
+	this->x_old = 0;
+	this->y = 0;
+	this->target_y = 0;
+	this->y_old = 0;
+
 	this->life = 0.0f;
 	this->maxlife = 0.0f;
 	this->mana = 0.0f;
@@ -42,4 +50,28 @@ CObject::CObject()
 	this->maxshield = 0.0f;
 	this->bp = 0.0f;
 	this->maxbp = 0.0f;
+}
+
+bool CObject::InViewport(CObject *obj)
+{
+	for(uint32 i = 0; i < this->viewport.size(); ++i)
+	{
+		if((ObjManager.FindByGuid(this->viewport.at(i)) == obj) && (obj != NULL) && (obj->type > OBJECT_EMPTY))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+void CObject::SendToViewport(unsigned char* buffer, size_t len)
+{
+	for(uint32 i = 0; i < this->viewport.size(); ++i)
+	{
+		CObject* object = ObjManager.FindByGuid(this->viewport.at(i));
+		if((object) && (object->type == OBJECT_PLAYER))
+		{
+			((CPlayer*)object)->Send(buffer, len);
+		}
+	}
 }

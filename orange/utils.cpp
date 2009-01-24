@@ -16,12 +16,23 @@
 */
 
 #include "stdafx.h"
+#include <math.h>
 #include ".\\utils.h"
+#include ".\\mathlib.h"
 
 uint64 levelexp[401];
 
 int8 RoadX[8] = {-1, 0, 1, 1, 1, 0, -1, -1};
 int8 RoadY[8] = {-1, -1, -1, 0, 1, 1, 1, 0};
+
+int32 FrustumX[4];
+int32 FrustumY[4];
+
+float rad1;
+float rad2;
+float t1;
+float t2;
+
 short RoadPathTable[16] = {-1, -1, 0, -1, 1, -1, 1, 0, 1, 1, 0, 1, -1, 1, -1, 0};
 
 /*		[0]	-1	shortx
@@ -131,4 +142,67 @@ void GenerateExp()
 			levelexp[i] += (i - 255) * (i - 255) * (i - 255 + 9);
 		}
 	}
+}
+
+void InitFrustum()
+{
+	float Frustum[4][3];
+	float CameraViewFar = 2400.0f;
+	float CameraViewNear = CameraViewFar * 0.19f;
+	float CameraViewTarget = CameraViewFar * 0.53f;
+	float WidthFar = 1190.0f;
+	float WidthNear = 550.0f;
+	float p[4][3];
+	p[0][0] = - WidthFar;
+	p[0][1] = CameraViewFar - CameraViewTarget;
+	p[0][2] = 0.0f;
+	p[1][0] = WidthFar;
+	p[1][1] = CameraViewFar - CameraViewTarget;
+	p[1][2] = 0.0f;
+	p[2][0] = WidthNear;
+	p[2][1] = CameraViewNear - CameraViewTarget;
+	p[2][2] = 0.0f;
+	p[3][0] = - WidthNear;
+	p[3][1] = CameraViewNear - CameraViewTarget;
+	p[3][2] = 0.0f;
+	float Angle[3];
+	Angle[0] = 0.0f;
+	Angle[1] = 0.0f;
+	Angle[2] = 45.0f;
+	float Matrix[3][4];
+	AngleMatrix(&Angle[0], &Matrix[0]);
+	for(int i = 0; i < 4; ++i)
+	{
+		VectorRotateSSE(&p[i][0], &Matrix[0], &Frustum[i][0]);
+		FrustumX[i] = (int)(Frustum[i][0] * 0.01f);
+		FrustumY[i] = (int)(Frustum[i][1] * 0.01f);
+	}
+}
+
+void MakeFrustum()
+{
+	rad1 = 1.0f + sqrt(34.0f * 34.0f + 18.0f * 18.0f);
+	rad2 = -1.0f + sqrt(17.0f * 17.0f + 9.0f * 9.0f);
+	t1 = 3.0f + (atan((-1.0f) * (9.0f / 17.0f)) * 180.0f) / (float)Q_PI;
+	t2 = -3.0f + (atan((-1.0f) * (17.0f / 9.0f)) * 180.0f) / (float)Q_PI;
+}
+
+bool InFrustum(int32 ox, int32 oy, int32 tx, int32 ty)
+{
+	float ntx = (float)(tx - ox);
+	float nty = (float)(ty - oy);
+	float rx = 18.0f + abs(ntx);
+	float ry = 18.0f + abs(nty);
+	float radius = sqrt(rx*rx + ry*ry);
+	if((radius > rad1) || (radius < rad2))
+	{
+		return false;
+	}
+	float val = ((-18.0f - nty) / (18.0f - ntx));
+	float deg = (atan(val) * 180.0f) / (float)Q_PI;
+	if((deg > t1) || (deg < t2))
+	{
+		return false;
+	}
+	return true;
 }

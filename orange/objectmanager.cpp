@@ -90,6 +90,29 @@ CPlayer* CObjectManager::CreatePlayer(ServerSocket* socket)
 	}
 }
 
+CBot* CObjectManager::CreateBot()
+{
+	CBot* bot = new CBot;
+	while(TRUE)
+	{
+		uint16 new_guid = rand() % 32000;
+		std::pair<MapType::iterator, bool> pr;
+		this->mtx.lock();
+		pr = this->container.insert(MapType::value_type(new_guid, (CObject*)bot));
+		this->mtx.unlock();
+		if(pr.second == true)
+		{
+			bot->guid = new_guid;
+			printf_s("[DEBUG] %d %d\n", pr.first->first, pr.first->second->guid);
+			return bot;
+		}
+		else
+		{
+			continue;
+		}
+	}
+}
+
 void CObjectManager::Delete(CObject* object) //useless too, lol
 {
 	std::vector<MapType::iterator> trash_bin;
@@ -103,6 +126,12 @@ void CObjectManager::Delete(CObject* object) //useless too, lol
 			trash_bin.push_back(it);
 			switch(object->type)
 			{
+			case VOID_BOT:
+				{
+					CBot* bot = (CBot*)object;
+					delete bot;
+					break;
+				}
 			case VOID_EMPTY:
 				{
 					delete object;

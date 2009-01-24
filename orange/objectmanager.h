@@ -22,6 +22,7 @@
 #include ".\\object.h"
 #include ".\\mutex.h"
 #include ".\\player.h"
+#include ".\\bot.h"
 #include ".\\WorldMap.h"
 #include <QtCore\\QMutex>
 #include <QtCore\\QThread>
@@ -43,6 +44,7 @@ public:
 	//CPlayer* FindPlayerByGuid(short guid);
 	CObject* CObjectManager::FindByGuid(uint16 guid);
 	CPlayer* CreatePlayer(ServerSocket* socket);
+	CBot* CreateBot();
 	//void DeletePlayer(CPlayer* player);
 	void Delete(CObject* object);
 	short MakeGuid(CObject* object);

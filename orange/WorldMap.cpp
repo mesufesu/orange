@@ -94,7 +94,7 @@ void CMapThread::run()
 				CObject* object = ObjManager.FindByGuid(map->guids.at(i));
 				if((object != NULL) && (object->type == OBJECT_PLAYER))
 				{
-					map->UpdateViewport((CPlayer*)object);
+					map->UpdateViewport(object);
 					if((GetTickCount() - ((CPlayer*)object)->last_save_time) >= (5 * 1000 * 60))
 					{
 						if(((CPlayer*)object)->status == PLAYER_PLAYING)
@@ -103,6 +103,11 @@ void CMapThread::run()
 						}
 					}
 				}
+				else if((object != NULL) && (object->type == OBJECT_BOT))
+				{
+					map->UpdateViewport(object);
+					((CBot*)object)->UpdateAI();
+				}
 			}
 			map->last_update = GetTickCount();
 		}
@@ -110,32 +115,37 @@ void CMapThread::run()
 	}
 }
 
-void CWorldMap::UpdateViewport(CPlayer* player)
+void CWorldMap::UpdateViewport(CObject* pobj)
 {
 	std::vector<uint16> view_delete;
 	std::vector<uint16> view_create;
 	view_delete.clear();
-	for(uint32 i = 0; i < player->viewport.size(); ++i)
+	for(uint32 i = 0; i < pobj->viewport.size(); ++i)
 	{
-		CObject * object = ObjManager.FindByGuid(player->viewport.at(i));
-		if((!object) || (object->type < OBJECT_UNIT) || (object->map != player->map) || !((abs(player->x - object->x) <= 9) && (abs(player->y - object->y) <= 9)))
+		CObject * object = ObjManager.FindByGuid(pobj->viewport.at(i));
+		if((!object) || (object->type < OBJECT_UNIT) || (object->map != pobj->map) || /*!((abs(pobj->x - object->x) <= 9) && (abs(pobj->y - object->y) <= 9))*/ !InFrustum(pobj->x, pobj->y, object->x, object->y))
 		{
-			printf_s("[VIEWPORT] %d deletes %d from viewport\n", player->guid, player->viewport.at(i));
-			view_delete.push_back(player->viewport.at(i));
-			player->viewport.erase(player->viewport.begin() + i);
+			printf_s("[VIEWPORT] %d deletes %d from viewport\n", pobj->guid, pobj->viewport.at(i));
+			view_delete.push_back(pobj->viewport.at(i));
+			pobj->viewport.erase(pobj->viewport.begin() + i);
 		}
 	}
 	for(uint32 i = 0; i < this->guids.size(); ++i)
 	{
 		CObject * object = ObjManager.FindByGuid(this->guids.at(i));
-		if((object) && (object->type > OBJECT_EMPTY) && (!player->InViewport(object)) && (object->map == player->map) && ((abs(player->x - object->x) <= 9) && (abs(player->y - object->y) <= 9)) && (object != (CObject*)player))
+		if((object) && (object->type > OBJECT_EMPTY) && (!pobj->InViewport(object)) && (object->map == pobj->map) && /*((abs(pobj->x - object->x) <= 9) && (abs(pobj->y - object->y) <= 9))*/ InFrustum(pobj->x, pobj->y, object->x, object->y) && (object != pobj))
 		{
-			printf_s("[VIEWPORT] %d inserts in his viewport %d\n", player->guid, this->guids.at(i));
+			printf_s("[VIEWPORT] %d inserts in his viewport %d\n", pobj->guid, this->guids.at(i));
 			view_create.push_back(this->guids.at(i));
-			player->viewport.push_back(this->guids.at(i));
+			pobj->viewport.push_back(this->guids.at(i));
 		}
 	}
 	
+	if(pobj->type != OBJECT_PLAYER)
+	{
+		return;
+	}
+
 	if(!view_delete.empty())
 	{
 		uint8 destroy_buffer[5000];
@@ -155,7 +165,7 @@ void CWorldMap::UpdateViewport(CPlayer* player)
 		pcount.h.size = sizeof(PBMSG_COUNT) + view_delete.size() * sizeof(PMSG_VIEWPORTDESTROY);
 		pcount.count = view_delete.size();
 		memcpy(destroy_buffer, &pcount, sizeof(PBMSG_COUNT));
-		player->Send((unsigned char*)destroy_buffer, pcount.h.size);
+		((CPlayer*)pobj)->Send((unsigned char*)destroy_buffer, pcount.h.size);
 	}
 	if(!view_create.empty())
 	{
@@ -197,6 +207,29 @@ void CWorldMap::UpdateViewport(CPlayer* player)
 						player_count++;
 						break;
 					}
+				case OBJECT_BOT:
+					{
+						CBot* obj_bot = (CBot*)object;
+						PMSG_VIEWPORTCREATE packet;
+						packet.NumberH = HIBYTE(obj_bot->guid);
+						packet.NumberL = LOBYTE(obj_bot->guid);
+						if(obj_bot->state && !obj_bot->teleporting)
+						{
+							packet.NumberH |= 0x80;
+						}
+						packet.X = obj_bot->x;
+						packet.Y = obj_bot->y;
+						packet.TX = obj_bot->target_x;
+						packet.TY = obj_bot->target_y;
+						packet.ViewSkillState = obj_bot->viewskillstate;
+						packet.DirAndPkLevel = obj_bot->dir * 0x10;
+						packet.DirAndPkLevel |= obj_bot->pklevel & 0xf;
+						memcpy(packet.Id, obj_bot->name, 10);
+						memcpy(packet.CharSet, obj_bot->charset, 18);
+						memcpy(&player_buffer[sizeof(PWMSG_COUNT) + player_count * sizeof(PMSG_VIEWPORTCREATE)], &packet, sizeof(PMSG_VIEWPORTCREATE));
+						player_count++;
+						break;
+					}
 				}
 			}
 		}
@@ -210,7 +243,7 @@ void CWorldMap::UpdateViewport(CPlayer* player)
 			packet_player.h.sizeL = LOBYTE(size);
 			packet_player.count = player_count;
 			memcpy(player_buffer, &packet_player, sizeof(PWMSG_COUNT));
-			player->Send((unsigned char*)player_buffer, size);
+			((CPlayer*)pobj)->Send((unsigned char*)player_buffer, size);
 		}
 	}
 }

@@ -24,8 +24,6 @@ OBJECTSTRUCT gObj[OBJ_MAX];
 int gObjCount;
 int gObjMonCount;
 int gObjCallMonCount;
-int FrustumX[4];
-int FrustumY[4];
 
 //OBJECTSTRUCT *gObj = (OBJECTSTRUCT*)OBJ;
 
@@ -88,11 +86,13 @@ void gObjInit()
 		}
 		InitializeCriticalSection(&gObj[i].m_critPShopTrade);
 	}
-	InitFrustum();
+	//InitFrustrum();
 }
 
-void InitFrustum()
+void InitFrustrum()
 {
+	int FrustumX[4];
+int FrustumY[4];
 	float Frustum[4][3];
 	float CameraViewFar = 2400.0f;
 	float CameraViewNear = CameraViewFar * 0.19f;
