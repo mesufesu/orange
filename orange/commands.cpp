@@ -59,5 +59,5 @@ void CreateItemHandler(CPlayer * player, std::string cmd)
 
 void HelpHandler(CPlayer* player, std::string cmd)
 {
-	printf_s("OMG LOL YOU GOT ME :DDD\n");
+	Log.String("OMG LOL YOU GOT ME :DDD");
 }

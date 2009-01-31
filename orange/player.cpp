@@ -17,7 +17,7 @@
 
 #include "stdafx.h"
 #include ".\\utils.h"
-#include "..\\Deathway\\SimpleModulus\\SimpleModulus.h"
+#include ".\\Deathway\\SimpleModulus\\SimpleModulus.h"
 #include ".\\DataBase.h"
 #include ".\\packets.h"
 #include ".\\ItemManager.h"
@@ -26,25 +26,18 @@
 #include ".\\classdef.h"
 #include ".\\player.h"
 
-const CItem dummy;
-
 CPlayer::CPlayer()
 {
 	this->socket = NULL;
 	this->status = PLAYER_EMPTY;
 	this->type = OBJECT_PLAYER;
 	this->guid = -1;
-	this->tick_count = GetTickCount();
+	this->tick_count = NULL;
 	this->last_save_time = GetTickCount();
 	this->failed_attempts = NULL;
-	for(int i = 0; i < 108; ++i)
-	{
-		this->inventory[i] = (CItem*)&dummy;
-	}
 	this->send_serial = NULL;
 	this->viewport.resize(100);
 	this->viewport.clear();
-	this->tick_count = GetTickCount();
 	this->last_move_time = GetTickCount();
 	this->check_time = GetTickCount();
 	this->pklevel = 0;
@@ -490,12 +483,12 @@ bool CPlayer::SavePlayer()
 		MainDB.Unlock();
 		if(!result)
 		{
-			printf_s("Inventory save failed %s:%s:%u\n", this->account, this->name, q.lastError().type());
+			Log.String("Inventory save failed %s:%s:%u", this->account, this->name, q.lastError().type());
 		}
 	}
 	else
 	{
-		printf_s("Character save failed %s:%s\n", this->account, this->name);
+		Log.String("Character save failed %s:%s", this->account, this->name);
 		return false;
 	}
 	return true;

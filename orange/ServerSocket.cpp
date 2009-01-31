@@ -16,10 +16,10 @@
 */
 
 #include "stdafx.h"
-#include "..\\Include\\ListenSocket.h"
-#include "..\\Include\\SocketHandler.h"
-#include "..\\Deathway\\SimpleModulus\\SimpleModulus.h"
-#include "..\\Deathway\\spe.h"
+#include ".\\sockets_lib\\ListenSocket.h"
+#include ".\\sockets_lib\\SocketHandler.h"
+#include ".\\Deathway\\SimpleModulus\\SimpleModulus.h"
+#include ".\\Deathway\\spe.h"
 #include ".\\objectmanager.h"
 #include ".\\protocol.h"
 #include ".\\ServerSocket.h"
@@ -32,7 +32,7 @@ void MainSocketThread::run()
 	ListenSocket<ServerSocket> server_lsocket(server_handler);
 	if(server_lsocket.Bind(55901))
 	{
-		printf_s("Server socket binding failed.\n");
+		Log.String("Server socket binding failed.");
 		return;
 	}
 	server_handler.Add(&server_lsocket);
@@ -49,7 +49,7 @@ ServerSocket::ServerSocket(ISocketHandler &h) : TcpSocket(h)
 
 void ServerSocket::OnAccept()
 {
-	printf_s("Connected from: %s:%d\n", this->GetRemoteAddress().c_str(), this->GetRemotePort());
+	Log.String("Connected from: %s:%d", this->GetRemoteAddress().c_str(), this->GetRemotePort());
 	CPlayer * newPlayer = ObjManager.CreatePlayer(this);
 	newPlayer->status = PLAYER_CONNECTED;
 	TestJoinSend(newPlayer, 1);
@@ -80,7 +80,7 @@ void ServerSocket::OnRead()
 			case 0xC2:
 				{
 					ibuf.SoftRead((char*)sub, 4);
-					printf_s("Unhandled %02x %02x %02x\n", head, sub[2], sub[3]);
+					Log.String("Unhandled %02x %02x %02x", head, sub[2], sub[3]);
 					break;
 				}
 			case 0xC3:
@@ -91,12 +91,12 @@ void ServerSocket::OnRead()
 			case 0xC4:
 				{
 					ibuf.SoftRead((char*)sub, 4);
-					printf_s("Unhandled %02x %02x %02x\n", head, sub[2], sub[3]);
+					Log.String("Unhandled %02x %02x %02x", head, sub[2], sub[3]);
 					break;
 				}
 			default:
 				{
-					printf_s("recv wrong packet %02x\n", head);
+					Log.String("recv wrong packet %02x", head);
 				}
 			}
 		}
@@ -105,7 +105,7 @@ void ServerSocket::OnRead()
 
 void ServerSocket::OnDisconnect()
 {
-	printf_s("Disconnected: %s:%d\n", this->GetRemoteAddress().c_str(), this->GetRemotePort());
+	Log.String("Disconnected: %s:%d", this->GetRemoteAddress().c_str(), this->GetRemotePort());
 	CPlayer* player = ObjManager.FindPlayerBySocket(this);
 	if(player->status == PLAYER_PLAYING)
 	{

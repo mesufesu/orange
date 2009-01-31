@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;QT_LARGEFILE_SUPPORT;QT_DLL;QT_CORE_LIB;QT_THREAD_SUPPORT"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -60,12 +60,12 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="WS2_32.lib ..\Include\Sockets.lib QtCored4.lib QtSqld4.lib QtGuid4.lib"
+				AdditionalDependencies="WS2_32.lib ..\lib\Sockets.lib qtmaind.lib QtCored4.lib QtSqld4.lib"
 				LinkIncremental="2"
 				GenerateDebugInformation="true"
 				GenerateMapFile="true"
 				MapFileName="$(TargetDir)$(TargetName).map"
-				SubSystem="2"
+				SubSystem="1"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -117,7 +117,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="true"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;QT_NO_DEBUG;QT_LARGEFILE_SUPPORT;QT_DLL;QT_CORE_LIB;QT_THREAD_SUPPORT"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="2"
@@ -135,12 +135,12 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="WS2_32.lib ..\Include\Sockets_r.lib ..\Deathway\SimpleModulus.lib QtCore4.lib QtSql4.lib QtGui4.lib"
+				AdditionalDependencies="WS2_32.lib ..\lib\Sockets_r.lib QtCore4.lib QtSql4.lib"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				GenerateMapFile="true"
 				MapFileName="$(TargetDir)$(TargetName).map"
-				SubSystem="2"
+				SubSystem="1"
 				OptimizeReferences="1"
 				EnableCOMDATFolding="2"
 				TargetMachine="1"
@@ -177,43 +177,11 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\BattleSocketManager.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\bot.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\CAttackEvent.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\CBattleGround.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\CDirPath.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\CDragonEvent.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\classdef.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\CMonsterAttr.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\CMonsterItemMng.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\CMonsterSetBase.cpp"
 				>
 			</File>
 			<File
@@ -225,19 +193,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\DataServer.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\DServerCli.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\gamemain.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\HeartbeatServer.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\inventory.cpp"
 				>
 			</File>
 			<File
@@ -253,23 +213,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\JoinServer.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\log.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\MainWindow.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\mathlib.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\mutex.cpp"
 				>
 			</File>
 			<File
@@ -301,11 +249,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Shop.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\Deathway\SimpleModulus\SimpleModulus.cpp"
+				RelativePath=".\Deathway\SimpleModulus\SimpleModulus.cpp"
 				>
 			</File>
 			<File
@@ -329,19 +273,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\user.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\utils.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\WhatsUpDummyServer.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\WinsockBase.cpp"
 				>
 			</File>
 			<File
@@ -352,66 +284,6 @@
 				RelativePath=".\WzUdp.cpp"
 				>
 			</File>
-			<Filter
-				Name="sockets"
-				>
-				<File
-					RelativePath=".\sockets\socketsmain.cpp"
-					>
-				</File>
-			</Filter>
-			<Filter
-				Name="deprecated"
-				>
-				<File
-					RelativePath=".\deprecated\ComboAttack.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\deprecated\GuildClass.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\deprecated\MagicInf.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\deprecated\MapClass.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\deprecated\MapItem.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\deprecated\MonsterHerd.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\deprecated\SkillDelay.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\deprecated\TMonsterAIAgro.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\deprecated\TMonsterSkillElementInfo.cpp"
-					>
-				</File>
-				<File
-					RelativePath=".\deprecated\zzzpath.cpp"
-					>
-				</File>
-				<Filter
-					Name="CSAuth"
-					>
-					<File
-						RelativePath=".\deprecated\CSAuth\CSAuth.cpp"
-						>
-					</File>
-				</Filter>
-			</Filter>
 			<Filter
 				Name="Resource Files"
 				Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
@@ -425,43 +297,11 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\BattleSocketManager.h"
-				>
-			</File>
-			<File
 				RelativePath=".\bot.h"
 				>
 			</File>
 			<File
-				RelativePath=".\CAttackEvent.h"
-				>
-			</File>
-			<File
-				RelativePath=".\CBattleGround.h"
-				>
-			</File>
-			<File
-				RelativePath=".\CDirPath.h"
-				>
-			</File>
-			<File
-				RelativePath=".\CDragonEvent.h"
-				>
-			</File>
-			<File
 				RelativePath=".\classdef.h"
-				>
-			</File>
-			<File
-				RelativePath=".\CMonsterAttr.h"
-				>
-			</File>
-			<File
-				RelativePath=".\CMonsterItemMng.h"
-				>
-			</File>
-			<File
-				RelativePath=".\CMonsterSetBase.h"
 				>
 			</File>
 			<File
@@ -473,19 +313,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\DataServer.h"
-				>
-			</File>
-			<File
-				RelativePath=".\DServerCli.h"
-				>
-			</File>
-			<File
-				RelativePath=".\gamemain.h"
-				>
-			</File>
-			<File
 				RelativePath=".\HeartbeatServer.h"
+				>
+			</File>
+			<File
+				RelativePath=".\inventory.h"
 				>
 			</File>
 			<File
@@ -501,23 +333,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\JoinServer.h"
-				>
-			</File>
-			<File
 				RelativePath=".\log.h"
 				>
 			</File>
 			<File
-				RelativePath=".\MainWindow.h"
-				>
-			</File>
-			<File
 				RelativePath=".\mathlib.h"
-				>
-			</File>
-			<File
-				RelativePath=".\mutex.h"
 				>
 			</File>
 			<File
@@ -549,15 +369,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\Shop.h"
+				RelativePath=".\Deathway\SimpleModulus\SimpleModulus.h"
 				>
 			</File>
 			<File
-				RelativePath="..\Deathway\SimpleModulus\SimpleModulus.h"
-				>
-			</File>
-			<File
-				RelativePath="..\Deathway\spe.h"
+				RelativePath=".\Deathway\spe.h"
 				>
 			</File>
 			<File
@@ -569,19 +385,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\user.h"
-				>
-			</File>
-			<File
 				RelativePath=".\utils.h"
-				>
-			</File>
-			<File
-				RelativePath=".\WhatsUpDummyServer.h"
-				>
-			</File>
-			<File
-				RelativePath=".\WinsockBase.h"
 				>
 			</File>
 			<File
@@ -592,186 +396,6 @@
 				RelativePath=".\WzUdp.h"
 				>
 			</File>
-			<Filter
-				Name="sockets"
-				>
-				<File
-					RelativePath=".\sockets\socketsmain.h"
-					>
-				</File>
-			</Filter>
-			<Filter
-				Name="deprecated"
-				>
-				<File
-					RelativePath=".\deprecated\ComboAttack.h"
-					>
-				</File>
-				<File
-					RelativePath=".\deprecated\GuildClass.h"
-					>
-				</File>
-				<File
-					RelativePath=".\deprecated\MagicInf.h"
-					>
-				</File>
-				<File
-					RelativePath=".\deprecated\MapClass.h"
-					>
-				</File>
-				<File
-					RelativePath=".\deprecated\MapItem.h"
-					>
-				</File>
-				<File
-					RelativePath=".\deprecated\MonsterHerd.h"
-					>
-				</File>
-				<File
-					RelativePath=".\deprecated\SkillDelay.h"
-					>
-				</File>
-				<File
-					RelativePath=".\deprecated\TMonsterAIAgro.h"
-					>
-				</File>
-				<File
-					RelativePath=".\deprecated\TMonsterSkillElementInfo.h"
-					>
-				</File>
-				<File
-					RelativePath=".\deprecated\zzzpath.h"
-					>
-				</File>
-				<Filter
-					Name="CSAuth"
-					>
-					<File
-						RelativePath=".\deprecated\CSAuth\CSAuth.h"
-						>
-					</File>
-				</Filter>
-			</Filter>
-			<Filter
-				Name="mysql"
-				>
-				<File
-					RelativePath="..\mysql\config-netware.h"
-					>
-				</File>
-				<File
-					RelativePath="..\mysql\config-os2.h"
-					>
-				</File>
-				<File
-					RelativePath="..\mysql\config-win.h"
-					>
-				</File>
-				<File
-					RelativePath="..\mysql\errmsg.h"
-					>
-				</File>
-				<File
-					RelativePath="..\mysql\m_ctype.h"
-					>
-				</File>
-				<File
-					RelativePath="..\mysql\m_string.h"
-					>
-				</File>
-				<File
-					RelativePath="..\mysql\my_alloc.h"
-					>
-				</File>
-				<File
-					RelativePath="..\mysql\my_dbug.h"
-					>
-				</File>
-				<File
-					RelativePath="..\mysql\my_getopt.h"
-					>
-				</File>
-				<File
-					RelativePath="..\mysql\my_global.h"
-					>
-				</File>
-				<File
-					RelativePath="..\mysql\my_list.h"
-					>
-				</File>
-				<File
-					RelativePath="..\mysql\my_pthread.h"
-					>
-				</File>
-				<File
-					RelativePath="..\mysql\my_sys.h"
-					>
-				</File>
-				<File
-					RelativePath="..\mysql\mysql.h"
-					>
-				</File>
-				<File
-					RelativePath="..\mysql\mysql_com.h"
-					>
-				</File>
-				<File
-					RelativePath="..\mysql\mysql_embed.h"
-					>
-				</File>
-				<File
-					RelativePath="..\mysql\mysql_time.h"
-					>
-				</File>
-				<File
-					RelativePath="..\mysql\mysql_version.h"
-					>
-				</File>
-				<File
-					RelativePath="..\mysql\mysqld_error.h"
-					>
-				</File>
-				<File
-					RelativePath="..\mysql\raid.h"
-					>
-				</File>
-				<File
-					RelativePath="..\mysql\typelib.h"
-					>
-				</File>
-			</Filter>
-			<Filter
-				Name="mysqlwrapper"
-				>
-				<File
-					RelativePath="..\mysqlwrapper\Database.h"
-					>
-				</File>
-				<File
-					RelativePath="..\mysqlwrapper\enum_t.h"
-					>
-				</File>
-				<File
-					RelativePath="..\mysqlwrapper\IError.h"
-					>
-				</File>
-				<File
-					RelativePath="..\mysqlwrapper\Query.h"
-					>
-				</File>
-				<File
-					RelativePath="..\mysqlwrapper\set_t.h"
-					>
-				</File>
-				<File
-					RelativePath="..\mysqlwrapper\StderrLog.h"
-					>
-				</File>
-				<File
-					RelativePath="..\mysqlwrapper\SysLog.h"
-					>
-				</File>
-			</Filter>
 		</Filter>
 	</Files>
 	<Globals>

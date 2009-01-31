@@ -2,7 +2,7 @@
 #define _BOT_H_
 
 #include ".\\ItemManager.h"
-#include ".\\mutex.h"
+#include ".\\inventory.h"
 #include ".\\object.h"
 #include ".\\player.h"
 #include ".\\utils.h"
@@ -17,8 +17,7 @@ public:
 
 	char name[10];
 	unsigned char charset[18];
-	CItem * inventory[108];
-	CMyMutex view_mtx;
+	CInventory inventory;
 	std::vector<uint16> viewport;
 
 	unsigned char rest;

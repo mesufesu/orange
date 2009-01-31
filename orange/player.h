@@ -20,7 +20,7 @@
 
 #include ".\\ServerSocket.h"
 #include ".\\ItemManager.h"
-#include ".\\mutex.h"
+#include ".\\inventory.h"
 #include ".\\object.h"
 
 enum PLAYER_STATUS
@@ -112,8 +112,7 @@ public:
 	unsigned char charset[18];
 	unsigned char failed_attempts;
 	SC_CHARINFO sc_charinfo[5];
-	CItem * inventory[108];
-	CMyMutex view_mtx;
+	CInventory inventory;
 
 	size_t send_serial;
 
@@ -148,7 +147,5 @@ public:
 	void CookCharset();
 	void LoadItemToInventory(DATA_ITEM * ditem);
 };
-
-extern const CItem dummy;
 
 #endif

@@ -39,9 +39,9 @@ const CItem* CItemManager::CreateItem()
 	while(TRUE)
 	{
 		guid = rand();
-		this->map_mutex.Lock();
+		this->map_mutex.lock();
 		pr = this->ItemMap.insert(MapType::value_type(guid, new_item));
-		this->map_mutex.Unlock();
+		this->map_mutex.unlock();
 		if(pr.second == true)
 		{
 			new_item->guid = guid;
@@ -62,9 +62,9 @@ CItem* CItemManager::InsertItem(uint32 guid)
 			return NULL;
 		}
 		std::pair<MapType::iterator, bool> pr;
-		this->map_mutex.Lock();
+		this->map_mutex.lock();
 		pr = this->ItemMap.insert(MapType::value_type(guid, new_item));
-		this->map_mutex.Unlock();
+		this->map_mutex.unlock();
 		if(pr.second == true)
 		{
 			return new_item;
@@ -77,7 +77,7 @@ void CItemManager::CleanUp()
 {
 	std::vector<MapType::iterator> list;
 	list.clear();
-	this->map_mutex.Lock();
+	this->map_mutex.lock();
 	for(MapType::iterator it = this->ItemMap.begin(); it != this->ItemMap.end(); ++it)
 	{
 		if(it->second && it->first)
@@ -111,7 +111,7 @@ void CItemManager::CleanUp()
 	{
 		this->ItemMap.erase(list.at(i));
 	}
-	this->map_mutex.Unlock();
+	this->map_mutex.unlock();
 }
 
 void CItemThread::run()
@@ -139,8 +139,9 @@ void CItemManager::Quit()
 
 bool CItemManager::HaveGuid(uint32 guid)
 {
-	this->map_mutex.Lock();
+	this->map_mutex.lock();
 	MapType::iterator it = this->ItemMap.find(guid);
+	this->map_mutex.unlock();
 	if(it != this->ItemMap.end())
 	{
 		return true;
@@ -263,11 +264,12 @@ bool CItemManager::SaveItem(CItem *item, uint32 slot)
 				}
 			}
 			MainDB.Unlock();
-			this->map_mutex.Lock();
-			this->ItemMap.erase(this->ItemMap.find(item->guid));
+			this->map_mutex.lock();
+			//this->ItemMap.erase(this->ItemMap.find(item->guid));
+			this->ItemMap.erase(item->guid);
 			item->guid = new_guid;
 			this->ItemMap.insert(MapType::value_type(new_guid, item));
-			this->map_mutex.Unlock();
+			this->map_mutex.unlock();
 			MainDB.Lock();
 			result = q.exec(Query("INSERT IGNORE INTO `character_items` (`guid`, `slot`, `type`, `level`, `durability`, `option1`, `option2`, `option3`, `newoption`, `setoption`, `petitem_level`, `petitem_exp`, `joh_option`, `optionex`) VALUES (%u, %u, %u, %u, %f, %u, %u, %u, %u, %u, %u, %u, %u, %u);", item->guid, slot, item->type, item->level, item->durability, item->m_Option1, item->m_Option2, item->m_Option3, item->m_NewOption, item->m_SetOption, item->m_PetItem_Level, item->m_PetItem_Exp, item->m_JewelOfHarmonyOption, item->m_ItemOptionEx).c_str());
 			MainDB.Unlock();
@@ -279,7 +281,7 @@ bool CItemManager::SaveItem(CItem *item, uint32 slot)
 	}
 	if(!result)
 	{
-		printf_s("Save item %u failed: %u.\n", item->guid, q.lastError().type());
+		Log.String("Save item %u failed: %u.", item->guid, q.lastError().type());
 		return false;
 	}
 	return true;

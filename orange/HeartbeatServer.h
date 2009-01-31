@@ -18,8 +18,8 @@
 #ifndef _HEARTBEATSERVER_H_
 #define _HEARTBEATSERVER_H_
 
-#include "..\\Include\\TcpSocket.h"
-#include "..\\Include\\ISocketHandler.h"
+#include ".\\sockets_lib\\TcpSocket.h"
+#include ".\\sockets_lib\\ISocketHandler.h"
 
 class HeartbeatSocket : public TcpSocket
 {

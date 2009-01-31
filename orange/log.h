@@ -2,12 +2,10 @@
 #define _LOG_H_
 
 #include <QtCore\\QMutex>
-#include ".\\MainWindow.h"
 
 class CLog
 {
 public:
-	QTextEdit *texted;
 	CLog();
 	~CLog();
 	void String(const char* format, ...);
@@ -16,9 +14,7 @@ private:
 	void _print(const std::string& log_string);
 
 	FILE* log_file;
-	CMainWindow * cwin;
-	QMutex wmtx;
-	QMutex fmtx;
+	QMutex mtx;
 };
 
 extern CLog Log;

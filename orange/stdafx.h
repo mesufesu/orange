@@ -26,6 +26,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <windows.h>
+#include <vector>
+#include <string>
+#include <unordered_map>
+#include ".\\log.h"
 
 typedef unsigned int uint32;
 typedef unsigned short uint16;
@@ -37,6 +41,7 @@ typedef signed short int16;
 typedef signed char int8;
 typedef signed __int64 int64;
 
-
+#define SECOND 1000
+#define MINUTE 60 * SECOND
 
 // TODO: reference additional headers your program requires here

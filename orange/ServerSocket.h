@@ -18,8 +18,8 @@
 #ifndef _SERVERSOCKET_H_
 #define _SERVERSOCKET_H_
 
-#include "..\\Include\\TcpSocket.h"
-#include "..\\Include\\ISocketHandler.h"
+#include ".\\sockets_lib\\TcpSocket.h"
+#include ".\\sockets_lib\\ISocketHandler.h"
 #include <QtCore\\QThread>
 
 class MainSocketThread : public QThread

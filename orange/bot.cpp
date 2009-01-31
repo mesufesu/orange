@@ -10,10 +10,6 @@ CBot::CBot()
 	this->guid = -1;
 	this->tick_count = GetTickCount();
 	this->last_think_time = GetTickCount();
-	for(int i = 0; i < 108; ++i)
-	{
-		this->inventory[i] = (CItem*)&dummy;
-	}
 	this->viewport.resize(100);
 	this->viewport.clear();
 	this->pklevel = 0;

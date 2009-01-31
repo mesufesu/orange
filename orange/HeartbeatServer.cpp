@@ -16,8 +16,8 @@
 */
 
 #include "stdafx.h"
-#include "..\\Include\\ListenSocket.h"
-#include "..\\Include\\SocketHandler.h"
+#include ".\\sockets_lib\\ListenSocket.h"
+#include ".\\sockets_lib\\SocketHandler.h"
 #include ".\\HeartbeatServer.h"
 
 HeartbeatSocket::HeartbeatSocket(ISocketHandler &h) : TcpSocket(h)
@@ -52,7 +52,7 @@ void WINAPI HeartbeatServerProc(port_t port)
 	ListenSocket<HeartbeatSocket> hb_lsocket(hb_handler);
 	if(hb_lsocket.Bind(port))
 	{
-		printf_s("Heartbeat Server socket binding failed.\n");
+		printf_s("Heartbeat Server socket binding failed.");
 		return;
 	}
 	hb_handler.Add(&hb_lsocket);

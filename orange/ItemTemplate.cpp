@@ -15,7 +15,7 @@ bool CItemTemplate::Load()
 	MainDB.Lock();
 	if(!q.exec("SELECT `type`, `slot`, `skill`, `width`, `height`, `option`, `drop`, `name`, `level`, `reqlevel`, `durability`, `SPECIAL`, `strength`, `dexterity`, `energy`, `vitality`, `leadership`, `set_option`, `CLASS_ATTR` FROM `item_template`;"))
 	{
-		printf_s("Something wrong with `item_template`.\n");
+		Log.String("Something wrong with `item_template`.");
 		return false;
 	}
 	MainDB.Unlock();

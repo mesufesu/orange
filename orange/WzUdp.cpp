@@ -17,6 +17,7 @@
 
 #include "stdafx.h"
 #include ".\\WzUdp.h"
+#include ".\\packets.h"
 
 WzUdp gUdpSoc;
 WzUdp gUdpSocCER;
@@ -224,4 +225,28 @@ unsigned long WINAPI WzUdpRecvThread(WzUdp* lpWzUdp)
 {
 	lpWzUdp->RecvThread();
 	return TRUE;
+}
+
+void GameServerInfoSend()
+{
+	PMSG_SERVERINFO pMsg;
+	pMsg.h.c = 0xC1;
+	pMsg.h.headcode = 0x01;
+	pMsg.h.size = sizeof(PMSG_SERVERINFO);
+	pMsg.Percent = 30;
+	pMsg.ServerCode = 0;
+	pMsg.UserCount = 12;
+	pMsg.AccountCount = 10;
+	pMsg.PCbangCount = 10;
+	pMsg.MaxUserCount = 11;
+	gUdpSoc.SendData((unsigned char*)&pMsg, sizeof(pMsg));
+}
+
+void WINAPI CSThreadProc()
+{
+	while(TRUE)
+	{
+		Sleep(1000);
+		GameServerInfoSend();
+	}
 }

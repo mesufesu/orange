@@ -20,9 +20,9 @@
 
 #include <map>
 #include <unordered_map>
-#include ".\\mutex.h"
 #include ".\\Item.h"
 #include <QtCore\\QThread>
+#include <QtCore\\QMutex>
 
 class CItemThread : public QThread
 {
@@ -52,7 +52,7 @@ public:
 private:
 	CItemThread ItemThread;
 	MapType ItemMap;
-	CMyMutex map_mutex;
+	QMutex map_mutex;
 };
 
 extern CItemManager ItemManager;

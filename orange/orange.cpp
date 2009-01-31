@@ -17,10 +17,7 @@
 
 #include "stdafx.h"
 #include ".\\utils.h"
-#include ".\\sockets\\socketsmain.h"
-#include ".\\gamemain.h"
-#include ".\\JoinServer.h"
-#include ".\\DataServer.h"
+#include ".\\WzUdp.h"
 #include ".\\HeartbeatServer.h"
 #include ".\\ServerSocket.h"
 #include ".\\DataBase.h"
@@ -28,23 +25,16 @@
 #include ".\\WorldMap.h"
 #include ".\\objectmanager.h"
 #include ".\\ItemTemplate.h"
-#include ".\\WhatsUpDummyServer.h"
-#include ".\\MainWindow.h"
 #include ".\\log.h"
 #include ".\\bot.h"
+#include ".\\classdef.h"
 
-int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+int main(int argc, char* argv[])
 {
-	UNREFERENCED_PARAMETER(hPrevInstance);
-	UNREFERENCED_PARAMETER(lpCmdLine);
-
-	QApplication orange(nCmdShow, &lpCmdLine);
+	QCoreApplication orange(argc, argv);
 	MakeFrustum();
+	DCInfo.Init();
 	Log.Init("test.log");
-	CMainWindow mwin;
-	mwin.setCentralWidget(Log.texted);
-	mwin.setWindowTitle("Orange");
-	mwin.show();
 
 	char ip[] = "127.0.0.1";
 
@@ -60,7 +50,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	}
 	ItemTemplate.Load();
 	//SocketMainInit();
-	GameMainInit();
+	//GameMainInit();
 	//JoinServerConnect(ip, 1027);
 	//DataServerCli.Connect();
 	DWORD dwThreadId;
@@ -68,7 +58,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 	//HANDLE hServerSocketThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ServerSocketProc, (LPVOID)55901, 0, &dwThreadId);
 	_SocketThread.start((QThread::Priority)4);
 	HANDLE hCSThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)CSThreadProc, NULL, 0, &dwThreadId);
-	Log.String("Socket Threads created.\n");
+	Log.String("Socket Threads created.");
 	ObjManager.Run();
 	ItemManager.Run();
 	for(uint32 i = 0; i < MAX_MAPS; ++i)
@@ -81,7 +71,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 		WorldMap[i].MapThread.lpmap = (void*)&WorldMap[i];
 		WorldMap[i].Run();
 	}
-	Log.String("WorldMap threads started.\n");
+	Log.String("WorldMap threads started.");
 	CBot* test_bot = ObjManager.CreateBot();
 	test_bot->SetBot("Pwnage", 0, 130, 130);
 	test_bot->Class = 5;

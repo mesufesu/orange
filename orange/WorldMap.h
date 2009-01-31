@@ -20,7 +20,6 @@
 
 #include <vector>
 #include ".\\player.h"
-#include ".\\mutex.h"
 #include <QtCore\\QThread>
 #include <QtCore\\QMutex>
 

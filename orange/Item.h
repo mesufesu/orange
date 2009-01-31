@@ -80,7 +80,7 @@ struct DATA_ITEM
   }
 };
 
-class CItem
+typedef class CItem
 {
 public:
   /*<thisrel this+0x0>*/ /*|0x4|*/ uint32 guid;
@@ -149,7 +149,7 @@ public:
   bool IsSetItem();
   void Assign(const DATA_ITEM *item_data);
   bool ApplyTemplate(const ITEM_TEMPLATE* it);
-};
+} *pItem;
 
 void ItemByteConvert(unsigned char* buf, int type, unsigned char Option1, unsigned char Option2, unsigned char Option3, unsigned char level, unsigned char dur, unsigned char Noption, unsigned char SetOption, unsigned char JewelOfHarmonyOption, unsigned char ItemEffectEx);
 

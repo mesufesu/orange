@@ -80,7 +80,7 @@ CPlayer* CObjectManager::CreatePlayer(ServerSocket* socket)
 		{
 			player->guid = new_guid;
 			player->socket = socket;
-			printf_s("[DEBUG] %d %d\n", pr.first->first, pr.first->second->guid);
+			Log.String("[DEBUG] %d %d", pr.first->first, pr.first->second->guid);
 			return player;
 		}
 		else
@@ -103,7 +103,7 @@ CBot* CObjectManager::CreateBot()
 		if(pr.second == true)
 		{
 			bot->guid = new_guid;
-			printf_s("[DEBUG] %d %d\n", pr.first->first, pr.first->second->guid);
+			Log.String("[DEBUG] %d %d", pr.first->first, pr.first->second->guid);
 			return bot;
 		}
 		else

@@ -57,6 +57,7 @@ stamp-h1
 callgrind.out.*
 
 *.user
+*.log
 Debug/*
 Release/*
 data/*

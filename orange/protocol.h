@@ -31,5 +31,6 @@ void Join_CreateCharacter(PMSG_CHARCREATE * data, CPlayer* player);
 void World_Move(PMSG_MOVE* data, CPlayer * player);
 void World_Action(PMSG_ACTION* data, CPlayer* player);
 void Player_Chat(PMSG_CHATDATA* data, CPlayer* player);
+void Client_Time(PMSG_CLIENTTIME* data, CPlayer* player);
 
 #endif

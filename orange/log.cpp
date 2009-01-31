@@ -6,7 +6,6 @@ CLog Log;
 CLog::CLog()
 {
 	this->log_file = NULL;
-	this->cwin = NULL;
 }
 
 CLog::~CLog()
@@ -19,8 +18,6 @@ CLog::~CLog()
 
 bool CLog::Init(const char* file)
 {
-	this->texted = new QTextEdit;
-	this->texted->setReadOnly(true);
 	if(!file)
 	{
 		return false;
@@ -51,10 +48,8 @@ void CLog::String(const char *format, ...)
 
 void CLog::_print(const std::string &log_string)
 {
-	this->wmtx.lock();
-	this->texted->insertPlainText(log_string.c_str());
-	this->wmtx.unlock();
-	this->fmtx.lock();
+	this->mtx.lock();
+	printf_s(log_string.c_str());
 	fwrite(log_string.c_str(), sizeof(uint8), log_string.size(), this->log_file);
-	this->fmtx.unlock();
+	this->mtx.unlock();
 }

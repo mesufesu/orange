@@ -32,7 +32,7 @@ void ProtocolCore(CPlayer* player, unsigned char opcode, unsigned char* buffer, 
 		{
 			if(buffer[1] != size)
 			{
-				printf_s("Packet size mismatch %d\n", (int)(buffer[1] - size));
+				Log.String("Packet size mismatch %d", (int)(buffer[1] - size));
 			}
 			break;
 		}
@@ -40,17 +40,17 @@ void ProtocolCore(CPlayer* player, unsigned char opcode, unsigned char* buffer, 
 		{
 			if((buffer[1] * 256 + buffer[2]) != size)
 			{
-				printf_s("Packet size mismatch %d\n", (int)((buffer[2] + buffer[2] * 256) - size));
+				Log.String("Packet size mismatch %d", (int)((buffer[2] + buffer[2] * 256) - size));
 			}
 			break;
 		}
 	}
-	printf_s("Got packet %02x size %02x %02x:\n", opcode, size, buffer[1]);
+	/*Log.String("Got packet %02x size %02x %02x:", opcode, size, buffer[1]);
 	for(uint32 i = 0; i < size; ++i)
 	{
-		printf_s("%02x ", buffer[i]);
+		Log.String("%02x ", buffer[i]);
 	}
-	printf_s("\n");
+	Log.String("\n");*/
 
 	if(size)
 	{
@@ -60,7 +60,7 @@ void ProtocolCore(CPlayer* player, unsigned char opcode, unsigned char* buffer, 
 			{
 				if(size > sizeof(PMSG_CHATDATA))
 				{
-					printf_s("PMSG_CHATDATA recieved size is larger than defined: %u\n", size);
+					Log.String("PMSG_CHATDATA recieved size is larger than defined: %u", size);
 				}
 				Player_Chat((PMSG_CHATDATA*)buffer, player);
 				break;
@@ -69,7 +69,7 @@ void ProtocolCore(CPlayer* player, unsigned char opcode, unsigned char* buffer, 
 			{
 				if(size != sizeof(PMSG_ACTION))
 				{
-					printf_s("Size mismatch %d:%d %02X\n", size, sizeof(PMSG_ACTION), opcode);
+					Log.String("Size mismatch %d:%d %02X", size, sizeof(PMSG_ACTION), opcode);
 				}
 				World_Action((PMSG_ACTION*)buffer, player);
 				break;
@@ -78,7 +78,7 @@ void ProtocolCore(CPlayer* player, unsigned char opcode, unsigned char* buffer, 
 			{
 				if(size != sizeof(PMSG_MOVE))
 				{
-					printf_s("Size mismatch %d:%d %02X\n", size, sizeof(PMSG_MOVE), opcode);
+					Log.String("Size mismatch %d:%d %02X", size, sizeof(PMSG_MOVE), opcode);
 				}
 				World_Move((PMSG_MOVE*) buffer, player);
 				break;
@@ -94,17 +94,17 @@ void ProtocolCore(CPlayer* player, unsigned char opcode, unsigned char* buffer, 
 					}
 				case 0x02:
 					{
-						printf_s("Unhandled F1 %02x packet.\n", buffer[3]);
+						Log.String("Unhandled F1 %02x packet.", buffer[3]);
 						break;
 					}
 				case 0x03:
 					{
-						printf_s("Unhandled F1 %02x packet.\n", buffer[3]);
+						Log.String("Unhandled F1 %02x packet.", buffer[3]);
 						break;
 					}
 				default:
 					{
-						printf_s("Unhandled F1 %02x packet.\n", buffer[3]);
+						Log.String("Unhandled F1 %02x packet.", buffer[3]);
 						break;
 					}
 				}
@@ -131,7 +131,7 @@ void ProtocolCore(CPlayer* player, unsigned char opcode, unsigned char* buffer, 
 					}
 				default:
 					{
-						printf_s("Unhandled F3 %02x packet.\n", buffer[3]);
+						Log.String("Unhandled F3 %02x packet.", buffer[3]);
 						break;
 					}
 				}
@@ -139,16 +139,12 @@ void ProtocolCore(CPlayer* player, unsigned char opcode, unsigned char* buffer, 
 			}
 		case 0x0E:
 			{
-				PMSG_CLIENTTIME clitime;
-				memcpy(&clitime, buffer, sizeof(PMSG_CLIENTTIME));
-				printf_s("%d\n", clitime.Time);
-				printf_s("%d\n", clitime.MagicSpeed);
-				printf_s("%d\n", clitime.AttackSpeed);
+				Client_Time((PMSG_CLIENTTIME*)buffer, player);
 				break;
 			}
 		default:
 			{
-				printf_s("Unhandled opcode %02x\n", opcode);
+				Log.String("Unhandled opcode %02x", opcode);
 				break;
 			}
 		}
@@ -335,6 +331,7 @@ void Join_WorldJoin(PMSG_CHARMAPJOIN* data, CPlayer* player)
 	player->CookCharset();
 	player->SendInventory();
 	player->status = PLAYER_PLAYING;
+	player->tick_count = 0xFFFFFFFF;
 	//and here =)
 }
 
@@ -506,7 +503,7 @@ void World_Move(PMSG_MOVE* data, CPlayer* player)
 			x += RoadX[new_path[i]];
 			y += RoadY[new_path[i]];
 		}
-		printf_s("Got %u:%u, after pathing %u:%u\n", data->X, data->Y, x, y);
+		Log.String("Got %u:%u, after pathing %u:%u", data->X, data->Y, x, y);
 		uint8 attr = WorldMap[player->map].GetAttr(x, y);
 		//Blood castle specific code here
 		if(!(attr & 8) && !(attr & 4))
@@ -611,6 +608,17 @@ void Player_Chat(PMSG_CHATDATA* data, CPlayer* player)
 	}
 	else
 	{
-		printf_s("Chat NYI.\n");
+		Log.String("Chat NYI.");
 	}
+}
+
+void Client_Time(PMSG_CLIENTTIME* data, CPlayer* player)
+{
+	if(player->state = PLAYER_PLAYING && ((data->Time - player->tick_count) < (19 * SECOND)))
+	{
+		Log.String("Client Time: %s time is smaller than 20 seconds.", player->socket->GetRemoteAddress());
+		player->Close();
+	}
+	//int32 temp = data->Time - player->tick_count;
+	player->tick_count = data->Time;
 }

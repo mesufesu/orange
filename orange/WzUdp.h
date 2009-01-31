@@ -66,6 +66,9 @@ public:
 
 unsigned long WINAPI WzUdpRecvThread(WzUdp* lpWzUdp);
 
+void GameServerInfoSend();
+void WINAPI CSThreadProc();
+
 extern WzUdp gUdpSoc;
 extern WzUdp gUdpSocCER;
 extern WzUdp gUdpSocCE;

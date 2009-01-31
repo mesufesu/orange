@@ -49,7 +49,7 @@ void CWorldMap::LoadMap(const char * filename)
 	}
 	else
 	{
-		printf_s("Error: %s notfound.\n", filename);
+		Log.String("Error: %s notfound.", filename);
 	}
 }
 
@@ -125,7 +125,7 @@ void CWorldMap::UpdateViewport(CObject* pobj)
 		CObject * object = ObjManager.FindByGuid(pobj->viewport.at(i));
 		if((!object) || (object->type < OBJECT_UNIT) || (object->map != pobj->map) || /*!((abs(pobj->x - object->x) <= 9) && (abs(pobj->y - object->y) <= 9))*/ !InFrustum(pobj->x, pobj->y, object->x, object->y))
 		{
-			printf_s("[VIEWPORT] %d deletes %d from viewport\n", pobj->guid, pobj->viewport.at(i));
+			Log.String("[VIEWPORT] %d deletes %d from viewport", pobj->guid, pobj->viewport.at(i));
 			view_delete.push_back(pobj->viewport.at(i));
 			pobj->viewport.erase(pobj->viewport.begin() + i);
 		}
@@ -135,7 +135,7 @@ void CWorldMap::UpdateViewport(CObject* pobj)
 		CObject * object = ObjManager.FindByGuid(this->guids.at(i));
 		if((object) && (object->type > OBJECT_EMPTY) && (!pobj->InViewport(object)) && (object->map == pobj->map) && /*((abs(pobj->x - object->x) <= 9) && (abs(pobj->y - object->y) <= 9))*/ InFrustum(pobj->x, pobj->y, object->x, object->y) && (object != pobj))
 		{
-			printf_s("[VIEWPORT] %d inserts in his viewport %d\n", pobj->guid, this->guids.at(i));
+			Log.String("[VIEWPORT] %d inserts in his viewport %d", pobj->guid, this->guids.at(i));
 			view_create.push_back(this->guids.at(i));
 			pobj->viewport.push_back(this->guids.at(i));
 		}
