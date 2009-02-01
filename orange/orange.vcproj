@@ -189,6 +189,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\cssocket.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\DataBase.cpp"
 				>
 			</File>
@@ -280,10 +284,6 @@
 				RelativePath=".\WorldMap.cpp"
 				>
 			</File>
-			<File
-				RelativePath=".\WzUdp.cpp"
-				>
-			</File>
 			<Filter
 				Name="Resource Files"
 				Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
@@ -306,6 +306,10 @@
 			</File>
 			<File
 				RelativePath=".\commands.h"
+				>
+			</File>
+			<File
+				RelativePath=".\cssocket.h"
 				>
 			</File>
 			<File
@@ -390,10 +394,6 @@
 			</File>
 			<File
 				RelativePath=".\WorldMap.h"
-				>
-			</File>
-			<File
-				RelativePath=".\WzUdp.h"
 				>
 			</File>
 		</Filter>

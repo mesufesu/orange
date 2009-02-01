@@ -17,7 +17,6 @@
 
 #include "stdafx.h"
 #include ".\\utils.h"
-#include ".\\WzUdp.h"
 #include ".\\HeartbeatServer.h"
 #include ".\\ServerSocket.h"
 #include ".\\DataBase.h"
@@ -28,6 +27,7 @@
 #include ".\\log.h"
 #include ".\\bot.h"
 #include ".\\classdef.h"
+#include ".\\cssocket.h"
 
 int main(int argc, char* argv[])
 {
@@ -53,11 +53,9 @@ int main(int argc, char* argv[])
 	//GameMainInit();
 	//JoinServerConnect(ip, 1027);
 	//DataServerCli.Connect();
-	DWORD dwThreadId;
-	HANDLE hHBThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)HeartbeatServerProc, (LPVOID)55902, 0, &dwThreadId);
-	//HANDLE hServerSocketThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)ServerSocketProc, (LPVOID)55901, 0, &dwThreadId);
+	HeartBeatThread.start();
 	_SocketThread.start((QThread::Priority)4);
-	HANDLE hCSThread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)CSThreadProc, NULL, 0, &dwThreadId);
+	CSSocketThread.start();
 	Log.String("Socket Threads created.");
 	ObjManager.Run();
 	ItemManager.Run();

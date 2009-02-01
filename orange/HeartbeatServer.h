@@ -20,6 +20,7 @@
 
 #include ".\\sockets_lib\\TcpSocket.h"
 #include ".\\sockets_lib\\ISocketHandler.h"
+#include <QtCore\\QThread>
 
 class HeartbeatSocket : public TcpSocket
 {
@@ -31,6 +32,12 @@ public:
 	void OnDisconnect();
 };
 
-void WINAPI HeartbeatServerProc(port_t port);
+class HBThread : public QThread
+{
+public:
+	void run();
+};
+
+extern HBThread HeartBeatThread;
 
 #endif

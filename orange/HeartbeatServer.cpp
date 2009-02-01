@@ -20,6 +20,8 @@
 #include ".\\sockets_lib\\SocketHandler.h"
 #include ".\\HeartbeatServer.h"
 
+HBThread HeartBeatThread;
+
 HeartbeatSocket::HeartbeatSocket(ISocketHandler &h) : TcpSocket(h)
 {
 }
@@ -46,13 +48,13 @@ void HeartbeatSocket::OnDisconnect()
 	printf_s("Disconnected: %s:%d\n", this->GetRemoteAddress().c_str(), this->GetRemotePort());
 }
 
-void WINAPI HeartbeatServerProc(port_t port)
+void HBThread::run()
 {
 	SocketHandler hb_handler;
 	ListenSocket<HeartbeatSocket> hb_lsocket(hb_handler);
-	if(hb_lsocket.Bind(port))
+	if(hb_lsocket.Bind(55902))
 	{
-		printf_s("Heartbeat Server socket binding failed.");
+		Log.String("Heartbeat Server socket binding failed.");
 		return;
 	}
 	hb_handler.Add(&hb_lsocket);
