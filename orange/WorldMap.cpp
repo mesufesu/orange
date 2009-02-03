@@ -86,7 +86,7 @@ void CMapThread::run()
 	CWorldMap * map = (CWorldMap*)lpmap;
 	while(TRUE)
 	{
-		if((GetTickCount() - map->last_update) >= 1000)
+		if((GetTickCount() - map->last_update) >= SECOND)
 		{
 			map->UpdateMap();
 			for(uint32 i = 0; i < map->guids.size(); ++i)
@@ -95,13 +95,13 @@ void CMapThread::run()
 				if((object != NULL) && (object->type == OBJECT_PLAYER))
 				{
 					map->UpdateViewport(object);
-					if((GetTickCount() - ((CPlayer*)object)->last_save_time) >= (5 * 1000 * 60))
+					/*if((GetTickCount() - ((CPlayer*)object)->last_save_time) >= (5 * MINUTE))
 					{
 						if(((CPlayer*)object)->status == PLAYER_PLAYING)
 						{
 							((CPlayer*)object)->SavePlayer();
 						}
-					}
+					}*/
 				}
 				else if((object != NULL) && (object->type == OBJECT_BOT))
 				{
@@ -111,7 +111,7 @@ void CMapThread::run()
 			}
 			map->last_update = GetTickCount();
 		}
-		Sleep(100);
+		this->msleep(100);
 	}
 }
 

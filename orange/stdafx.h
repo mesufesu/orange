@@ -29,6 +29,7 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
+#include ".\\mt19937.h"
 #include ".\\log.h"
 
 typedef unsigned int uint32;

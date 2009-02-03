@@ -119,11 +119,12 @@ void CItemThread::run()
 	int32 tick_count = GetTickCount();
 	while(TRUE)
 	{
-		if((GetTickCount() - tick_count) >= 5000)
+		if((GetTickCount() - tick_count) >= 5 * SECOND)
 		{
+			tick_count = GetTickCount();
 			ItemManager.CleanUp();
 		}
-		Sleep(1000);
+		this->msleep(SECOND);
 	}
 }
 

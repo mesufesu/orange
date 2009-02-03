@@ -18,6 +18,8 @@
 #include "stdafx.h"
 #include ".\\ItemManager.h"
 #include ".\\objectmanager.h"
+#include <assert.h>
+#include ".\\DataBase.h"
 
 CObjectManager ObjManager;
 
@@ -54,7 +56,7 @@ CPlayer* CObjectManager::FindPlayerBySocket(ServerSocket *socket)
 	return NULL;
 }*/
 
-CObject* CObjectManager::FindByGuid(uint16 guid)
+CObject* CObjectManager::FindByGuid(uint32 guid)
 {
 	this->mtx.lock();
 	MapType::iterator it = this->container.find(guid);
@@ -68,10 +70,11 @@ CObject* CObjectManager::FindByGuid(uint16 guid)
 
 CPlayer* CObjectManager::CreatePlayer(ServerSocket* socket)
 {
+	init_genrand(GetTickCount());
 	CPlayer* player = new CPlayer;
 	while(TRUE)
 	{
-		uint16 new_guid = rand() % 32000;
+		uint32 new_guid = ((genrand_int32() % MAX_PLAYER_GUID) + MAX_TEMP_GUID);
 		std::pair<MapType::iterator, bool> pr;
 		this->mtx.lock();
 		pr = this->container.insert(MapType::value_type(new_guid, (CObject*)player));
@@ -80,7 +83,6 @@ CPlayer* CObjectManager::CreatePlayer(ServerSocket* socket)
 		{
 			player->guid = new_guid;
 			player->socket = socket;
-			Log.String("[DEBUG] %d %d", pr.first->first, pr.first->second->guid);
 			return player;
 		}
 		else
@@ -90,12 +92,45 @@ CPlayer* CObjectManager::CreatePlayer(ServerSocket* socket)
 	}
 }
 
+void CObjectManager::ActualizePlayer(CPlayer * player, uint32 new_guid)
+{
+	this->mtx.lock();
+	this->container.erase(player->guid);
+	std::pair<MapType::iterator, bool> pr;
+	pr = this->container.insert(MapType::value_type(new_guid, (CObject*)player));
+	if(pr.second == true)
+	{
+		player->guid = new_guid;
+	}
+	else
+	{
+		assert(pr.second);
+	}
+	this->mtx.unlock();
+}
+
+uint32 CObjectManager::GetFreePlayerGuid()
+{
+	init_genrand(GetTickCount());
+	QSqlQuery q;
+	while(true)
+	{
+		uint32 new_guid = genrand_int32() % MAX_PLAYER_GUID;
+		q.exec(Query("SELECT `name` from `characters` WHERE `guid` = %u;", new_guid).c_str()); /*non blocking*/
+		if(!q.next())
+		{
+			return new_guid;
+		}
+	}
+}
+
 CBot* CObjectManager::CreateBot()
 {
+	init_genrand(GetTickCount());
 	CBot* bot = new CBot;
-	while(TRUE)
+	while(true)
 	{
-		uint16 new_guid = rand() % 32000;
+		uint32 new_guid = ((genrand_int32() % (MAX_UNIT_GUID - MAX_PLAYER_GUID)) + MAX_PLAYER_GUID);
 		std::pair<MapType::iterator, bool> pr;
 		this->mtx.lock();
 		pr = this->container.insert(MapType::value_type(new_guid, (CObject*)bot));
@@ -103,7 +138,6 @@ CBot* CObjectManager::CreateBot()
 		if(pr.second == true)
 		{
 			bot->guid = new_guid;
-			Log.String("[DEBUG] %d %d", pr.first->first, pr.first->second->guid);
 			return bot;
 		}
 		else
@@ -161,50 +195,61 @@ void CObjectManager::Delete(CObject* object) //useless too, lol
 void CObjectThread::run()
 {
 	std::vector<CObjectManager::MapType::iterator> trash_bin;
-	while(TRUE)
+	uint32 tick_count = GetTickCount();
+	while(true)
 	{
-		trash_bin.clear();
-		ObjManager.mtx.lock();
-		for(CObjectManager::MapType::iterator it = ObjManager.container.begin(); it != ObjManager.container.end(); ++it)
+		if((GetTickCount() - tick_count) >= 10 * SECOND)
 		{
-			CObject* object = it->second;
-			if((object) && ((object->type == VOID_EMPTY) || (object->type == VOID_UNIT) || (object->type == VOID_PLAYER)))
+			trash_bin.clear();
+			ObjManager.mtx.lock();
+			for(CObjectManager::MapType::iterator it = ObjManager.container.begin(); it != ObjManager.container.end(); ++it)
 			{
-				trash_bin.push_back(it);
-				switch(object->type)
+				CObject* object = it->second;
+				if((object) && (object->type < OBJECT_EMPTY))
 				{
-				case VOID_EMPTY:
+					trash_bin.push_back(it);
+					switch(object->type)
 					{
-						delete object;
-						break;
-					}
-				case VOID_UNIT:
-					{
-						//TODO
-						break;
-					}
-				case VOID_PLAYER:
-					{
-						CPlayer* player = (CPlayer*)object;
-						for(uint32 i = 0; i < 108; ++i)
+					case VOID_BOT:
 						{
-							if(player->inventory[i]->IsItem())
-							{
-								player->inventory[i]->status = ITEM_NOTEXIST;
-							}
+							CBot* bot = (CBot*)object;
+							delete bot;
+							break;
 						}
-						delete player;
-						break;
+					case VOID_EMPTY:
+						{
+							delete object;
+							break;
+						}
+					case VOID_UNIT:
+						{
+							//TODO
+							break;
+						}
+					case VOID_PLAYER:
+						{
+							CPlayer* player = (CPlayer*)object;
+							for(uint32 i = 0; i < 108; ++i)
+							{
+								if(player->inventory[i]->IsItem())
+								{
+									player->inventory[i]->status = ITEM_NOTEXIST;
+								}
+							}
+							delete player;
+							break;
+						}
 					}
 				}
 			}
+			for(uint32 i = 0; i < trash_bin.size(); ++i)
+			{
+				ObjManager.container.erase(trash_bin.at(i));
+			}
+			ObjManager.mtx.unlock();
+			tick_count = GetTickCount();
 		}
-		for(uint32 i = 0; i < trash_bin.size(); ++i)
-		{
-			ObjManager.container.erase(trash_bin.at(i));
-		}
-		ObjManager.mtx.unlock();
-		Sleep(10000);
+		this->msleep(300);
 	}
 }
 

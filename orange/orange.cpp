@@ -18,6 +18,7 @@
 #include "stdafx.h"
 #include ".\\utils.h"
 #include ".\\HeartbeatServer.h"
+#include ".\\Deathway\\SimpleModulus\\SimpleModulus.h"
 #include ".\\ServerSocket.h"
 #include ".\\DataBase.h"
 #include ".\\Item.h"
@@ -35,6 +36,17 @@ int main(int argc, char* argv[])
 	MakeFrustum();
 	DCInfo.Init();
 	Log.Init("test.log");
+
+	if(!g_SimpleModulusCS.LoadDecryptionKey(".\\data\\Dec1.dat"))
+	{
+		Log.String("Dec1.dat file not found");
+		return 0;
+	}
+	if(!g_SimpleModulusSC.LoadEncryptionKey(".\\data\\Enc2.dat"))
+	{
+		Log.String("Enc2.dat file not found");
+		return 0;
+	}
 
 	char ip[] = "127.0.0.1";
 

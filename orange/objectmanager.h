@@ -37,12 +37,14 @@ class CObjectManager
 public:
 	friend void CObjectThread::run();
 	friend void CWorldMap::UpdateMap();
-	typedef std::tr1::unordered_map<uint16, CObject*> MapType;
+	typedef std::tr1::unordered_map<uint32, CObject*> MapType;
 	CObjectManager();
 	CPlayer* FindPlayerBySocket(ServerSocket* socket);
 	//CPlayer* FindPlayerByGuid(short guid);
-	CObject* CObjectManager::FindByGuid(uint16 guid);
+	CObject* CObjectManager::FindByGuid(uint32 guid);
 	CPlayer* CreatePlayer(ServerSocket* socket);
+	void ActualizePlayer(CPlayer* player, uint32 new_guid);
+	static uint32 GetFreePlayerGuid();
 	CBot* CreateBot();
 	//void DeletePlayer(CPlayer* player);
 	void Delete(CObject* object);

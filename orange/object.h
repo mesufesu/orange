@@ -32,10 +32,14 @@ enum OBJECT_TYPE
 	OBJECT_BOT = 3,
 };
 
+#define MAX_PLAYER_GUID 10000 //user-created characters use lowest 10k guids
+#define MAX_UNIT_GUID 32000 //server-created units take higher part 10001 - 32000: in total 22000 objects, there is still 768 for a safe
+#define MAX_TEMP_GUID 0x1000000 //temporary guids for a non-game connections (logging in and etc.)
+
 class CObject
 {
 public:
-	short guid;
+	uint32 guid;
 	unsigned char x;
 	unsigned char y;
 	uint8 x_old;

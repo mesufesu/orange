@@ -109,6 +109,7 @@ void ServerSocket::OnDisconnect()
 	CPlayer* player = ObjManager.FindPlayerBySocket(this);
 	if(player->status == PLAYER_PLAYING)
 	{
+		player->status = PLAYER_LOGGING_OUT;
 		player->SavePlayer();
 	}
 	player->SetStatus(0);

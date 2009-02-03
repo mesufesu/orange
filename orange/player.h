@@ -29,6 +29,7 @@ enum PLAYER_STATUS
 	PLAYER_CONNECTED = 1,
 	PLAYER_LOGGED = 2,
 	PLAYER_PLAYING = 3,
+	PLAYER_LOGGING_OUT = 4,
 };
 
 enum OBJECTS
@@ -63,12 +64,8 @@ struct SC_CHARINFO
 	uint8 Class;
 	uint8 ChangeUp;
 	uint16 level;
-	std::vector<uint32> item_guids;
-	DATA_ITEM temp_inv[12];
-	/*SC_CHARINFO()
-	{
-		ZeroMemory(this, sizeof(SC_CHARINFO));
-	}*/
+	//std::vector<uint32> item_guids;
+	//DATA_ITEM temp_inv[12];
 };
 
 struct DATA_CHARACTER

@@ -429,7 +429,7 @@ void Join_CreateCharacter(PMSG_CHARCREATE * data, CPlayer* player)
 	QSqlQuery q;
 	int have_chars = 0;
 	MainDB.Lock();
-	q.exec(Query("SELECT `id` FROM `characters` WHERE `account` = '%s'", player->account).c_str());
+	q.exec(Query("SELECT `guid` FROM `characters` WHERE `account` = '%s'", player->account).c_str());
 	while(q.next())
 	{
 		have_chars++;
@@ -442,11 +442,11 @@ void Join_CreateCharacter(PMSG_CHARCREATE * data, CPlayer* player)
 		return;
 	}
 	MainDB.Lock();
-	q.exec(Query("SELECT `id` FROM `characters` WHERE `name` = '%s'", data->Name).c_str());
-	int name_used = 0;
-	while(q.next())
+	q.exec(Query("SELECT `guid` FROM `characters` WHERE `name` = '%s'", data->Name).c_str());
+	bool name_used = false;
+	if(q.next())
 	{
-		name_used++;
+		name_used = true;
 	}
 	MainDB.Unlock();
 	if(name_used)
@@ -455,8 +455,8 @@ void Join_CreateCharacter(PMSG_CHARCREATE * data, CPlayer* player)
 		player->Send((unsigned char*)&packet, packet.h.size);
 		return;
 	}
-	bool result = q.exec(Query("INSERT INTO `characters` (`account`, `name`, `position`, `level`, `strength`, `dexterity`, `vitality`, `energy`, `leadership`, `life`, `mana`, `shield`, `bp`, `money`, `inventory_guids`, `class`, `spell_data`, `guild_data`) values ('%s', '%s', %u, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, NULL, %d, NULL, NULL)",
-		player->account, data->Name, 0x82820000, 1, cl->Strength, cl->Dexterity, cl->Vitality, cl->Energy, cl->Leadership, (int)(cl->Life), (int)(cl->Mana), 90, 90, 1000, char_class).c_str());
+	bool result = q.exec(Query("INSERT INTO `characters` (`guid`, `account`, `name`, `position`, `level`, `strength`, `dexterity`, `vitality`, `energy`, `leadership`, `life`, `mana`, `shield`, `bp`, `money`, `class`) values (%u, '%s', '%s', %u, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d)",
+		CObjectManager::GetFreePlayerGuid(), player->account, data->Name, 0x82820000, 1, cl->Strength, cl->Dexterity, cl->Vitality, cl->Energy, cl->Leadership, (int)(cl->Life), (int)(cl->Mana), 90, 90, 1000, char_class).c_str());
 	if(!result)
 	{
 		packet.Result = 2;
@@ -468,8 +468,6 @@ void Join_CreateCharacter(PMSG_CHARCREATE * data, CPlayer* player)
 	packet.Equipment[0] = ((data->ClassSkin / 0x10) * 0x20) & 0xE0;
 	packet.pos = have_chars;
 	strcpy_s((char*)packet.Name, 10, data->Name);
-	unsigned char test[sizeof(packet)];
-	memcpy(test, &packet, sizeof(packet));
 	player->Send((unsigned char*)&packet, packet.h.size);
 	player->LoadSelectionScreen();
 }
@@ -619,6 +617,5 @@ void Client_Time(PMSG_CLIENTTIME* data, CPlayer* player)
 		Log.String("Client Time: %s time is smaller than 20 seconds.", player->socket->GetRemoteAddress());
 		player->Close();
 	}
-	//int32 temp = data->Time - player->tick_count;
 	player->tick_count = data->Time;
 }

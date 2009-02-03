@@ -225,6 +225,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\mt19937.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\object.cpp"
 				>
 			</File>
@@ -342,6 +346,10 @@
 			</File>
 			<File
 				RelativePath=".\mathlib.h"
+				>
+			</File>
+			<File
+				RelativePath=".\mt19937.h"
 				>
 			</File>
 			<File
