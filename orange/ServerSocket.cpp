@@ -110,7 +110,10 @@ void ServerSocket::OnDisconnect()
 	if(player->status == PLAYER_PLAYING)
 	{
 		player->status = PLAYER_LOGGING_OUT;
-		player->SavePlayer();
+		if((GetTickCount() - player->last_save_time) >= 5 * SECOND)
+		{
+			player->SavePlayer();
+		}
 	}
 	player->SetStatus(0);
 	player->status = PLAYER_EMPTY;

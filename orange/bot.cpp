@@ -40,14 +40,14 @@ void CBot::UpdateAI()
 {
 	if((GetTickCount() - this->last_think_time) >= 5000)
 	{
-		srand((uint32)time(NULL));
+		init_genrand(GetTickCount());
 		uint32 count = 0;
 		while(count < 1000)
 		{
-			bool helpx = rand() % 2;
-			bool helpy = rand() % 2;
-			uint8 newx = this->x + (rand() % 4) * (helpx ? -1 : 1);
-			uint8 newy = this->y + (rand() % 4) * (helpy ? -1 : 1);
+			bool helpx = genrand_int32() % 2;
+			bool helpy = genrand_int32() % 2;
+			uint8 newx = this->x + (genrand_int32() % 4) * (helpx ? -1 : 1);
+			uint8 newy = this->y + (genrand_int32() % 4) * (helpy ? -1 : 1);
 			uint8 attr = WorldMap[this->map].GetAttr(newx, newy);
 			if((!(attr & 0x04)) && (!(attr & 0x08)))
 			{
@@ -63,7 +63,7 @@ void CBot::UpdateAI()
 				data.NumberL = LOBYTE(this->guid);
 				data.X = newx;
 				data.Y = newy;
-				data.Path = (rand() % 9);
+				data.Path = (genrand_int32() % 9);
 				this->SendToViewport((uint8*)&data, data.h.size);
 				this->x = newx;
 				this->y = newy;
@@ -99,20 +99,20 @@ void CBot::CookCharset()
 	{
 		this->charset[0] |= 0x03;
 	}
-	if(this->inventory[HAND_LEFT]->type >= 0)
+	if(this->inventory[RIGHT_HAND]->type >= 0)
 	{
-		this->charset[12] |= (this->inventory[HAND_LEFT]->type & 0x0f00) / 0x10;  //12 char - highest 4 bits
-		this->charset[1] = (this->inventory[HAND_LEFT]->type & 0xff); //1 char both 4-bit fields
+		this->charset[12] |= (this->inventory[RIGHT_HAND]->type & 0x0f00) / 0x10;  //12 char - highest 4 bits
+		this->charset[1] = (this->inventory[RIGHT_HAND]->type & 0xff); //1 char both 4-bit fields
 	}
 	else //or -1;
 	{
 		this->charset[12] |= 0xf0;
 		this->charset[1] = 0xff;
 	}
-	if(this->inventory[HAND_RIGHT]->type >= 0)
+	if(this->inventory[LEFT_HAND]->type >= 0)
 	{
-		this->charset[13] |= (this->inventory[HAND_RIGHT]->type & 0x0f00) / 0x10;
-		this->charset[2] = (this->inventory[HAND_RIGHT]->type & 0xff);
+		this->charset[13] |= (this->inventory[LEFT_HAND]->type & 0x0f00) / 0x10;
+		this->charset[2] = (this->inventory[LEFT_HAND]->type & 0xff);
 	}
 	else
 	{
@@ -198,8 +198,8 @@ void CBot::CookCharset()
 	}
 	this->charset[5] |= index;
 	uint32 levelindex = 0;
-	levelindex = LevelConvert(this->inventory[HAND_LEFT]->level) & 0xff;
-	levelindex |= (LevelConvert(this->inventory[HAND_RIGHT]->level) & 0xff) * 0x08;
+	levelindex = LevelConvert(this->inventory[RIGHT_HAND]->level) & 0xff;
+	levelindex |= (LevelConvert(this->inventory[LEFT_HAND]->level) & 0xff) * 0x08;
 	levelindex |= (LevelConvert(this->inventory[HELMET]->level) & 0xff) * 0x40;
 	levelindex |= (LevelConvert(this->inventory[ARMOR]->level) & 0xff) * 0x200;
 	levelindex |= (LevelConvert(this->inventory[PANTS]->level) & 0xff) * 0x1000;
@@ -241,11 +241,11 @@ void CBot::CookCharset()
 	{
 		this->charset[10] |= 0x8;
 	}
-	if(this->inventory[HAND_LEFT]->IsExtItem())
+	if(this->inventory[RIGHT_HAND]->IsExtItem())
 	{
 		this->charset[10] |= 0x4;
 	}
-	if(this->inventory[HAND_RIGHT]->IsExtItem())
+	if(this->inventory[LEFT_HAND]->IsExtItem())
 	{
 		this->charset[10] |= 0x2;
 	}
@@ -270,11 +270,11 @@ void CBot::CookCharset()
 	{
 		this->charset[11] |= 0x8;
 	}
-	if(this->inventory[HAND_LEFT]->IsSetItem())
+	if(this->inventory[RIGHT_HAND]->IsSetItem())
 	{
 		this->charset[11] |= 0x4;
 	}
-	if(this->inventory[HAND_RIGHT]->IsSetItem())
+	if(this->inventory[LEFT_HAND]->IsSetItem())
 	{
 		this->charset[11] |= 0x2;
 	}

@@ -58,6 +58,10 @@ CPlayer::CPlayer()
 	ZeroMemory(this->account, sizeof(this->account));
 	ZeroMemory(this->name, sizeof(this->name));
 	ZeroMemory(this->charset, sizeof(this->charset));
+
+	/*data from calc start*/
+	armed = false;
+	/*data from calc end*/
 }
 
 void CPlayer::Send(unsigned char* buffer, size_t len)
@@ -174,10 +178,11 @@ bool CPlayer::LoadCharacterData(SC_CHARINFO *info)
 	MainDB.Lock();
 	bool result = q.exec(Query("SELECT `position`, `experience`, `leveluppoint`, `strength`, `dexterity`, `vitality`, `energy`, `leadership`, `life`, `mana`, `shield`, `bp`, `money`, `pklevel`, `addpoint`, `maxaddpoint`, `minuspoint`, `maxminuspoint`, `guid` FROM `characters` WHERE `account` = '%s' AND `name` = '%s';", this->account, info->name.c_str()).c_str());
 	MainDB.Unlock();
-	if((result == false) && (!q.next()))
+	if(result == false)
 	{
 		return false;
 	}
+	q.next();
 	strcpy_s(this->name, sizeof(this->name), info->name.c_str());
 	this->Class = info->Class;
 	this->changeup = info->ChangeUp;
@@ -234,7 +239,7 @@ void CPlayer::SendInventory()
 			count++;
 			PMSG_INVENTORYLIST data;
 			data.Pos = i;
-			ItemByteConvert(data.ItemInfo, item->type, item->m_Option1, item->m_Option2, item->m_Option3, (unsigned char)item->level, (unsigned char)item->durability, item->m_NewOption, item->m_SetOption, item->m_JewelOfHarmonyOption, item->m_ItemOptionEx);
+			ItemByteConvert(data.ItemInfo, item->type, item->option1, item->option2, item->option3, item->level, (unsigned char)item->durability, item->option_new, item->m_SetOption, item->m_JewelOfHarmonyOption, item->m_ItemOptionEx);
 			memcpy(&buffer[offs], &data, sizeof(PMSG_INVENTORYLIST));
 			offs += sizeof(PMSG_INVENTORYLIST);
 		}
@@ -249,7 +254,7 @@ void CPlayer::SendInventory()
 	this->Send(buffer, offs);
 }
 
-void CPlayer::AssignItem(DATA_ITEM *data)
+/*void CPlayer::AssignItem(DATA_ITEM *data)
 {
 	CItem * item =  this->inventory[data->slot];
 	item->guid = data->guid;
@@ -265,7 +270,7 @@ void CPlayer::AssignItem(DATA_ITEM *data)
 	item->m_ItemOptionEx = data->optionex;
 	item->m_PetItem_Exp = data->petitem_exp;
 	item->m_PetItem_Level = data->petitem_level;
-}
+}*/
 
 bool CPlayer::CheckPosition()
 {
@@ -376,20 +381,20 @@ void CPlayer::CookCharset()
 	{
 		this->charset[0] |= 0x03;
 	}
-	if(this->inventory[HAND_LEFT]->type >= 0)
+	if(this->inventory[RIGHT_HAND]->type >= 0)
 	{
-		this->charset[12] |= (this->inventory[HAND_LEFT]->type & 0x0f00) / 0x10;  //12 char - highest 4 bits
-		this->charset[1] = (this->inventory[HAND_LEFT]->type & 0xff); //1 char both 4-bit fields
+		this->charset[12] |= (this->inventory[RIGHT_HAND]->type & 0x0f00) / 0x10;  //12 char - highest 4 bits
+		this->charset[1] = (this->inventory[RIGHT_HAND]->type & 0xff); //1 char both 4-bit fields
 	}
 	else //or -1;
 	{
 		this->charset[12] |= 0xf0;
 		this->charset[1] = 0xff;
 	}
-	if(this->inventory[HAND_RIGHT]->type >= 0)
+	if(this->inventory[LEFT_HAND]->type >= 0)
 	{
-		this->charset[13] |= (this->inventory[HAND_RIGHT]->type & 0x0f00) / 0x10;
-		this->charset[2] = (this->inventory[HAND_RIGHT]->type & 0xff);
+		this->charset[13] |= (this->inventory[LEFT_HAND]->type & 0x0f00) / 0x10;
+		this->charset[2] = (this->inventory[LEFT_HAND]->type & 0xff);
 	}
 	else
 	{
@@ -475,8 +480,8 @@ void CPlayer::CookCharset()
 	}
 	this->charset[5] |= index;
 	uint32 levelindex = 0;
-	levelindex = LevelConvert(this->inventory[HAND_LEFT]->level) & 0xff;
-	levelindex |= (LevelConvert(this->inventory[HAND_RIGHT]->level) & 0xff) * 0x08;
+	levelindex = LevelConvert(this->inventory[RIGHT_HAND]->level) & 0xff;
+	levelindex |= (LevelConvert(this->inventory[LEFT_HAND]->level) & 0xff) * 0x08;
 	levelindex |= (LevelConvert(this->inventory[HELMET]->level) & 0xff) * 0x40;
 	levelindex |= (LevelConvert(this->inventory[ARMOR]->level) & 0xff) * 0x200;
 	levelindex |= (LevelConvert(this->inventory[PANTS]->level) & 0xff) * 0x1000;
@@ -518,11 +523,11 @@ void CPlayer::CookCharset()
 	{
 		this->charset[10] |= 0x8;
 	}
-	if(this->inventory[HAND_LEFT]->IsExtItem())
+	if(this->inventory[RIGHT_HAND]->IsExtItem())
 	{
 		this->charset[10] |= 0x4;
 	}
-	if(this->inventory[HAND_RIGHT]->IsExtItem())
+	if(this->inventory[LEFT_HAND]->IsExtItem())
 	{
 		this->charset[10] |= 0x2;
 	}
@@ -547,11 +552,11 @@ void CPlayer::CookCharset()
 	{
 		this->charset[11] |= 0x8;
 	}
-	if(this->inventory[HAND_LEFT]->IsSetItem())
+	if(this->inventory[RIGHT_HAND]->IsSetItem())
 	{
 		this->charset[11] |= 0x4;
 	}
-	if(this->inventory[HAND_RIGHT]->IsSetItem())
+	if(this->inventory[LEFT_HAND]->IsSetItem())
 	{
 		this->charset[11] |= 0x2;
 	}
@@ -578,7 +583,7 @@ void CPlayer::CookCharset()
 	}
 }
 
-void CPlayer::LoadItemToInventory(DATA_ITEM *ditem)
+/*void CPlayer::LoadItemToInventory(DATA_ITEM *ditem)
 {
 	if(ditem->type < 0)
 	{
@@ -601,7 +606,7 @@ void CPlayer::LoadItemToInventory(DATA_ITEM *ditem)
 		case 4:
 		case 5:
 			{
-				if(!(ditem->slot == HAND_LEFT) && !(ditem->slot == HAND_RIGHT))
+				if(!(ditem->slot == RIGHT_HAND) && !(ditem->slot == RIGHT_HAND))
 				{
 					ItemManager.DeleteFromDB(ditem->guid);
 					return;
@@ -638,5 +643,123 @@ void CPlayer::LoadItemToInventory(DATA_ITEM *ditem)
 		this->inventory[ditem->slot] = item;
 		this->inventory[ditem->slot]->ApplyTemplate(it);
 		this->inventory[ditem->slot]->Assign(ditem);
+	}
+}*/
+
+void CPlayer::Calculate()
+{
+	pItem right = this->inventory[RIGHT_HAND];
+	pItem left = this->inventory[LEFT_HAND];
+	pItem gloves = this->inventory[GLOVES];
+	pItem amulet = this->inventory[AMULET];
+	pItem guardian = this->inventory[GUARDIAN];
+
+	//armed is false by default, if player have any weapon in hand except bolts, arrows or shield we set it true, made by webzen, useless imo
+	for(uint32 i = 0; i < 2; ++i)
+	{
+		if(this->armed)
+		{
+			break;
+		}
+		pItem it = this->inventory[i];
+		if(it->IsItem())
+		{
+			if(it->type != 2055 && it->type != 2063 && (it->type / 512) != 6)
+			{
+				this->armed;
+			}
+		}
+	}
+
+	this->add_life = 0;
+	this->add_mana = 0;
+	this->extra_gold = 0;
+	this->life_steal = 0;
+	this->mana_steal = 0;
+	this->damage_reflect = 0;
+	this->damage_absorb = 0;
+	this->_SkillLongSpearChange = 0;
+	//periodic item specific skipped
+	//setoptions specific skipped
+	this->addstrength = 0;
+	this->adddexterity = 0;
+	this->addvitality = 0;
+	this->addenergy = 0;
+	this->addbp = 0;
+	this->addshield = 0;
+	ZeroMemory(this->res, sizeof(this->res));
+	//setoption specific skipped
+	uint32 _strength = this->strength + this->addstrength;
+	uint32 _dexterity = this->dexterity + this->adddexterity;
+	uint32 _vitality = this->vitality + this->addvitality;
+	uint32 _energy = this->energy + this->addenergy;
+	switch(this->Class)
+	{
+	case CLASS_WIZARD:
+		{
+			this->ad_right_min = _strength / 8;
+			this->ad_right_max = _strength / 4;
+			this->ad_left_min = _strength / 8;
+			this->ad_left_max = _strength / 4;
+			break;
+		}
+	case CLASS_KNIGHT:
+		{
+			this->ad_right_min = _strength / 6;
+			this->ad_right_max = _strength / 4;
+			this->ad_left_min = _strength / 6;
+			this->ad_left_max = _strength / 4;
+			break;
+		}
+	case CLASS_ELF:
+		{
+			if(this->armed)
+			{
+				this->ad_right_min = (_strength + _dexterity) / 7;
+				this->ad_right_max = (_strength + _dexterity) / 4;
+				this->ad_left_min = (_strength + _dexterity) / 7;
+				this->ad_left_max = (_strength + _dexterity) / 4;
+			}
+			else
+			{
+				this->ad_right_min = _strength / 14 + _dexterity / 7;
+				this->ad_right_max = _strength / 8 + _dexterity / 4;
+				this->ad_left_min = _strength / 14 + _dexterity / 7;
+				this->ad_left_max = _strength / 8 + _dexterity / 4;
+			}
+			break;
+		}
+	case CLASS_MAGUMSA:
+		{
+			this->ad_right_min = _energy / 12 + _strength / 6;
+			this->ad_right_max = _energy / 8 + _strength / 4;
+			this->ad_left_min = _energy / 12 + _strength / 6;
+			this->ad_left_max = _energy / 8 + _strength / 4;
+			break;
+		}
+	case CLASS_DARKLORD:
+		{
+			this->ad_right_min = _energy / 14 + _strength / 7;
+			this->ad_right_max = _energy / 10 + _strength / 5;
+			this->ad_left_min = _energy / 14 + _strength / 7;
+			this->ad_left_max = _energy / 10 + _strength / 5;
+			break;
+		}
+	case CLASS_SUMMONER:
+		{
+			this->ad_right_min = _energy / 12 + _strength / 6; //wrong but..
+			this->ad_right_max = _energy / 8 + _strength / 4;
+			this->ad_left_min = _energy / 12 + _strength / 6;
+			this->ad_left_max = _energy / 8 + _strength / 4;
+			break;
+		}
+	default:
+		{
+			this->ad_right_min = 0; //:E
+			this->ad_right_max = 0;
+			this->ad_left_min = 0;
+			this->ad_left_max = 0;
+			break;
+		}
 	}
 }

@@ -22,6 +22,7 @@
 #include ".\\ItemManager.h"
 #include ".\\inventory.h"
 #include ".\\object.h"
+#include ".\\classdef.h"
 
 enum PLAYER_STATUS
 {
@@ -44,8 +45,8 @@ enum OBJECTS
 
 enum PLAYER_WARDROBE
 {
-	HAND_LEFT	= 0,	// <--
-	HAND_RIGHT	= 1,	// <--
+	RIGHT_HAND	= 0,	// <--
+	LEFT_HAND	= 1,	// <--
 	HELMET		= 2,	// <--
 	ARMOR		= 3,	// <--
 	PANTS		= 4,	// <--
@@ -53,7 +54,7 @@ enum PLAYER_WARDROBE
 	BOOTS		= 6,	// <--
 	WINGS		= 7,	// <--
 	GUARDIAN	= 8,	// <--
-	PENDANT		= 9,	// <--
+	AMULET		= 9,	// <--
 	RING_01		= 10,	// <--
 	RING_02		= 11,	// <--
 };
@@ -127,6 +128,32 @@ public:
 	uint8 Class;
 	uint8 changeup;
 
+	/*data from calc start*/
+	bool armed;
+
+	//here goes specific stat bonuses as it made by webzen, better implement it later by mod auras
+	uint32 add_life;
+	uint32 add_mana;
+	uint32 extra_gold;
+	uint32 life_steal;
+	uint32 mana_steal;
+	uint32 damage_reflect;
+	uint32 damage_absorb;
+	uint32 _SkillLongSpearChange;
+	uint32 addstrength;
+	uint32 adddexterity;
+	uint32 addvitality;
+	uint32 addenergy;
+	uint32 addbp;
+	uint32 addshield;
+	uint8 res[7];
+
+	uint32 ad_left_min;
+	uint32 ad_left_max;
+	uint32 ad_right_min;
+	uint32 ad_right_max;
+	/*data from calc end*/
+
 	CPlayer();
 	void Send(unsigned char* buffer, size_t len);
 	void Close();
@@ -143,6 +170,7 @@ public:
 	bool SavePlayer();
 	void CookCharset();
 	void LoadItemToInventory(DATA_ITEM * ditem);
+	void Calculate();
 };
 
 #endif

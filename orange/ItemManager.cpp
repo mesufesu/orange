@@ -238,7 +238,7 @@ bool CItemManager::SaveItem(CItem *item, uint32 slot)
 	case ITEM_CHANGED:
 		{
 			MainDB.Lock();
-			result = q.exec(Query("UPDATE `character_items` SET `slot` = %u, `type` = %u, `level` = %u, `durability` = %f, `option1` = %u, `option2` = %u, `option3` = %u, `newoption` = %u, `setoption` = %u, `petitem_level` = %u, `petitem_exp` = %u, `joh_option` = %u, `optionex` = %u WHERE `guid` = %u;", slot, item->type, item->level, item->durability, item->m_Option1, item->m_Option2, item->m_Option3, item->m_NewOption, item->m_SetOption, item->m_PetItem_Level, item->m_PetItem_Exp, item->m_JewelOfHarmonyOption, item->m_ItemOptionEx, item->guid).c_str());
+			result = q.exec(Query("UPDATE `character_items` SET `slot` = %u, `type` = %u, `level` = %u, `durability` = %f, `option1` = %u, `option2` = %u, `option3` = %u, `newoption` = %u, `setoption` = %u, `petitem_level` = %u, `petitem_exp` = %u, `joh_option` = %u, `optionex` = %u WHERE `guid` = %u;", slot, item->type, item->level, item->durability, item->option1, item->option2, item->option3, item->option_new, item->m_SetOption, item->m_PetItem_Level, item->m_PetItem_Exp, item->m_JewelOfHarmonyOption, item->m_ItemOptionEx, item->guid).c_str());
 			MainDB.Unlock();
 			item->status = ITEM_UNCHANGED;
 			break;
@@ -272,7 +272,7 @@ bool CItemManager::SaveItem(CItem *item, uint32 slot)
 			this->ItemMap.insert(MapType::value_type(new_guid, item));
 			this->map_mutex.unlock();
 			MainDB.Lock();
-			result = q.exec(Query("INSERT IGNORE INTO `character_items` (`guid`, `slot`, `type`, `level`, `durability`, `option1`, `option2`, `option3`, `newoption`, `setoption`, `petitem_level`, `petitem_exp`, `joh_option`, `optionex`) VALUES (%u, %u, %u, %u, %f, %u, %u, %u, %u, %u, %u, %u, %u, %u);", item->guid, slot, item->type, item->level, item->durability, item->m_Option1, item->m_Option2, item->m_Option3, item->m_NewOption, item->m_SetOption, item->m_PetItem_Level, item->m_PetItem_Exp, item->m_JewelOfHarmonyOption, item->m_ItemOptionEx).c_str());
+			result = q.exec(Query("INSERT IGNORE INTO `character_items` (`guid`, `slot`, `type`, `level`, `durability`, `option1`, `option2`, `option3`, `newoption`, `setoption`, `petitem_level`, `petitem_exp`, `joh_option`, `optionex`) VALUES (%u, %u, %u, %u, %f, %u, %u, %u, %u, %u, %u, %u, %u, %u);", item->guid, slot, item->type, item->level, item->durability, item->option1, item->option2, item->option3, item->option_new, item->m_SetOption, item->m_PetItem_Level, item->m_PetItem_Exp, item->m_JewelOfHarmonyOption, item->m_ItemOptionEx).c_str());
 			MainDB.Unlock();
 			item->status = ITEM_UNCHANGED;
 			break;

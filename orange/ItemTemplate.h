@@ -14,15 +14,15 @@ struct ITEM_TEMPLATE
 	bool option;
 	bool drop;
 	std::string name;
-	uint16 level;
+	uint16 item_level;
 	uint16 reqlevel;
 	uint8 durability;
 	uint64 SPECIAL;
-	uint16 strength;
-	uint16 dexterity;
-	uint16 energy;
-	uint16 vitality;
-	uint16 leadership;
+	uint16 reqstrength;
+	uint16 reqdexterity;
+	uint16 reqenergy;
+	uint16 reqvitality;
+	uint16 reqcharisma;
 	uint8 set_option;
 	uint32 CLASS_ATTR;
 	ITEM_TEMPLATE()

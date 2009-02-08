@@ -49,6 +49,26 @@ enum CLASS_ATTR
 	SU_2 = 0x00020000L,
 };
 
+enum _ITEM_TYPE
+{
+	ITEM_SWORD = 0,
+	ITEM_AXE = 1,
+	ITEM_MACE = 2,
+	ITEM_SPEAR = 3,
+	ITEM_BOW = 4,
+	ITEM_STAFF = 5,
+	ITEM_SHIELD = 6,
+	ITEM_HELM = 7,
+	ITEM_CHEST = 8,
+	ITEM_PANTS = 9,
+	ITEM_GLOVES = 10,
+	ITEM_BOOTS = 11,
+	ITEM_12 = 12,
+	ITEM_13 = 13,
+	ITEM_14 = 14,
+	ITEM_SCROLL = 15,
+};
+
 enum _ITEM_STATUS
 {
 	ITEM_UNCHANGED = 0, //item was not changed during session, can skip saving
@@ -80,56 +100,69 @@ struct DATA_ITEM
   }
 };
 
+struct _Special
+{
+	uint32 type;
+	uint32 value;
+	_Special(uint32 v1, uint32 v2)
+	{
+		this->type = v1;
+		this->value = v2;
+	};
+	_Special(uint32 v)
+	{
+		this->type = v;
+	};
+};
+
+typedef std::vector<uint32> OptionsList;
+
 typedef class CItem
 {
 public:
-  /*<thisrel this+0x0>*/ /*|0x4|*/ uint32 guid;
-  /*<thisrel this+0x6>*/ /*|0x2|*/ int16 type;
-  /*<thisrel this+0x8>*/ /*|0x2|*/ uint8 level;
-  /*<thisrel this+0xa>*/ /*|0x1|*/ uint8 part;
-  /*<thisrel this+0xb>*/ /*|0x1|*/ uint8 Class;
-  /*<thisrel this+0xc>*/ /*|0x1|*/ bool two_hand;
-  /*<thisrel this+0xd>*/ /*|0x1|*/ uint8 attack_speed;
-  /*<thisrel this+0xe>*/ /*|0x1|*/ uint8 walk_speed;
-  /*<thisrel this+0x10>*/ /*|0x2|*/ uint16 damage_min;
-  /*<thisrel this+0x12>*/ /*|0x2|*/ uint16 damage_max;
-  /*<thisrel this+0x14>*/ /*|0x1|*/ uint8 block;
-  /*<thisrel this+0x16>*/ /*|0x2|*/ uint16 defense;
-  /*<thisrel this+0x18>*/ /*|0x2|*/ uint16 magic_defense;
-  /*<thisrel this+0x1a>*/ /*|0x1|*/ uint8 speed;
-  /*<thisrel this+0x1c>*/ /*|0x2|*/ unsigned short m_DamageMinOrigin;
-  /*<thisrel this+0x1e>*/ /*|0x2|*/ unsigned short m_DefenseOrigin;
-  /*<thisrel this+0x20>*/ /*|0x2|*/ unsigned short m_Magic;
-  /*<thisrel this+0x24>*/ /*|0x4|*/ float durability;
-  float base_durability;
-  /*<thisrel this+0x28>*/ /*|0x2|*/ unsigned short m_DurabilitySmall;
-  /*<thisrel this+0x2c>*/ /*|0x4|*/ float m_BaseDurability;
-  /*<thisrel this+0x30>*/ /*|0x1|*/ unsigned char m_SpecialNum;
-  /*<thisrel this+0x31>*/ /*|0x8|*/ unsigned char m_Special[8];
-  /*<thisrel this+0x39>*/ /*|0x8|*/ unsigned char m_SpecialValue[8];
-  /*<thisrel this+0x42>*/ /*|0x2|*/ uint16 reqstrength;
-  /*<thisrel this+0x44>*/ /*|0x2|*/ uint16 reqdexterity;
-  /*<thisrel this+0x46>*/ /*|0x2|*/ uint16 reqenergy;
-  /*<thisrel this+0x48>*/ /*|0x2|*/ uint16 reqlevel;
-  /*<thisrel this+0x4a>*/ /*|0x2|*/ uint16 reqvitality;
-  /*<thisrel this+0x4c>*/ /*|0x2|*/ uint16 reqleadership;
-  /*<thisrel this+0x4e>*/ /*|0x2|*/ unsigned short m_Leadership;
-  /*<thisrel this+0x50>*/ /*|0x5|*/ uint32 reqclass;
-  /*<thisrel this+0x55>*/ /*|0x7|*/ unsigned char m_Resistance[7];
+	uint64 guid;
+	int16 type;
+	uint8 level;
+	uint8 part;
+	bool two_hand;
+	uint8 attack_speed;
+	uint8 walk_speed;
+	uint16 damage_min;
+	uint16 damage_max;
+	uint16 damage_min_original;
+	uint16 damage_max_original;
+	uint16 defense_original;
+	uint16 spell_power_original;
+	uint16 spell_power;
+	uint8 option1;
+	uint8 option2;
+	uint8 option3;
+	uint8 option_new;
+	float durability_state[4];
+	float state;
+	uint8 block;
+	uint16 defense;
+	uint16 magic_defense;
+	uint8 speed;
+	OptionsList opt;
+	float durability;
+	float base_durability;
+	uint16 reqstrength;
+	uint16 reqdexterity;
+	uint16 reqenergy;
+	uint16 reqlevel;
+	uint16 reqvitality;
+	uint16 reqcharisma;
+	unsigned short m_Leadership;
+	CLASS_ATTR reqclass;
+	uint8 resistance[7];
+	uint8 m_SkillChange;
   /*<thisrel this+0x5c>*/ /*|0x4|*/ int m_Value;
   /*<thisrel this+0x60>*/ /*|0x4|*/ unsigned long m_SellMoney;
   /*<thisrel this+0x64>*/ /*|0x4|*/ unsigned long m_BuyMoney;
   /*<thisrel this+0x68>*/ /*|0x4|*/ int m_iPShopValue;
-  /*<thisrel this+0x6c>*/ /*|0x1|*/ unsigned char m_bItemExist;
   /*<thisrel this+0x70>*/ /*|0x4|*/ int m_OldSellMoney;
   /*<thisrel this+0x74>*/ /*|0x4|*/ int m_OldBuyMoney;
-  /*<thisrel this+0x78>*/ /*|0x1|*/ unsigned char m_Option1;
-  /*<thisrel this+0x79>*/ /*|0x1|*/ unsigned char m_Option2;
-  /*<thisrel this+0x7a>*/ /*|0x1|*/ unsigned char m_Option3;
-  /*<thisrel this+0x7b>*/ /*|0x1|*/ unsigned char m_NewOption;
-  /*<thisrel this+0x7c>*/ /*|0x10|*/ float m_DurabilityState[4];
-  /*<thisrel this+0x8c>*/ /*|0x4|*/ float m_CurrentDurabilityState;
-  /*<thisrel this+0x90>*/ /*|0x1|*/ unsigned char m_SkillChange;
   /*<thisrel this+0x91>*/ /*|0x1|*/ unsigned char m_QuestItem;
   /*<thisrel this+0x92>*/ /*|0x1|*/ unsigned char m_SetOption;
   /*<thisrel this+0x93>*/ /*|0x1|*/ unsigned char m_SetAddStat;
@@ -147,8 +180,12 @@ public:
   bool IsItem();
   bool IsExtItem();
   bool IsSetItem();
-  void Assign(const DATA_ITEM *item_data);
-  bool ApplyTemplate(const ITEM_TEMPLATE* it);
+  //void Assign(const DATA_ITEM *item_data);
+  //bool ApplyTemplate(const ITEM_TEMPLATE* it);
+  void PlusSpecial(uint32 * value, uint32 special); 
+  void Convert(uint32 _type, uint8 option1, uint8 option2, uint8 option3, uint8 option_new, uint8 set_option, uint8 effect_ex);
+  _ITEM_TYPE GetItemType();
+  void Value();
 } *pItem;
 
 void ItemByteConvert(unsigned char* buf, int type, unsigned char Option1, unsigned char Option2, unsigned char Option3, unsigned char level, unsigned char dur, unsigned char Noption, unsigned char SetOption, unsigned char JewelOfHarmonyOption, unsigned char ItemEffectEx);

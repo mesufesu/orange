@@ -94,6 +94,7 @@ CPlayer* CObjectManager::CreatePlayer(ServerSocket* socket)
 
 void CObjectManager::ActualizePlayer(CPlayer * player, uint32 new_guid)
 {
+	assert((new_guid > 0) && (new_guid < MAX_PLAYER_GUID));
 	this->mtx.lock();
 	this->container.erase(player->guid);
 	std::pair<MapType::iterator, bool> pr;

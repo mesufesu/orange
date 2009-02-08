@@ -41,7 +41,7 @@ void CreateItemHandler(CPlayer * player, std::string cmd)
 	int32 slot = -1;
 	sscanf_s(stype.c_str(), "%d", &type);
 	sscanf_s(sslot.c_str(), "%d", &slot);
-	if(type != -1 && slot != -1)
+	/*if(type != -1 && slot != -1)
 	{
 		if(player->inventory[slot]->IsItem())
 		{
@@ -54,7 +54,7 @@ void CreateItemHandler(CPlayer * player, std::string cmd)
 			player->inventory[slot]->ApplyTemplate(it);
 			player->SendInventory();
 		}
-	}
+	}*/
 }
 
 void HelpHandler(CPlayer* player, std::string cmd)

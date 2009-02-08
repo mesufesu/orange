@@ -612,7 +612,7 @@ void Player_Chat(PMSG_CHATDATA* data, CPlayer* player)
 
 void Client_Time(PMSG_CLIENTTIME* data, CPlayer* player)
 {
-	if(player->state = PLAYER_PLAYING && ((data->Time - player->tick_count) < (19 * SECOND)))
+	if(player->state == PLAYER_PLAYING && ((data->Time - player->tick_count) < (19 * SECOND)))
 	{
 		Log.String("Client Time: %s time is smaller than 20 seconds.", player->socket->GetRemoteAddress());
 		player->Close();
