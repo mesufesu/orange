@@ -39,7 +39,7 @@ void CLog::String(const char *format, ...)
 	ZeroMemory(buf, ret);
 	vsprintf_s(buf, ret, format, pArgs);
 	va_end(pArgs);
-	std::string logstring("[LOG] ");
+	std::string logstring;
 	logstring.append(buf);
 	logstring.append("\n");
 	delete [] buf;

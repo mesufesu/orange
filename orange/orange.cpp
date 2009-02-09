@@ -25,6 +25,7 @@
 #include ".\\WorldMap.h"
 #include ".\\objectmanager.h"
 #include ".\\ItemTemplate.h"
+#include ".\\UnitTemplate.h"
 #include ".\\log.h"
 #include ".\\bot.h"
 #include ".\\classdef.h"
@@ -61,6 +62,7 @@ int main(int argc, char* argv[])
 		Log.String("Online status set to 0.");
 	}
 	ItemTemplate.Load();
+	UnitTemplate.Load();
 	//SocketMainInit();
 	//GameMainInit();
 	//JoinServerConnect(ip, 1027);

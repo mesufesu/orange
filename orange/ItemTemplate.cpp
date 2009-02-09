@@ -11,11 +11,13 @@ CItemTemplate::CItemTemplate()
 
 bool CItemTemplate::Load()
 {
+	Log.String("Loading item templates...");
 	QSqlQuery q;
 	MainDB.Lock();
 	if(!q.exec("SELECT `type`, `slot`, `skill`, `width`, `height`, `option`, `drop`, `name`, `level`, `reqlevel`, `durability`, `SPECIAL`, `strength`, `dexterity`, `energy`, `vitality`, `leadership`, `set_option`, `CLASS_ATTR` FROM `item_template`;"))
 	{
 		Log.String("Something wrong with `item_template`.");
+		MainDB.Unlock();
 		return false;
 	}
 	MainDB.Unlock();
@@ -47,6 +49,7 @@ bool CItemTemplate::Load()
 		ZeroMemory(&it, sizeof(ITEM_TEMPLATE));
 	}
 	mtx.unlock();
+	Log.String("> Loaded %u item templates.", this->template_container.size());
 	return true;
 }
 
