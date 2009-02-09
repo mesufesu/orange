@@ -170,8 +170,10 @@ void CWorldMap::UpdateViewport(CObject* pobj)
 	if(!view_create.empty())
 	{
 		uint8 player_buffer[5000];
+		uint8 npc_buffer[5000];
 		ZeroMemory(player_buffer, sizeof(player_buffer));
 		size_t player_count = 0;
+		size_t npc_count = 0;
 
 		for(uint32 i = 0; i < view_create.size(); ++i)
 		{
@@ -182,6 +184,25 @@ void CWorldMap::UpdateViewport(CObject* pobj)
 				{
 				case OBJECT_UNIT:
 					{
+						CUnit* obj_unit = (CUnit*)object;
+						PMSG_MONSTER_VIEWPORTCREATE packet;
+						packet.NumberH = HIBYTE(obj_unit->guid);
+						packet.NumberL = LOBYTE(obj_unit->guid);
+						if(obj_unit->state == 1 && !obj_unit->teleporting) /* todo: check, bcz packet dont have flags here*/
+						{
+							packet.NumberH |= 0x80;
+							packet.NumberH |= 0x40;
+						}
+						packet.Type_HI = HIBYTE(obj_unit->model_id);
+						packet.Type_LO = LOBYTE(obj_unit->model_id);
+						packet.ViewSkillState = obj_unit->viewskillstate;
+						packet.X = obj_unit->x;
+						packet.Y = obj_unit->y;
+						packet.TX = obj_unit->target_x;
+						packet.TX = obj_unit->target_y;
+						packet.Path = obj_unit->dir * 0x10;
+						memcpy(&npc_buffer[sizeof(PWMSG_COUNT) + npc_count * sizeof(PMSG_MONSTER_VIEWPORTCREATE)], &packet, sizeof(PMSG_MONSTER_VIEWPORTCREATE));
+						npc_count++;
 						break;
 					}
 				case OBJECT_PLAYER:
@@ -244,6 +265,18 @@ void CWorldMap::UpdateViewport(CObject* pobj)
 			packet_player.count = player_count;
 			memcpy(player_buffer, &packet_player, sizeof(PWMSG_COUNT));
 			((CPlayer*)pobj)->Send((unsigned char*)player_buffer, size);
+		}
+		if(npc_count > 0)
+		{
+			size_t size = sizeof(PWMSG_COUNT) + npc_count * sizeof(PMSG_MONSTER_VIEWPORTCREATE);
+			PWMSG_COUNT packet_npc;
+			packet_npc.h.c = 0xC2;
+			packet_npc.h.headcode = 0x13;
+			packet_npc.h.sizeH = HIBYTE(size);
+			packet_npc.h.sizeL = LOBYTE(size);
+			packet_npc.count = npc_count;
+			memcpy(npc_buffer, &packet_npc, sizeof(PWMSG_COUNT));
+			((CPlayer*)pobj)->Send((unsigned char*)npc_buffer, size);
 		}
 	}
 }

@@ -63,7 +63,7 @@ void CBot::UpdateAI()
 				data.NumberL = LOBYTE(this->guid);
 				data.X = newx;
 				data.Y = newy;
-				data.Path = (genrand_int32() % 9);
+				data.Path = (genrand_int32() % 8) * 0x10;
 				this->SendToViewport((uint8*)&data, data.h.size);
 				this->x = newx;
 				this->y = newy;

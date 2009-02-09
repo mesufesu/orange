@@ -33,8 +33,9 @@ enum OBJECT_TYPE
 };
 
 #define MAX_PLAYER_GUID 10000 //user-created characters use lowest 10k guids
-#define MAX_UNIT_GUID 32000 //server-created units take higher part 10001 - 32000: in total 22000 objects, there is still 768 for a safe
+#define MAX_UNIT_GUID 22000 //server-created units take higher part 10001 - 22000: in total 12000 objects, there is still 768 for a safe
 #define MAX_TEMP_GUID 0x1000000 //temporary guids for a non-game connections (logging in and etc.)
+/* all written above is total foolness, players can have up to 0x7FFF, bcz in NumberH can be 0x80 flag, units can have up to 0x3FFF cuz of 0x40 and 0x80 */
 
 class CObject
 {
@@ -54,6 +55,7 @@ public:
 	unsigned char viewskillstate;
 	bool teleporting;
 	OBJECT_TYPE type;
+	int16 model_id;
 
 	uint16 level;
 	uint16 strength;

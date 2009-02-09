@@ -281,6 +281,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\unit.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\UnitTemplate.cpp"
 				>
 			</File>
@@ -398,6 +402,10 @@
 			</File>
 			<File
 				RelativePath=".\targetver.h"
+				>
+			</File>
+			<File
+				RelativePath=".\unit.h"
 				>
 			</File>
 			<File

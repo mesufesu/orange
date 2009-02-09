@@ -22,6 +22,7 @@
 #include ".\\object.h"
 #include ".\\player.h"
 #include ".\\bot.h"
+#include ".\\unit.h"
 #include ".\\WorldMap.h"
 #include <QtCore\\QMutex>
 #include <QtCore\\QThread>
@@ -46,8 +47,8 @@ public:
 	void ActualizePlayer(CPlayer* player, uint32 new_guid);
 	static uint32 GetFreePlayerGuid();
 	CBot* CreateBot();
+	CUnit* CreateUnit();
 	//void DeletePlayer(CPlayer* player);
-	void Delete(CObject* object);
 	short MakeGuid(CObject* object);
 	void Run();
 	void Quit();

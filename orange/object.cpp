@@ -41,6 +41,7 @@ CObject::CObject()
 	this->y = 0;
 	this->target_y = 0;
 	this->y_old = 0;
+	this->dir = 0;
 
 	this->life = 0.0f;
 	this->maxlife = 0.0f;
@@ -50,6 +51,8 @@ CObject::CObject()
 	this->maxshield = 0.0f;
 	this->bp = 0.0f;
 	this->maxbp = 0.0f;
+
+	this->model_id = -1;
 }
 
 /*bool CObject::InViewport(CObject *obj)

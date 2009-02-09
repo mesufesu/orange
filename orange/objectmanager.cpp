@@ -148,49 +148,27 @@ CBot* CObjectManager::CreateBot()
 	}
 }
 
-void CObjectManager::Delete(CObject* object) //useless too, lol
+CUnit * CObjectManager::CreateUnit()
 {
-	std::vector<MapType::iterator> trash_bin;
-	trash_bin.clear();
-	this->mtx.lock();
-	for(MapType::iterator it = this->container.begin(); it != this->container.end(); ++it)
+	init_genrand(GetTickCount());
+	CUnit* unit = new CUnit;
+	while(true)
 	{
-		if(it->second == object)
+		uint32 new_guid = ((genrand_int32() % (MAX_UNIT_GUID - MAX_PLAYER_GUID)) + MAX_PLAYER_GUID);
+		std::pair<MapType::iterator, bool> pr;
+		this->mtx.lock();
+		pr = this->container.insert(MapType::value_type(new_guid, (CObject*)unit));
+		this->mtx.unlock();
+		if(pr.second == true)
 		{
-			//this->container.erase(it);
-			trash_bin.push_back(it);
-			switch(object->type)
-			{
-			case VOID_BOT:
-				{
-					CBot* bot = (CBot*)object;
-					delete bot;
-					break;
-				}
-			case VOID_EMPTY:
-				{
-					delete object;
-					break;
-				}
-			case VOID_UNIT:
-				{
-					//TODO
-					break;
-				}
-			case VOID_PLAYER:
-				{
-					CPlayer* player = (CPlayer*)object;
-					delete player;
-					break;
-				}
-			}
+			unit->guid = new_guid;
+			return unit;
+		}
+		else
+		{
+			continue;
 		}
 	}
-	for(uint32 i = 0; i < trash_bin.size(); ++i)
-	{
-		this->container.erase(trash_bin.at(i));
-	}
-	this->mtx.unlock();
 }
 
 void CObjectThread::run()
@@ -224,7 +202,8 @@ void CObjectThread::run()
 						}
 					case VOID_UNIT:
 						{
-							//TODO
+							CUnit* unit = (CUnit*)object;
+							delete unit;
 							break;
 						}
 					case VOID_PLAYER:

@@ -28,6 +28,7 @@
 #include ".\\UnitTemplate.h"
 #include ".\\log.h"
 #include ".\\bot.h"
+#include ".\\unit.h"
 #include ".\\classdef.h"
 #include ".\\cssocket.h"
 
@@ -90,5 +91,8 @@ int main(int argc, char* argv[])
 	test_bot->changeup = 2;
 	test_bot->CookCharset();
 	Log.String("Bot [Pwnage] created at 0,130,130");
+	CUnit* test_npc = ObjManager.CreateUnit();
+	test_npc->SetUnit(1, 0, 134, 127);
+	Log.String("Unit %u created at 0,130,130", test_npc->guid);
 	return orange.exec();
 }
