@@ -70,10 +70,11 @@ public:
 	float bp;
 	float maxbp;
 
-	std::vector<uint16> viewport;
+	std::vector<uint32> viewport;
 
 	CObject();
-	bool InViewport(CObject* obj);
+	/*bool InViewport(CObject* obj);*/
+	bool IsInViewportList(uint32 guid);
 	void SendToViewport(unsigned char* buffer, size_t len);
 };
 

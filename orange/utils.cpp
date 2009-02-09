@@ -187,22 +187,47 @@ void MakeFrustum()
 	t2 = -3.0f + (atan((-1.0f) * (17.0f / 9.0f)) * 180.0f) / (float)Q_PI;
 }
 
-bool InFrustum(int32 ox, int32 oy, int32 tx, int32 ty)
+bool InViewport(uint8 type, int32 ox, int32 oy, int32 tx, int32 ty)
 {
-	float ntx = (float)(tx - ox);
-	float nty = (float)(ty - oy);
-	float rx = 18.0f + abs(ntx);
-	float ry = 18.0f + abs(nty);
-	float radius = sqrt(rx*rx + ry*ry);
-	if((radius > rad1) || (radius < rad2))
+	switch(type)
 	{
-		return false;
+	case 2:
+		{
+			float ntx = (float)(tx - ox);
+			float nty = (float)(ty - oy);
+			float rx = 18.0f + abs(ntx);
+			float ry = 18.0f + abs(nty);
+			float radius = sqrt(rx*rx + ry*ry);
+			if((radius > rad1) || (radius < rad2))
+			{
+				return false;
+			}
+			float val = ((-18.0f - nty) / (18.0f - ntx));
+			float deg = (atan(val) * 180.0f) / (float)Q_PI;
+			if((deg > t1) || (deg < t2))
+			{
+				return false;
+			}
+			return true;
+			break;
+		}
+	case 1:
+	case 3:
+		{
+			float nx = (float)(tx - ox);
+			float ny = (float)(ty - oy);
+			float radius = sqrt(nx*nx + ny*ny);
+			if(radius > 15.0f)
+			{
+				return false;
+			}
+			return true;
+			break;
+		}
+	default:
+		{
+			return false;
+			break;
+		}
 	}
-	float val = ((-18.0f - nty) / (18.0f - ntx));
-	float deg = (atan(val) * 180.0f) / (float)Q_PI;
-	if((deg > t1) || (deg < t2))
-	{
-		return false;
-	}
-	return true;
 }

@@ -123,7 +123,7 @@ void CWorldMap::UpdateViewport(CObject* pobj)
 	for(uint32 i = 0; i < pobj->viewport.size(); ++i)
 	{
 		CObject * object = ObjManager.FindByGuid(pobj->viewport.at(i));
-		if((!object) || (object->type < OBJECT_UNIT) || (object->map != pobj->map) || /*!((abs(pobj->x - object->x) <= 9) && (abs(pobj->y - object->y) <= 9))*/ !InFrustum(pobj->x, pobj->y, object->x, object->y))
+		if((!object) || (object->type < OBJECT_UNIT) || (object->map != pobj->map) || /*!((abs(pobj->x - object->x) <= 9) && (abs(pobj->y - object->y) <= 9))*/ !InViewport(pobj->type, pobj->x, pobj->y, object->x, object->y))
 		{
 			Log.String("[VIEWPORT] %d deletes %d from viewport", pobj->guid, pobj->viewport.at(i));
 			view_delete.push_back(pobj->viewport.at(i));
@@ -133,7 +133,7 @@ void CWorldMap::UpdateViewport(CObject* pobj)
 	for(uint32 i = 0; i < this->guids.size(); ++i)
 	{
 		CObject * object = ObjManager.FindByGuid(this->guids.at(i));
-		if((object) && (object->type > OBJECT_EMPTY) && (!pobj->InViewport(object)) && (object->map == pobj->map) && /*((abs(pobj->x - object->x) <= 9) && (abs(pobj->y - object->y) <= 9))*/ InFrustum(pobj->x, pobj->y, object->x, object->y) && (object != pobj))
+		if((object) && (object->type > OBJECT_EMPTY) && (!pobj->IsInViewportList(object->guid)) && (object->map == pobj->map) && /*((abs(pobj->x - object->x) <= 9) && (abs(pobj->y - object->y) <= 9))*/ InViewport(pobj->type, pobj->x, pobj->y, object->x, object->y) && (object != pobj))
 		{
 			Log.String("[VIEWPORT] %d inserts in his viewport %d", pobj->guid, this->guids.at(i));
 			view_create.push_back(this->guids.at(i));

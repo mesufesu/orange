@@ -52,11 +52,23 @@ CObject::CObject()
 	this->maxbp = 0.0f;
 }
 
-bool CObject::InViewport(CObject *obj)
+/*bool CObject::InViewport(CObject *obj)
 {
 	for(uint32 i = 0; i < this->viewport.size(); ++i)
 	{
 		if((ObjManager.FindByGuid(this->viewport.at(i)) == obj) && (obj != NULL) && (obj->type > OBJECT_EMPTY))
+		{
+			return true;
+		}
+	}
+	return false;
+}*/
+
+bool CObject::IsInViewportList(uint32 guid)
+{
+	for(uint32 i = 0; i < this->viewport.size(); ++i)
+	{
+		if(this->viewport.at(i) == guid)
 		{
 			return true;
 		}
@@ -69,7 +81,7 @@ void CObject::SendToViewport(unsigned char* buffer, size_t len)
 	for(uint32 i = 0; i < this->viewport.size(); ++i)
 	{
 		CObject* object = ObjManager.FindByGuid(this->viewport.at(i));
-		if((object) && (object->type == OBJECT_PLAYER))
+		if((object) && (object->type == OBJECT_PLAYER) && (object->IsInViewportList(this->guid)))
 		{
 			((CPlayer*)object)->Send(buffer, len);
 		}

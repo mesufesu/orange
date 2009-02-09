@@ -29,7 +29,7 @@ void GenerateExp();
 uint8 GetCategory(uint16 type);
 void InitFrustum();
 void MakeFrustum();
-bool InFrustum(int32 ox, int32 oy, int32 tx, int32 ty);
+bool InViewport(uint8 type, int32 ox, int32 oy, int32 tx, int32 ty);
 
 extern short RoadPathTable[16];
 extern int8 RoadX[8];
