@@ -32,8 +32,11 @@ enum OBJECT_TYPE
 	OBJECT_BOT = 3,
 };
 
-#define MAX_PLAYER_GUID 10000 //user-created characters use lowest 10k guids
-#define MAX_UNIT_GUID 22000 //server-created units take higher part 10001 - 22000: in total 12000 objects, there is still 768 for a safe
+#define DEFAULT_MOVE_SPEED 1000
+
+#define MAX_UNIT_GUID 0x3fff //0 - 0x3fff, bcz flags 0x40 & 0x80 can be in higher part
+#define MAX_BOT_GUID 0x4fff //0x3fff - 0x4fff
+#define MAX_PLAYER_GUID 0x7fff //0x4fff - 0x7fff, bcz flag 0x80 can be in higher part
 #define MAX_TEMP_GUID 0x1000000 //temporary guids for a non-game connections (logging in and etc.)
 /* all written above is total foolness, players can have up to 0x7FFF, bcz in NumberH can be 0x80 flag, units can have up to 0x3FFF cuz of 0x40 and 0x80 */
 
@@ -41,10 +44,13 @@ class CObject
 {
 public:
 	uint32 guid;
-	unsigned char x;
-	unsigned char y;
+	uint8 x;
+	uint8 y;
 	uint8 x_old;
 	uint8 y_old;
+	uint32 last_move_time;
+	uint32 move_speed;
+	uint32 attack_range;
 	unsigned char target_x;
 	unsigned char target_y;
 	unsigned char map;

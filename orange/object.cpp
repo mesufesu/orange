@@ -53,6 +53,7 @@ CObject::CObject()
 	this->maxbp = 0.0f;
 
 	this->model_id = -1;
+	this->move_speed = DEFAULT_MOVE_SPEED;
 }
 
 /*bool CObject::InViewport(CObject *obj)

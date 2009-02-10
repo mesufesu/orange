@@ -74,7 +74,7 @@ CPlayer* CObjectManager::CreatePlayer(ServerSocket* socket)
 	CPlayer* player = new CPlayer;
 	while(TRUE)
 	{
-		uint32 new_guid = ((genrand_int32() % MAX_PLAYER_GUID) + MAX_TEMP_GUID);
+		uint32 new_guid = ((genrand_int32() % (MAX_PLAYER_GUID - MAX_BOT_GUID - 1)) + MAX_TEMP_GUID + 1);
 		std::pair<MapType::iterator, bool> pr;
 		this->mtx.lock();
 		pr = this->container.insert(MapType::value_type(new_guid, (CObject*)player));
@@ -94,7 +94,7 @@ CPlayer* CObjectManager::CreatePlayer(ServerSocket* socket)
 
 void CObjectManager::ActualizePlayer(CPlayer * player, uint32 new_guid)
 {
-	assert((new_guid > 0) && (new_guid < MAX_PLAYER_GUID));
+	assert((new_guid > MAX_BOT_GUID) && (new_guid < MAX_PLAYER_GUID));
 	this->mtx.lock();
 	this->container.erase(player->guid);
 	std::pair<MapType::iterator, bool> pr;
@@ -116,7 +116,7 @@ uint32 CObjectManager::GetFreePlayerGuid()
 	QSqlQuery q;
 	while(true)
 	{
-		uint32 new_guid = genrand_int32() % MAX_PLAYER_GUID;
+		uint32 new_guid = (genrand_int32() % (MAX_PLAYER_GUID - MAX_BOT_GUID - 1)) + MAX_BOT_GUID + 1;
 		q.exec(Query("SELECT `name` from `characters` WHERE `guid` = %u;", new_guid).c_str()); /*non blocking*/
 		if(!q.next())
 		{
@@ -131,7 +131,7 @@ CBot* CObjectManager::CreateBot()
 	CBot* bot = new CBot;
 	while(true)
 	{
-		uint32 new_guid = ((genrand_int32() % (MAX_UNIT_GUID - MAX_PLAYER_GUID)) + MAX_PLAYER_GUID);
+		uint32 new_guid = ((genrand_int32() % (MAX_BOT_GUID - MAX_UNIT_GUID - 1)) + MAX_UNIT_GUID + 1);
 		std::pair<MapType::iterator, bool> pr;
 		this->mtx.lock();
 		pr = this->container.insert(MapType::value_type(new_guid, (CObject*)bot));
@@ -154,7 +154,7 @@ CUnit * CObjectManager::CreateUnit()
 	CUnit* unit = new CUnit;
 	while(true)
 	{
-		uint32 new_guid = ((genrand_int32() % (MAX_UNIT_GUID - MAX_PLAYER_GUID)) + MAX_PLAYER_GUID);
+		uint32 new_guid = (genrand_int32() % MAX_UNIT_GUID) + 1;
 		std::pair<MapType::iterator, bool> pr;
 		this->mtx.lock();
 		pr = this->container.insert(MapType::value_type(new_guid, (CObject*)unit));

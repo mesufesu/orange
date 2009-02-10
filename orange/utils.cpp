@@ -231,3 +231,10 @@ bool InViewport(uint8 type, int32 ox, int32 oy, int32 tx, int32 ty)
 		}
 	}
 }
+
+uint32 GetDistance(uint32 ox, uint32 oy, uint32 tx, uint32 ty)
+{
+	uint32 nx = abs((int)(ox - tx));
+	uint32 ny = abs((int)(oy - ty));
+	return (uint32)sqrt((float)(nx*nx) + (float)(ny*ny));
+}

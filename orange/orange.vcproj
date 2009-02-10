@@ -257,6 +257,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\SimpleAI.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Deathway\SimpleModulus\SimpleModulus.cpp"
 				>
 			</File>
@@ -386,6 +390,10 @@
 			</File>
 			<File
 				RelativePath=".\ServerSocket.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SimpleAI.h"
 				>
 			</File>
 			<File

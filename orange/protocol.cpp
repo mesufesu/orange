@@ -474,7 +474,7 @@ void Join_CreateCharacter(PMSG_CHARCREATE * data, CPlayer* player)
 
 void World_Move(PMSG_MOVE* data, CPlayer* player)
 {
-	if((GetTickCount() - player->last_move_time) && !player->teleporting)
+	if(((GetTickCount() - player->last_move_time) >= (GetDistance(player->x, player->y, player->x_old, player->y_old) * player->move_speed)) && !player->teleporting)
 	{
 		//todo: skill checks
 		uint8 x = data->X;;
@@ -527,8 +527,8 @@ void World_Move(PMSG_MOVE* data, CPlayer* player)
 			packet.Path = player->dir * 0x10;
 			player->Send((unsigned char*)&packet, packet.h.size);
 			player->SendToViewport((unsigned char*)&packet, packet.h.size);
-			player->x_old = player->target_x;
-			player->y_old = player->target_y;
+			player->x_old = data->X;
+			player->y_old = data->Y;
 			player->x = x;
 			player->y = y;
 			player->viewstate = 0;
@@ -539,6 +539,10 @@ void World_Move(PMSG_MOVE* data, CPlayer* player)
 			player->path_count =0;
 			player->SetPosition(player->x, player->y);
 		}
+	}
+	else
+	{
+		player->SetPosition(player->x, player->y);
 	}
 }
 

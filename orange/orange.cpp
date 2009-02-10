@@ -85,14 +85,17 @@ int main(int argc, char* argv[])
 		WorldMap[i].Run();
 	}
 	Log.String("WorldMap threads started.");
-	CBot* test_bot = ObjManager.CreateBot();
+	/*CBot* test_bot = ObjManager.CreateBot();
 	test_bot->SetBot("Pwnage", 0, 130, 130);
 	test_bot->Class = 5;
 	test_bot->changeup = 2;
 	test_bot->CookCharset();
-	Log.String("Bot [Pwnage] created at 0,130,130");
-	CUnit* test_npc = ObjManager.CreateUnit();
-	test_npc->SetUnit(1, 0, 134, 127);
-	Log.String("Unit %u created at 0,130,130", test_npc->guid);
+	Log.String("Bot [Pwnage] created at 0,130,130");*/
+	/*CUnit* test_npc1 = ObjManager.CreateUnit();
+	test_npc1->SetUnit(1, 0, 136, 126, 130, 126, 1);*/
+	CUnit* test_npc2 = ObjManager.CreateUnit();
+	test_npc2->SetUnit(1, 0, 136, 128, 136, 128, 0);
+	Log.String("%x òóö òóö", WorldMap[0].GetAttr(136, 122));
+	//Log.String("Unit %u created at 0,130,130", test_npc1->guid);
 	return orange.exec();
 }

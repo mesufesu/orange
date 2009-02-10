@@ -108,6 +108,11 @@ void CMapThread::run()
 					map->UpdateViewport(object);
 					((CBot*)object)->UpdateAI();
 				}
+				else if((object != NULL) && (object->type == OBJECT_UNIT))
+				{
+					map->UpdateViewport(object);
+					((CUnit*)object)->ai->Think();
+				}
 			}
 			map->last_update = GetTickCount();
 		}
@@ -199,7 +204,7 @@ void CWorldMap::UpdateViewport(CObject* pobj)
 						packet.X = obj_unit->x;
 						packet.Y = obj_unit->y;
 						packet.TX = obj_unit->target_x;
-						packet.TX = obj_unit->target_y;
+						packet.TY = obj_unit->target_y;
 						packet.Path = obj_unit->dir * 0x10;
 						memcpy(&npc_buffer[sizeof(PWMSG_COUNT) + npc_count * sizeof(PMSG_MONSTER_VIEWPORTCREATE)], &packet, sizeof(PMSG_MONSTER_VIEWPORTCREATE));
 						npc_count++;

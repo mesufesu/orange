@@ -99,7 +99,6 @@ public:
 	ServerSocket* socket;
 	PLAYER_STATUS status;
 	uint32 tick_count;
-	uint32 last_move_time;
 	uint32 last_save_time;
 	uint32 check_time;
 
