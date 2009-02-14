@@ -17,7 +17,7 @@ void CSimpleAI::Think()
 	if((GetTickCount() - this->last_think_time) >= 100)
 	{
 		this->last_think_time = GetTickCount();
-		if(!this->owner->viewport.empty())
+		if(this->owner->attack_range && !this->owner->viewport.empty()) /* don't make threat selection if we can't attack anyone, all npc's with attack_range == 0 are non-hostile to players */
 		{
 			for(uint32 i = 0; i < this->owner->viewport.size(); ++i)
 			{
@@ -40,6 +40,7 @@ void CSimpleAI::ProcessThreatList()
 {
 	if(this->threat_list.empty())
 	{
+		/* if we don't hate anyone we must perform random movement */
 		return;
 	}
 	uint highest = 0;
@@ -50,23 +51,30 @@ void CSimpleAI::ProcessThreatList()
 			highest = i;
 		}
 	}
-	CObject * object = ObjManager.FindByGuid(this->threat_list.at(highest).guid);
-	if(!object)
+	this->target = ObjManager.FindByGuid(this->threat_list.at(highest).guid);
+	if(!this->target)
 	{
 		this->threat_list.erase(this->threat_list.begin() + highest);
 		return;
 	}
-	if(!owner->IsInViewportList(object->guid))
+	if(!owner->IsInViewportList(this->target->guid))
 	{
 		this->threat_list.erase(this->threat_list.begin() + highest);
 		return;
 	}
-	if(!owner->attack_range)
+	if(((GetTickCount() - this->owner->last_move_time) >= (GetDistance(this->owner->x, this->owner->y, this->owner->x_old, this->owner->y_old) * (DEFAULT_MOVE_SPEED - owner->move_speed))) &&
+		((GetTickCount() - this->owner->last_attack_time) >= (this->owner->attack_speed))) /* if time passed only then we can try to perform any action */
 	{
-		this->threat_list.erase(this->threat_list.begin() + highest);
-		return;
+		if(this->owner->attack_range >= GetDistance(this->owner->x, this->owner->y, this->target->x, this->target->y))
+		{
+			Log.String("%u wants to tore apart %u.", this->owner->guid, this->target->guid);
+		}
+		else
+		{
+			this->PerformMovementToTarget();
+		}
 	}
-	if(owner->attack_range >= GetDistance(owner->x, owner->y, object->x, object->y))
+	/*if(owner->attack_range >= GetDistance(owner->x, owner->y, object->x, object->y))
 	{
 		if((GetTickCount() - this->owner->last_move_time) >= (GetDistance(owner->x, owner->y, owner->x_old, owner->y_old) * (DEFAULT_MOVE_SPEED - owner->move_speed)))
 		{
@@ -88,7 +96,7 @@ void CSimpleAI::ProcessThreatList()
 		{
 			Log.String("%u wants to move to %u, but its not time yet.", owner->guid, object->guid);
 		}
-	}
+	}*/
 }
 
 void CSimpleAI::AddThreat(uint32 target_guid, uint32 amount)
@@ -111,8 +119,89 @@ void CSimpleAI::ProcessAIEvent(AIEvent _event)
 {
 }
 
-void CSimpleAI::Move(uint8 x, uint8 y)
+void CSimpleAI::PerformMovementToTarget()
 {
+	std::vector<std::pair<uint8, uint8>> spots;
+	uint8 tx = this->target->x;
+	uint8 ty = this->target->y;
+	if(tx > 0 && ty < 255)
+	{
+		uint8 attr = WorldMap[target->map].GetAttr(tx - 1, ty + 1);
+		if(!(attr & 0x04) && !(attr & 0x08))
+		{
+			spots.push_back(std::make_pair(tx - 1, ty + 1));
+		}
+	}
+	if(ty < 255)
+	{
+		uint8 attr = WorldMap[target->map].GetAttr(tx, ty + 1);
+		if(!(attr & 0x04) && !(attr & 0x08))
+		{
+			spots.push_back(std::make_pair(tx, ty + 1));
+		}
+	}
+	if(tx < 255 && ty < 255)
+	{
+		uint8 attr = WorldMap[target->map].GetAttr(tx + 1, ty + 1);
+		if(!(attr & 0x04) && !(attr & 0x08))
+		{
+			spots.push_back(std::make_pair(tx + 1, ty + 1));
+		}
+	}
+	if(tx < 255)
+	{
+		uint8 attr = WorldMap[target->map].GetAttr(tx + 1, ty);
+		if(!(attr & 0x04) && !(attr & 0x08))
+		{
+			spots.push_back(std::make_pair(tx + 1, ty));
+		}
+	}
+	if(tx < 255 && ty > 0)
+	{
+		uint8 attr = WorldMap[target->map].GetAttr(tx + 1, ty - 1);
+		if(!(attr & 0x04) && !(attr & 0x08))
+		{
+			spots.push_back(std::make_pair(tx + 1, ty - 1));
+		}
+	}
+	if(ty > 0)
+	{
+		uint8 attr = WorldMap[target->map].GetAttr(tx, ty - 1);
+		if(!(attr & 0x04) && !(attr & 0x08))
+		{
+			spots.push_back(std::make_pair(tx, ty - 1));
+		}
+	}
+	if(tx > 0 && ty > 0)
+	{
+		uint8 attr = WorldMap[target->map].GetAttr(tx - 1, ty - 1);
+		if(!(attr & 0x04) && !(attr & 0x08))
+		{
+			spots.push_back(std::make_pair(tx - 1, ty - 1));
+		}
+	}
+	if(spots.empty())
+	{
+		return;
+	}
+	uint32 least_expensive = 0;
+	for(uint32 i = 0; i < spots.size(); ++i)
+	{
+		if(GetDistance(this->owner->x, this->owner->y, spots.at(i).first, spots.at(i).second) <= GetDistance(this->owner->x, this->owner->y, spots.at(least_expensive).first, spots.at(least_expensive).second))
+		{
+			least_expensive = i;
+		}
+	}
+	uint8 nx = spots.at(least_expensive).first;
+	uint8 ny = spots.at(least_expensive).second;
+	uint32 distance = GetDistance(this->owner->x, this->owner->y, nx, ny);
+	if(distance > 9)
+	{
+		float mult = (float)9 / (float)distance;
+		nx = this->owner->x - (int32)(((float)(this->owner->x - nx)) * mult);
+		ny = this->owner->y - (int32)(((float)(this->owner->y - ny)) * mult);
+	}
+
 	/* need to choose target point before moving to it, in some cases monster ended himself in non walkable place and attacked his target */
 	PMSG_RECVMOVE packet;
 	packet.h.c = 0xC1;
@@ -120,15 +209,15 @@ void CSimpleAI::Move(uint8 x, uint8 y)
 	packet.h.headcode = 0x1D;
 	packet.NumberH = HIBYTE(this->owner->guid);
 	packet.NumberL = LOBYTE(this->owner->guid);
-	packet.Path = 0x10;
-	packet.X = x;
-	packet.Y = y;
+	packet.Path = 0x10; /* still lazy to calculate direction */
+	packet.X = nx;
+	packet.Y = nx;
 	this->owner->x_old = this->owner->x;
 	this->owner->y_old = this->owner->y;
-	this->owner->x = x;
-	this->owner->y = y;
-	this->owner->target_x = x;
-	this->owner->target_y = y;
+	this->owner->x = nx;
+	this->owner->y = nx;
+	this->owner->target_x = nx;
+	this->owner->target_y = nx;
 	this->owner->last_move_time = GetTickCount();
 	this->owner->SendToViewport((uint8*)&packet, packet.h.size);
 }

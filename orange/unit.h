@@ -8,6 +8,7 @@ class CUnit : public CObject
 {
 public:
 	uint32 templ;
+	uint32 view_range;
 	CSimpleAI * ai;
 	CUnit();
 	~CUnit();

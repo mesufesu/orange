@@ -187,7 +187,7 @@ void MakeFrustum()
 	t2 = -3.0f + (atan((-1.0f) * (17.0f / 9.0f)) * 180.0f) / (float)Q_PI;
 }
 
-bool InViewport(uint8 type, int32 ox, int32 oy, int32 tx, int32 ty)
+bool InViewport(uint8 type, int32 ox, int32 oy, int32 tx, int32 ty, uint32 view_range)
 {
 	switch(type)
 	{
@@ -212,6 +212,17 @@ bool InViewport(uint8 type, int32 ox, int32 oy, int32 tx, int32 ty)
 			break;
 		}
 	case 1:
+		{
+			float nx = (float)(tx - ox);
+			float ny = (float)(ty - oy);
+			float radius = sqrt(nx*nx + ny*ny);
+			if(radius > (float)view_range)
+			{
+				return false;
+			}
+			return true;
+			break;
+		}
 	case 3:
 		{
 			float nx = (float)(tx - ox);

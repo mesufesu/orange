@@ -53,7 +53,11 @@ CObject::CObject()
 	this->maxbp = 0.0f;
 
 	this->model_id = -1;
-	this->move_speed = DEFAULT_MOVE_SPEED;
+	this->move_speed = 0; /* null means DEFAULT speed */
+	this->last_attack_time = GetTickCount();
+	this->last_move_time = GetTickCount();
+	this->attack_range = 0;
+	this->attack_speed = DEFAULT_ATTACK_SPEED;
 }
 
 /*bool CObject::InViewport(CObject *obj)

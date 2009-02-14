@@ -33,6 +33,7 @@ enum OBJECT_TYPE
 };
 
 #define DEFAULT_MOVE_SPEED 1000
+#define DEFAULT_ATTACK_SPEED 1000
 
 #define MAX_UNIT_GUID 0x3fff //0 - 0x3fff, bcz flags 0x40 & 0x80 can be in higher part
 #define MAX_BOT_GUID 0x4fff //0x3fff - 0x4fff
@@ -49,7 +50,9 @@ public:
 	uint8 x_old;
 	uint8 y_old;
 	uint32 last_move_time;
+	uint32 last_attack_time;
 	uint32 move_speed;
+	uint32 attack_speed;
 	uint32 attack_range;
 	unsigned char target_x;
 	unsigned char target_y;

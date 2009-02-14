@@ -37,9 +37,10 @@ public:
 	void AddThreat(uint32 guid, uint32 amount);
 private:
 	CObject* owner;
+	CObject* target;
 	void ProcessAIEvent(AIEvent _event);
 	void ProcessThreatList();
-	void Move(uint8 x, uint8 y);
+	void PerformMovementToTarget();
 	uint32 last_think_time;
 	std::vector<ThreatElement> threat_list;
 	std::vector<AIEvent> events;

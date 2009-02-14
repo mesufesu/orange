@@ -6,8 +6,9 @@ CUnit::CUnit()
 {
 	this->type = OBJECT_UNIT;
 	this->ai = new CSimpleAI((CObject*)this);
-	this->state = 1;
-	this->attack_range = 1;
+	this->state = 0;
+	this->attack_range = 0;
+	this->view_range = 0;
 }
 
 CUnit::~CUnit()
@@ -30,6 +31,10 @@ bool CUnit::SetUnit(uint32 _type, uint8 _map, uint8 _x, uint8 _y, uint8 tx, uint
 		this->target_y = ty;
 		this->map = _map;
 		this->state = ustate;
+		this->attack_range = ut->attack_range;
+		this->move_speed = ut->move_speed;
+		this->view_range = ut->view_range;
+		this->attack_speed = ut->attack_speed;
 		return true;
 	}
 	else
