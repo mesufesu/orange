@@ -41,6 +41,8 @@ private:
 	void ProcessAIEvent(AIEvent _event);
 	void ProcessThreatList();
 	void PerformMovementToTarget();
+	void PerformRandomMovement();
+	void TryMoveTo(uint8 x, uint8 y);
 	uint32 last_think_time;
 	std::vector<ThreatElement> threat_list;
 	std::vector<AIEvent> events;

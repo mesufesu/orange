@@ -474,7 +474,9 @@ void Join_CreateCharacter(PMSG_CHARCREATE * data, CPlayer* player)
 
 void World_Move(PMSG_MOVE* data, CPlayer* player)
 {
-	if(((GetTickCount() - player->last_move_time) >= (GetDistance(player->x, player->y, player->x_old, player->y_old) * player->move_speed)) && !player->teleporting)
+	uint32 diff = GetTickCount() - player->last_move_time;
+	Log.String("%u move difference %u", player->guid, diff);
+	if(((GetTickCount() - player->last_move_time) >= 100) && !player->teleporting)
 	{
 		//todo: skill checks
 		uint8 x = data->X;;
@@ -542,7 +544,7 @@ void World_Move(PMSG_MOVE* data, CPlayer* player)
 	}
 	else
 	{
-		player->SetPosition(player->x, player->y);
+		player->SetPosition(data->X, data->Y);
 	}
 }
 

@@ -51,6 +51,8 @@ public:
 	uint8 y_old;
 	uint32 last_move_time;
 	uint32 last_attack_time;
+	uint32 die_time;
+	uint32 respawn_time;
 	uint32 move_speed;
 	uint32 attack_speed;
 	uint32 attack_range;

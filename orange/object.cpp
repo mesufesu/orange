@@ -58,6 +58,8 @@ CObject::CObject()
 	this->last_move_time = GetTickCount();
 	this->attack_range = 0;
 	this->attack_speed = DEFAULT_ATTACK_SPEED;
+	this->die_time = GetTickCount();
+	this->respawn_time = 3 * SECOND;
 }
 
 /*bool CObject::InViewport(CObject *obj)

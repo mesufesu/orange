@@ -116,7 +116,7 @@ void CMapThread::run()
 			}
 			map->last_update = GetTickCount();
 		}
-		this->msleep(100);
+		this->msleep(1);
 	}
 }
 

@@ -43,6 +43,8 @@ CPlayer::CPlayer()
 	this->pklevel = 0;
 	this->rest = 0;
 
+	this->move_speed = 800;
+
 	this->experience = 0;
 	this->leveluppoint = 0;
 	this->money = 0;
@@ -303,7 +305,7 @@ void CPlayer::SetPosition(uint8 _x, uint8 _y)
 		PMSG_RECV_POSISTION_SET data;
 		data.h.c = 0xC1;
 		data.h.size = sizeof(PMSG_RECV_POSISTION_SET);
-		data.h.headcode = GC_RECV_POSITION_SET;
+		data.h.headcode = 0xD6;
 		data.NumberH = HIBYTE(this->guid);
 		data.NumberL = LOBYTE(this->guid);
 		data.X = _x;
