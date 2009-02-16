@@ -290,3 +290,13 @@ unsigned char CWorldMap::GetAttr(int x, int y)
 {
 	return *(&map[0][0] + x + y*256);
 }
+
+bool CWorldMap::FreeToMove(uint8 x, uint8 y)
+{
+	uint8 attr = this->GetAttr(x, y);
+	if(!(attr & MAP_BLOCKED1) && !(attr & MAP_BLOCKED2))
+	{
+		return true;
+	}
+	return false;
+}

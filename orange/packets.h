@@ -260,7 +260,14 @@ struct PMSG_RECVMOVE
 };
 // <size 0x8>
 
-struct PMSG_RECV_POSISTION_SET
+struct PMSG_POSITION_SET
+{
+  /*<thisrel this+0x0>*/ /*|0x3|*/ PBMSG_HEAD h;
+  /*<thisrel this+0x3>*/ /*|0x1|*/ unsigned char X;
+  /*<thisrel this+0x4>*/ /*|0x1|*/ unsigned char Y;
+};
+
+struct PMSG_RECV_POSITION_SET
 {
   /*<thisrel this+0x0>*/ /*|0x3|*/ PBMSG_HEAD h;
   /*<thisrel this+0x3>*/ /*|0x1|*/ unsigned char NumberH;

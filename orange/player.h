@@ -69,6 +69,13 @@ struct SC_CHARINFO
 	//DATA_ITEM temp_inv[12];
 };
 
+struct MovePoint
+{
+	uint32 time;
+	uint8 x;
+	uint8 y;
+};
+
 struct DATA_CHARACTER
 {
 	uint32 Position; //mapx mapy map dir
@@ -103,6 +110,7 @@ public:
 	uint32 check_time;
 
 	size_t path_count;
+	std::vector<MovePoint> path;
 
 	char account[10];
 	char name[10];
@@ -170,6 +178,8 @@ public:
 	void CookCharset();
 	void LoadItemToInventory(DATA_ITEM * ditem);
 	void Calculate();
+	MovePoint * GetCurrentPosition();
+	bool CheckPacketPosition(uint8 x, uint8 y);
 };
 
 #endif

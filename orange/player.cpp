@@ -195,6 +195,12 @@ bool CPlayer::LoadCharacterData(SC_CHARINFO *info)
 	this->y = (uint8)((position >> 16) & 0x0000ffff);
 	this->y_old = this->y;
 	this->target_y = this->y;
+	this->path.clear();
+	MovePoint pt;
+	pt.time = GetTickCount();
+	pt.x = this->x;
+	pt.y = this->y;
+	this->path.push_back(pt);
 	this->map = (uint8)((position >> 8) & 0x000000ff);
 	this->dir = (uint8)((position) & 0x000000ff);
 	this->experience = q.value(1).toULongLong();
@@ -294,32 +300,39 @@ bool CPlayer::CheckPacketTime()
 
 void CPlayer::SetPosition(uint8 _x, uint8 _y)
 {
-	if((this->type != OBJECT_PLAYER) || (!this->CheckPacketTime()) || (this->teleporting))
+	if(this->type != OBJECT_PLAYER && this->teleporting)
 	{
 		return;
 	}
+	PMSG_POSITION_SET pPacket;
+	PMSG_RECV_POSITION_SET vPacket;
+	pPacket.h.c = 0xC1;
+	pPacket.h.size = sizeof(PMSG_POSITION_SET);
+	pPacket.h.headcode = 0xD6;
+	pPacket.X = _x;
+	pPacket.Y = _y;
+	vPacket.h.c = 0xC1;
+	vPacket.h.headcode = 0xD6;
+	vPacket.h.size = sizeof(PMSG_RECV_POSITION_SET);
+	vPacket.X = _x;
+	vPacket.Y = _y;
+	vPacket.NumberH = HIBYTE(this->guid);
+	vPacket.NumberL = LOBYTE(this->guid);
+	MovePoint pt;
+	pt.time = GetTickCount();
+	pt.x = _x;
+	pt.y = _y;
+	this->path.clear();
+	this->path.push_back(pt);
 	this->x = _x;
 	this->y = _y;
-	if(!((this->map >= 18) && (this->map <= 23))) //ChaosCastle Specific check here (blow time)
-	{
-		PMSG_RECV_POSISTION_SET data;
-		data.h.c = 0xC1;
-		data.h.size = sizeof(PMSG_RECV_POSISTION_SET);
-		data.h.headcode = 0xD6;
-		data.NumberH = HIBYTE(this->guid);
-		data.NumberL = LOBYTE(this->guid);
-		data.X = _x;
-		data.Y = _y;
-		this->target_x = _x;
-		this->target_y = _y;
-		if(this->CheckPosition())
-		{
-			this->Send((uint8*)&data, sizeof(PMSG_RECV_POSISTION_SET));
-			this->SendToViewport((uint8*)&data, sizeof(PMSG_RECV_POSISTION_SET));
-			this->x_old = this->target_x;
-			this->y_old = this->target_y;
-		}
-	}
+	this->target_x = _x;
+	this->target_y = _y;
+	this->x_old = _x;
+	this->y_old = _y;
+	this->last_move_time = pt.time;
+	this->Send((uint8*)&pPacket, pPacket.h.size);
+	this->SendToViewport((uint8*)&vPacket, vPacket.h.size);
 }
 
 bool CPlayer::SavePlayer()
@@ -764,4 +777,32 @@ void CPlayer::Calculate()
 			break;
 		}
 	}
+}
+
+MovePoint * CPlayer::GetCurrentPosition()
+{
+	uint32 currtime = GetTickCount();
+	uint32 current = 0;
+	for(uint32 i = 0; i < this->path.size(); ++i)
+	{
+		if(this->path.at(i).time >= currtime)
+		{
+			return &this->path.at(i - 1);
+		}
+	}
+	return NULL;
+}
+
+bool CPlayer::CheckPacketPosition(uint8 x, uint8 y)
+{
+	MovePoint * pt = this->GetCurrentPosition();
+	if(!pt)
+	{
+		return false;
+	}
+	if((abs(x - pt->x) <= 2) && (abs(y - pt->y) <= 2))
+	{
+		return true;
+	}
+	return false;
 }

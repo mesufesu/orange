@@ -29,6 +29,8 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
+#include <math.h>
+#include <assert.h>
 #include ".\\mt19937.h"
 #include ".\\log.h"
 

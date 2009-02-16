@@ -474,10 +474,19 @@ void Join_CreateCharacter(PMSG_CHARCREATE * data, CPlayer* player)
 
 void World_Move(PMSG_MOVE* data, CPlayer* player)
 {
-	uint32 diff = GetTickCount() - player->last_move_time;
-	Log.String("%u move difference %u", player->guid, diff);
 	if(((GetTickCount() - player->last_move_time) >= 100) && !player->teleporting)
 	{
+		MovePoint * old_pt;
+		if(!player->path.empty())
+		{
+			old_pt = player->GetCurrentPosition();
+			assert(old_pt != NULL);
+			if(!player->CheckPacketPosition(data->X, data->Y))
+			{
+				player->SetPosition(old_pt->x, old_pt->y);
+				return;
+			}
+		}
 		//todo: skill checks
 		uint8 x = data->X;;
 		uint8 y = data->Y;
@@ -486,6 +495,7 @@ void World_Move(PMSG_MOVE* data, CPlayer* player)
 		player->path_count = data->Path[0] & 0x0f;
 		if(player->path_count > 15)
 		{
+			player->SetPosition(old_pt->x, old_pt->y);
 			return;
 		}
 
@@ -498,53 +508,52 @@ void World_Move(PMSG_MOVE* data, CPlayer* player)
 			new_path[n + 1] = data->Path[i] & 0x0f;
 			n += 2;
 		}
+		MovePoint first;
+		first.time = GetTickCount();
+		first.x = x;
+		first.y = y;
+		player->path.clear();
+		player->path.push_back(first);
 		for(uint32 i = 0; i < player->path_count; ++i)
 		{
 			x += RoadX[new_path[i]];
 			y += RoadY[new_path[i]];
-		}
-		Log.String("Got %u:%u, after pathing %u:%u", data->X, data->Y, x, y);
-		uint8 attr = WorldMap[player->map].GetAttr(x, y);
-		//Blood castle specific code here
-		if(!(attr & 8) && !(attr & 4))
-		{
-			player->target_x = x;
-			player->target_y = y;
-			PMSG_RECVMOVE packet;
-			packet.h.c = 0xC1;
-			packet.h.headcode = 0x1D;
-			packet.h.size = sizeof(PMSG_RECVMOVE);
-			packet.NumberH = HIBYTE(player->guid);
-			packet.NumberL = LOBYTE(player->guid);
-			packet.X = x;
-			packet.Y = y;
-			if(!player->CheckPosition())
+			if(!WorldMap[player->map].FreeToMove(x, y))
 			{
-				player->path_count = 0;
-				player->target_x = player->x;
-				player->target_y = player->y;
-				packet.X = player->x;
-				packet.Y = player->y; //maybe ::SetPosition here?
+				player->SetPosition(old_pt->x, old_pt->y);
+				return;
 			}
-			packet.Path = player->dir * 0x10;
-			player->Send((unsigned char*)&packet, packet.h.size);
-			player->SendToViewport((unsigned char*)&packet, packet.h.size);
-			player->x_old = data->X;
-			player->y_old = data->Y;
-			player->x = x;
-			player->y = y;
-			player->viewstate = 0;
-			player->last_move_time = GetTickCount();
+			MovePoint point;
+			point.time = first.time + 300 * (i + 1);
+			point.x = x;
+			point.y = y;
+			player->path.push_back(point);
 		}
-		else
+		//Blood castle specific code here
+		player->target_x = x;
+		player->target_y = y;
+		PMSG_RECVMOVE packet;
+		packet.h.c = 0xC1;
+		packet.h.headcode = 0x1D;
+		packet.h.size = sizeof(PMSG_RECVMOVE);
+		packet.NumberH = HIBYTE(player->guid);
+		packet.NumberL = LOBYTE(player->guid);
+		packet.X = x;
+		packet.Y = y;
+		if(!player->CheckPosition())
 		{
-			player->path_count =0;
-			player->SetPosition(player->x, player->y);
+			player->SetPosition(old_pt->x, old_pt->y);
+			return;
 		}
-	}
-	else
-	{
-		player->SetPosition(data->X, data->Y);
+		packet.Path = player->dir * 0x10;
+		player->Send((unsigned char*)&packet, packet.h.size);
+		player->SendToViewport((unsigned char*)&packet, packet.h.size);
+		player->x_old = data->X;
+		player->y_old = data->Y;
+		player->x = x;
+		player->y = y;
+		player->viewstate = 0;
+		player->last_move_time = GetTickCount();
 	}
 }
 

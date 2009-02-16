@@ -25,6 +25,15 @@
 
 #define MAX_MAPS 60
 
+enum MAP_ATTR
+{
+	MAP_NONE = 0,
+	MAP_SAFE_ZONE = 0x01,
+	MAP_BUSY = 0x02,
+	MAP_BLOCKED1 = 0x04,
+	MAP_BLOCKED2 = 0x08,
+};
+
 class CMapThread : public QThread
 {
 public:
@@ -50,6 +59,7 @@ public:
 	void Run();
 	void Quit();
 	unsigned char GetAttr(int x, int y);
+	bool FreeToMove(uint8 x, uint8 y);
 
 private:
 	std::vector<uint16> guids;
