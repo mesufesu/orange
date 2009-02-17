@@ -137,6 +137,7 @@ public:
 
 	/*data from calc start*/
 	bool armed;
+	unsigned char SkillLongSpearChange;
 
 	//here goes specific stat bonuses as it made by webzen, better implement it later by mod auras
 	uint32 add_life;
@@ -159,6 +160,10 @@ public:
 	uint32 ad_left_max;
 	uint32 ad_right_min;
 	uint32 ad_right_max;
+	uint32 spell_damage_min;
+	uint32 spell_damage_max;
+	uint32 crit_damage;
+	uint32 excellent_damage;
 	/*data from calc end*/
 
 	CPlayer();

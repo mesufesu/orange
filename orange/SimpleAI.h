@@ -3,22 +3,11 @@
 
 #include ".\\object.h"
 
-enum AIEventType
-{
-	ATTACKED = 0,
-};
-
 enum AIEventPriority
 {
 	LOW = 0,
 	NORMAL = 1,
 	HIGH = 2,
-};
-
-struct AIEvent
-{
-	AIEventType ev;
-	AIEventPriority prio;
 };
 
 struct ThreatElement
@@ -31,21 +20,18 @@ class CSimpleAI
 {
 public:
 	CSimpleAI(CObject* obj);
+	~CSimpleAI();
 	void Think();
-	void AddAIEvent(AIEvent _event);
-	void SetOwner(CObject* owner);
 	void AddThreat(uint32 guid, uint32 amount);
-private:
+protected:
 	CObject* owner;
 	CObject* target;
-	void ProcessAIEvent(AIEvent _event);
 	void ProcessThreatList();
-	void PerformMovementToTarget();
-	void PerformRandomMovement();
-	void TryMoveTo(uint8 x, uint8 y);
-	uint32 last_think_time;
+	virtual void DecideAction();
+	virtual bool IsHostile(CObject* obj);
 	std::vector<ThreatElement> threat_list;
-	std::vector<AIEvent> events;
+private:
+	uint32 last_think_time;
 };
 
 #endif

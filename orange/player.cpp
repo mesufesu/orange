@@ -62,7 +62,12 @@ CPlayer::CPlayer()
 	ZeroMemory(this->charset, sizeof(this->charset));
 
 	/*data from calc start*/
-	armed = false;
+	this->armed = false;
+	this->SkillLongSpearChange = 0;
+	this->crit_damage = 0;
+	this->excellent_damage = 0;
+	this->spell_damage_min = 0;
+	this->spell_damage_max = 0;
 	/*data from calc end*/
 }
 
@@ -775,6 +780,70 @@ void CPlayer::Calculate()
 			this->ad_left_min = 0;
 			this->ad_left_max = 0;
 			break;
+		}
+	}
+	this->inventory[WINGS]->PlusSpecial(&this->ad_right_min, 80);
+	this->inventory[WINGS]->PlusSpecial(&this->ad_right_max, 80);
+	this->inventory[WINGS]->PlusSpecial(&this->ad_left_min, 80);
+	this->inventory[WINGS]->PlusSpecial(&this->ad_left_max, 80);
+	uint32 _addcharisma = 0;
+	if(this->inventory[WINGS]->IsItem())
+	{
+		_addcharisma += this->inventory[WINGS]->m_Leadership;
+	}
+	if(right->IsItem())
+	{
+		if(right->GetItemType() != ITEM_STAFF && right->GetItemType() != ITEM_SHIELD) //strange, not only weapons
+		{
+			this->ad_right_min += right->damage_min;
+			this->ad_right_max += right->damage_max;
+		}
+		else
+		{
+			this->ad_right_min += right->damage_min / 2;
+			this->ad_right_max += right->damage_max / 2;
+		}
+		if(right->m_SkillChange)
+		{
+			this->SkillLongSpearChange = 1;
+		}
+		right->PlusSpecial(&this->ad_right_min, 80);
+		right->PlusSpecial(&this->ad_right_max, 80);
+	}
+	if(left->IsItem())
+	{
+		this->ad_left_min += left->damage_min;
+		this->ad_left_max += left->damage_max;
+		left->PlusSpecial(&this->ad_left_min, 80);
+		left->PlusSpecial(&this->ad_left_max, 80);
+	}
+	this->crit_damage = 0;
+	this->excellent_damage = 0;
+	this->inventory[RIGHT_HAND]->PlusSpecial(&this->crit_damage, 84);
+	this->inventory[LEFT_HAND]->PlusSpecial(&this->crit_damage, 84);
+	this->inventory[HELMET]->PlusSpecial(&this->crit_damage, 84);
+	this->inventory[ARMOR]->PlusSpecial(&this->crit_damage, 84);
+	this->inventory[PANTS]->PlusSpecial(&this->crit_damage, 84);
+	this->inventory[GLOVES]->PlusSpecial(&this->crit_damage, 84);
+	this->inventory[BOOTS]->PlusSpecial(&this->crit_damage, 84);
+	this->inventory[WINGS]->PlusSpecial(&this->crit_damage, 84);
+
+	this->spell_damage_min = _energy / 9;
+	this->spell_damage_max = _energy / 4;
+	this->inventory[WINGS]->PlusSpecial(&this->spell_damage_min, 81);
+	this->inventory[WINGS]->PlusSpecial(&this->spell_damage_max, 81);
+	if(right->IsItem())
+	{
+		uint32 it_type = right->type;
+		if(it_type != 31 && it_type != 21 && it_type != 23 && it_type != 25)
+		{
+			right->PlusSpecial(&this->spell_damage_min, 81);
+			right->PlusSpecial(&this->spell_damage_max, 81);
+		}
+		else
+		{
+			right->PlusSpecial(&this->spell_damage_min, 80);
+			right->PlusSpecial(&this->spell_damage_max, 80);
 		}
 	}
 }

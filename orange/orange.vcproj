@@ -293,6 +293,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\UnitAI.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\UnitTemplate.cpp"
 				>
 			</File>
@@ -422,6 +426,10 @@
 			</File>
 			<File
 				RelativePath=".\unit.h"
+				>
+			</File>
+			<File
+				RelativePath=".\UnitAI.h"
 				>
 			</File>
 			<File
