@@ -33,6 +33,7 @@
 #include <assert.h>
 #include ".\\mt19937.h"
 #include ".\\log.h"
+#include ".\\config.h"
 
 typedef unsigned int uint32;
 typedef unsigned short uint16;

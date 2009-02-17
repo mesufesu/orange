@@ -35,9 +35,10 @@
 int main(int argc, char* argv[])
 {
 	QCoreApplication orange(argc, argv);
+	config.Read();
 	MakeFrustum();
 	DCInfo.Init();
-	Log.Init("test.log");
+	Log.Init(config.log_file_name.c_str());
 
 	if(!g_SimpleModulusCS.LoadDecryptionKey(".\\data\\Dec1.dat"))
 	{
@@ -95,7 +96,6 @@ int main(int argc, char* argv[])
 	test_npc1->SetUnit(1, 0, 136, 126, 130, 126, 1);*/
 	CUnit* test_npc2 = ObjManager.CreateUnit();
 	test_npc2->SetUnit(1, 0, 136, 128, 136, 128, 0);
-	Log.String("%x òóö òóö", WorldMap[0].GetAttr(136, 122));
 	//Log.String("Unit %u created at 0,130,130", test_npc1->guid);
 	return orange.exec();
 }

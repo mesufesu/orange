@@ -84,6 +84,7 @@ void CWorldMap::Quit()
 void CMapThread::run()
 {
 	CWorldMap * map = (CWorldMap*)lpmap;
+	uint32 sleep_time = SECOND / config.world_tick_rate;
 	while(TRUE)
 	{
 		if((GetTickCount() - map->last_update) >= SECOND)
@@ -116,7 +117,7 @@ void CMapThread::run()
 			}
 			map->last_update = GetTickCount();
 		}
-		this->msleep(1);
+		this->msleep(sleep_time);
 	}
 }
 
