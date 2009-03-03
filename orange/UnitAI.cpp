@@ -1,8 +1,8 @@
 #include "stdafx.h"
-#include ".\\packets.h"
-#include ".\\objectmanager.h"
-#include ".\\UnitAI.h"
-#include ".\\WorldMap.h"
+#include "packets.h"
+#include "objectmanager.h"
+#include "UnitAI.h"
+#include "WorldMap.h"
 
 CUnitAI::CUnitAI(CObject * owner) : CSimpleAI(owner)
 {

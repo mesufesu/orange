@@ -4,7 +4,7 @@
 #define MAX_COMMANDS 2
 
 #include <string>
-#include ".\\player.h"
+#include "player.h"
 
 struct _COMMANDS
 {

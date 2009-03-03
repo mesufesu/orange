@@ -1,6 +1,6 @@
 #include "stdafx.h"
-#include ".\\Database.h"
-#include ".\\UnitTemplate.h"
+#include "Database.h"
+#include "UnitTemplate.h"
 
 CUnitTemplate UnitTemplate;
 

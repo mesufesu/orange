@@ -16,12 +16,12 @@
 */
 
 #include "stdafx.h"
-#include ".\\DataBase.h"
-#include ".\\WorldMap.h"
-#include ".\\ItemManager.h"
-#include ".\\protocol.h"
-#include ".\\classdef.h"
-#include ".\\commands.h"
+#include "DataBase.h"
+#include "WorldMap.h"
+#include "ItemManager.h"
+#include "protocol.h"
+#include "classdef.h"
+#include "commands.h"
 
 void ProtocolCore(CPlayer* player, unsigned char opcode, unsigned char* buffer, size_t size, bool Encrypt, int serial)
 {

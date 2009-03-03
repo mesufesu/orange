@@ -1,7 +1,5 @@
 #include "stdafx.h"
-#include <math.h>
-#include <assert.h>
-#include ".\\mathlib.h"
+#include "mathlib.h"
 
 void AngleMatrix(const float *angles, float (*matrix)[4] )
 {

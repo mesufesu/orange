@@ -16,7 +16,7 @@
 */
 
 #include "stdafx.h"
-#include ".\\DataBase.h"
+#include "DataBase.h"
 
 CDatabaseHandler MainDB;
 

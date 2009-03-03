@@ -18,12 +18,12 @@
 #ifndef _PLAYER_H_
 #define _PLAYER_H_
 
-#include ".\\ServerSocket.h"
-#include ".\\ItemManager.h"
-#include ".\\inventory.h"
-#include ".\\object.h"
-#include ".\\classdef.h"
-#include ".\\PositionHandler.h"
+#include "ServerSocket.h"
+#include "ItemManager.h"
+#include "inventory.h"
+#include "object.h"
+#include "classdef.h"
+#include "PositionHandler.h"
 
 enum PLAYER_STATUS
 {

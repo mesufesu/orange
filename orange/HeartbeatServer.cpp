@@ -16,9 +16,9 @@
 */
 
 #include "stdafx.h"
-#include ".\\sockets_lib\\ListenSocket.h"
-#include ".\\sockets_lib\\SocketHandler.h"
-#include ".\\HeartbeatServer.h"
+#include <ListenSocket.h>
+#include <SocketHandler.h>
+#include "HeartbeatServer.h"
 
 HBThread HeartBeatThread;
 

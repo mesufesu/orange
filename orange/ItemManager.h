@@ -20,9 +20,9 @@
 
 #include <map>
 #include <unordered_map>
-#include ".\\Item.h"
-#include <QtCore\\QThread>
-#include <QtCore\\QMutex>
+#include "Item.h"
+#include <QtCore/QThread>
+#include <QtCore/QMutex>
 
 class CItemThread : public QThread
 {

@@ -16,13 +16,13 @@
 */
 
 #include "stdafx.h"
-#include ".\\sockets_lib\\ListenSocket.h"
-#include ".\\sockets_lib\\SocketHandler.h"
-#include ".\\Deathway\\SimpleModulus\\SimpleModulus.h"
-#include ".\\Deathway\\spe.h"
-#include ".\\objectmanager.h"
-#include ".\\protocol.h"
-#include ".\\ServerSocket.h"
+#include <ListenSocket.h>
+#include <SocketHandler.h>
+#include "Deathway/SimpleModulus/SimpleModulus.h"
+#include "Deathway/spe.h"
+#include "objectmanager.h"
+#include "protocol.h"
+#include "ServerSocket.h"
 
 MainSocketThread _SocketThread;
 

@@ -16,14 +16,14 @@
 */
 
 #include "stdafx.h"
-#include ".\\Deathway\\SimpleModulus\\SimpleModulus.h"
-#include ".\\DataBase.h"
-#include ".\\packets.h"
-#include ".\\ItemManager.h"
-#include ".\\objectmanager.h"
-#include ".\\ItemTemplate.h"
-#include ".\\classdef.h"
-#include ".\\player.h"
+#include "Deathway/SimpleModulus/SimpleModulus.h"
+#include "DataBase.h"
+#include "packets.h"
+#include "ItemManager.h"
+#include "objectmanager.h"
+#include "ItemTemplate.h"
+#include "classdef.h"
+#include "player.h"
 
 CPlayer::CPlayer()
 {

@@ -1,7 +1,7 @@
 #include "stdafx.h"
-#include ".\\sockets_lib\\SocketHandler.h"
-#include ".\\packets.h"
-#include ".\\cssocket.h"
+#include <SocketHandler.h>
+#include "packets.h"
+#include "cssocket.h"
 
 CSThread CSSocketThread;
 

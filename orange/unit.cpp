@@ -1,6 +1,6 @@
 #include "stdafx.h"
-#include ".\\UnitTemplate.h"
-#include ".\\unit.h"
+#include "UnitTemplate.h"
+#include "unit.h"
 
 CUnit::CUnit()
 {

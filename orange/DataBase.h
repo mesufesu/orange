@@ -18,8 +18,8 @@
 #ifndef _DATABASE_H_
 #define _DATABASE_H_
 
-#include <QtCore\\QMutex>
-#include <QtSql\\QtSql>
+#include <QtCore/QMutex>
+#include <QtSql/QtSql>
 
 class CDatabaseHandler
 {

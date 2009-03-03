@@ -1,7 +1,7 @@
 #ifndef _SIMPLE_AI_H_
 #define _SIMPLE_AI_H_
 
-#include ".\\object.h"
+#include "object.h"
 
 enum AIEventPriority
 {

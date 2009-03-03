@@ -18,7 +18,7 @@
 #ifndef _ITEM_H_
 #define _ITEM_H_
 
-#include ".\\ItemTemplate.h"
+#include "ItemTemplate.h"
 
 enum CLASS_ATTR
 {

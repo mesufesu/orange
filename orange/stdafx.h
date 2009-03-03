@@ -31,10 +31,10 @@
 #include <unordered_map>
 #include <math.h>
 #include <assert.h>
-#include ".\\mt19937.h"
-#include ".\\log.h"
-#include ".\\config.h"
-#include ".\\utils.h"
+#include "mt19937.h"
+#include "log.h"
+#include "config.h"
+#include "utils.h"
 
 typedef unsigned int uint32;
 typedef unsigned short uint16;

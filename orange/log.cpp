@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include ".\\log.h"
+#include "log.h"
 
 CLog Log;
 

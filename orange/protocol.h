@@ -18,8 +18,8 @@
 #ifndef _PROTOCOL_H_
 #define _PROTOCOL_H_
 
-#include ".\\packets.h"
-#include ".\\objectmanager.h"
+#include "packets.h"
+#include "objectmanager.h"
 
 void ProtocolCore(CPlayer* player, unsigned char opcode, unsigned char* buffer, size_t size, bool Encrypt, int serial);
 void TestJoinSend(CPlayer* player, int result);

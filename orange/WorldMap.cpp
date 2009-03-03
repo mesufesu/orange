@@ -16,9 +16,9 @@
 */
 
 #include "stdafx.h"
-#include ".\\objectmanager.h"
-#include ".\\packets.h"
-#include ".\\WorldMap.h"
+#include "objectmanager.h"
+#include "packets.h"
+#include "WorldMap.h"
 
 CWorldMap WorldMap[MAX_MAPS];
 

@@ -16,8 +16,8 @@
 */
 
 #include "stdafx.h"
-#include ".\\object.h"
-#include ".\\objectmanager.h"
+#include "object.h"
+#include "objectmanager.h"
 
 CObject::CObject()
 {

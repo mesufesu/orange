@@ -1,7 +1,7 @@
 #ifndef _UNIT_AI_H_
 #define _UNIT_AI_H_
 
-#include ".\\SimpleAI.h" 
+#include "SimpleAI.h" 
 
 class CUnitAI : public CSimpleAI
 {

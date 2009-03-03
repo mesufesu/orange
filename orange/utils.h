@@ -18,8 +18,6 @@
 #ifndef _UTILS_H_
 #define _UTILS_H_
 
-#include <string>
-
 #ifndef _WINDOWS
 #define ZeroMemory(Destination,Length) memset((Destination),0,(Length))
 #endif

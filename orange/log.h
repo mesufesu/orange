@@ -1,7 +1,7 @@
 #ifndef _LOG_H_
 #define _LOG_H_
 
-#include <QtCore\\QMutex>
+#include <QtCore/QMutex>
 
 class CLog
 {

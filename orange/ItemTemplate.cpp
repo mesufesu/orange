@@ -1,6 +1,6 @@
 #include "stdafx.h"
-#include ".\\ItemTemplate.h"
-#include ".\\DataBase.h"
+#include "ItemTemplate.h"
+#include "DataBase.h"
 
 CItemTemplate ItemTemplate;
 

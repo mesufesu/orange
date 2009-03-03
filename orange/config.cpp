@@ -1,7 +1,7 @@
 #include "stdafx.h"
-#include ".\\config.h"
+#include "config.h"
 
-#include <QtCore\\QSettings>
+#include <QtCore/QSettings>
 
 CConfigStorage config;
 

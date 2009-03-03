@@ -1,6 +1,6 @@
 #include "stdafx.h"
-#include ".\\objectmanager.h"
-#include ".\\SimpleAI.h"
+#include "objectmanager.h"
+#include "SimpleAI.h"
 
 CSimpleAI::CSimpleAI(CObject* obj)
 {

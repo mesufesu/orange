@@ -18,10 +18,9 @@
 #ifndef _WORLDMAP_H_
 #define _WORLDMAP_H_
 
-#include <vector>
-#include ".\\player.h"
-#include <QtCore\\QThread>
-#include <QtCore\\QMutex>
+#include "player.h"
+#include <QtCore/QThread>
+#include <QtCore/QMutex>
 
 #define MAX_MAPS 60
 

@@ -16,7 +16,7 @@
 */
 
 #include "stdafx.h"
-#include ".\\utils.h"
+#include "utils.h"
 #include ".\\mathlib.h"
 
 uint64 levelexp[401];

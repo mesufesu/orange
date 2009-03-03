@@ -16,7 +16,7 @@
 */
 
 #include "stdafx.h"
-#include ".\\classdef.h"
+#include "classdef.h"
 
 classdef DCInfo;
 

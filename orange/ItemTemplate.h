@@ -2,7 +2,7 @@
 #define _ITEM_TEMPLATE_H_
 
 #include <unordered_map>
-#include <QtCore\\QMutex>
+#include <QtCore/QMutex>
 
 struct ITEM_TEMPLATE
 {

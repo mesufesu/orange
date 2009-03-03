@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include ".\\mt19937.h"
+#include "mt19937.h"
 
 /* 
    A C-program for MT19937, with initialization improved 2002/1/26.

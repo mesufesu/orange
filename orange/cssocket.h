@@ -1,8 +1,8 @@
 #ifndef _CSSOCKET_H_
 #define _CSSOCKET_H_
 
-#include ".\\sockets_lib\\UdpSocket.h"
-#include <QtCore\\QThread>
+#include <UdpSocket.h>
+#include <QtCore/QThread>
 
 class CSThread : public QThread
 {

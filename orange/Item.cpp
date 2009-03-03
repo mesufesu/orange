@@ -16,8 +16,8 @@
 */
 
 #include "stdafx.h"
-#include ".\\Item.h"
-#include ".\\utils.h"
+#include "Item.h"
+#include "utils.h"
 
 CItem::CItem()
 {

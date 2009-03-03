@@ -19,13 +19,13 @@
 #define _OBJECTMANAGER_H_
 
 #include <vector>
-#include ".\\object.h"
-#include ".\\player.h"
-#include ".\\bot.h"
-#include ".\\unit.h"
-#include ".\\WorldMap.h"
-#include <QtCore\\QMutex>
-#include <QtCore\\QThread>
+#include "object.h"
+#include "player.h"
+#include "bot.h"
+#include "unit.h"
+#include "WorldMap.h"
+#include <QtCore/QMutex>
+#include <QtCore/QThread>
 
 class CObjectThread : public QThread
 {

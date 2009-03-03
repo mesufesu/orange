@@ -1,7 +1,7 @@
 #include "stdafx.h"
-#include ".\\commands.h"
-#include ".\\ItemManager.h"
-#include ".\\ItemTemplate.h"
+#include "commands.h"
+#include "ItemManager.h"
+#include "ItemTemplate.h"
 
 const _COMMANDS commands[MAX_COMMANDS] = 
 {

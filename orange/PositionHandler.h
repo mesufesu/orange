@@ -1,7 +1,7 @@
 #ifndef _POSITION_HANDLER_H_
 #define _POSITION_HANDLER_H_
 
-#include <QtCore\\QMutex>
+#include <QtCore/QMutex>
 
 struct MovePoint
 {

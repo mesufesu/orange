@@ -1,7 +1,7 @@
 #include "stdafx.h"
-#include ".\\bot.h"
-#include ".\\WorldMap.h" 
-#include ".\\packets.h" 
+#include "bot.h"
+#include "WorldMap.h" 
+#include "packets.h" 
 
 CBot::CBot()
 {

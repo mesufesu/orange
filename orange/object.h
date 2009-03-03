@@ -18,8 +18,6 @@
 #ifndef _OBJECT_H_
 #define _OBJECT_H_
 
-#include <vector>
-
 enum OBJECT_TYPE
 {
 	VOID_BOT = -4,

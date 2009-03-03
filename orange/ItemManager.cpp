@@ -16,9 +16,9 @@
 */
 
 #include "stdafx.h"
-#include ".\\utils.h"
-#include ".\\DataBase.h"
-#include ".\\ItemManager.h"
+#include "utils.h"
+#include "DataBase.h"
+#include "ItemManager.h"
 
 CItemManager ItemManager;
 

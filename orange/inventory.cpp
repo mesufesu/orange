@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include ".\\inventory.h"
+#include "inventory.h"
 
 const CItem dummy;
 

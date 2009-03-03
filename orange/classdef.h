@@ -18,7 +18,7 @@
 #ifndef _CLASSDEF_H_
 #define _CLASSDEF_H_
 
-#include ".\\Item.h"
+#include "Item.h"
 
 enum ClassNumber
 {

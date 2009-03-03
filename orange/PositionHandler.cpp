@@ -1,6 +1,6 @@
 #include "stdafx.h"
-#include ".\\WorldMap.h"
-#include ".\\PositionHandler.h"
+#include "WorldMap.h"
+#include "PositionHandler.h"
 
 CPositionHandler::CPositionHandler()
 {

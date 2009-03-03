@@ -1,11 +1,11 @@
 #ifndef _BOT_H_
 #define _BOT_H_
 
-#include ".\\ItemManager.h"
-#include ".\\inventory.h"
-#include ".\\object.h"
-#include ".\\player.h"
-#include ".\\utils.h"
+#include "ItemManager.h"
+#include "inventory.h"
+#include "object.h"
+#include "player.h"
+#include "utils.h"
 
 class CBot : public CObject
 {

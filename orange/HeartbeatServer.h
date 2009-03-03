@@ -18,9 +18,9 @@
 #ifndef _HEARTBEATSERVER_H_
 #define _HEARTBEATSERVER_H_
 
-#include ".\\sockets_lib\\TcpSocket.h"
-#include ".\\sockets_lib\\ISocketHandler.h"
-#include <QtCore\\QThread>
+#include <TcpSocket.h>
+#include <ISocketHandler.h>
+#include <QtCore/QThread>
 
 class HeartbeatSocket : public TcpSocket
 {
