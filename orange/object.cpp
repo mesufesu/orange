@@ -54,11 +54,11 @@ CObject::CObject()
 
 	this->model_id = -1;
 	this->move_speed = 0; /* null means DEFAULT speed */
-	this->last_attack_time = GetTickCount();
-	this->last_move_time = GetTickCount();
+	this->last_attack_time = GetTicks();
+	this->last_move_time = GetTicks();
 	this->attack_range = 0;
 	this->attack_speed = DEFAULT_ATTACK_SPEED;
-	this->die_time = GetTickCount();
+	this->die_time = GetTicks();
 	this->respawn_time = 3 * SECOND;
 }
 

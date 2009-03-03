@@ -11,7 +11,7 @@ CSUdp::CSUdp(ISocketHandler &h) : UdpSocket(h)
 
 void CSThread::run()
 {
-	uint32 last_tick = GetTickCount();
+	uint32 last_tick = GetTicks();
 	SocketHandler h;
 	CSUdp CSSocket(h);
 	PMSG_SERVERINFO data;
@@ -22,9 +22,9 @@ void CSThread::run()
 	data.ServerCode = 0;
 	while(true)
 	{
-		if((GetTickCount() - last_tick) >= SECOND)
+		if(GetTickDiff(last_tick) >= SECOND)
 		{
-			last_tick = GetTickCount();
+			last_tick = GetTicks();
 			data.Percent = 30;
 			data.UserCount = 12;
 			data.AccountCount = 10;

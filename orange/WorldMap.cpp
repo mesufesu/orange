@@ -31,7 +31,7 @@ CWorldMap::CWorldMap()
 	this->map_number = -1;
 	this->width = -1;
 	this->height = -1;
-	this->last_update = GetTickCount();
+	this->last_update = GetTicks();
 }
 
 void CWorldMap::LoadMap(const char * filename)
@@ -87,7 +87,7 @@ void CMapThread::run()
 	uint32 sleep_time = SECOND / config.world_tick_rate;
 	while(TRUE)
 	{
-		if((GetTickCount() - map->last_update) >= SECOND)
+		if(GetTickDiff(map->last_update) >= SECOND)
 		{
 			map->UpdateMap();
 			for(uint32 i = 0; i < map->guids.size(); ++i)
@@ -115,7 +115,7 @@ void CMapThread::run()
 					((CUnit*)object)->ai->Think();
 				}
 			}
-			map->last_update = GetTickCount();
+			map->last_update = GetTicks();
 		}
 		this->msleep(sleep_time);
 	}

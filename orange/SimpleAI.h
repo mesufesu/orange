@@ -29,6 +29,7 @@ protected:
 	void ProcessThreatList();
 	virtual void DecideAction();
 	virtual bool IsHostile(CObject* obj);
+	virtual bool IsInAggroDistance(CObject* obj);
 	std::vector<ThreatElement> threat_list;
 private:
 	uint32 last_think_time;

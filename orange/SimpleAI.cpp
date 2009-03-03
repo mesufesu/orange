@@ -1,12 +1,10 @@
 #include "stdafx.h"
-#include <math.h>
 #include ".\\objectmanager.h"
-#include ".\\utils.h"
 #include ".\\SimpleAI.h"
 
 CSimpleAI::CSimpleAI(CObject* obj)
 {
-	this->last_think_time = GetTickCount();
+	this->last_think_time = GetTicks();
 	this->threat_list.clear();
 	this->owner = obj;
 	this->target = NULL;
@@ -18,7 +16,7 @@ CSimpleAI::~CSimpleAI()
 
 void CSimpleAI::Think()
 {
-	this->last_think_time = GetTickCount();
+	this->last_think_time = GetTicks();
 	if(this->owner->attack_range && !this->owner->viewport.empty()) /* don't make threat selection if we can't attack anyone, all npc's with attack_range == 0 are non-hostile to players */
 	{
 		for(uint32 i = 0; i < this->owner->viewport.size(); ++i)
@@ -26,7 +24,7 @@ void CSimpleAI::Think()
 			CObject * obj = ObjManager.FindByGuid(this->owner->viewport.at(i));
 			if(obj && (obj->type > OBJECT_EMPTY) &&
 			this->IsHostile(obj) &&
-			(GetDistance(this->owner->x, this->owner->y, obj->x, obj->y) <= ((CUnit*)this->owner)->view_range))/* todo: make an is_enemy check, summoned units are also OBJECT_UNIT :) */
+			this->IsInAggroDistance(obj))
 			{
 				this->AddThreat(this->owner->viewport.at(i), 0);
 			}
@@ -34,8 +32,8 @@ void CSimpleAI::Think()
 	}
 	this->ProcessThreatList();
 
-	if(((GetTickCount() - this->owner->last_move_time) >= (GetDistance(this->owner->x, this->owner->y, this->owner->x_old, this->owner->y_old) * (DEFAULT_MOVE_SPEED - owner->move_speed))) &&
-	((GetTickCount() - this->owner->last_attack_time) >= (this->owner->attack_speed))) /* if time passed only then we can try to perform any action */
+	if((GetTickDiff(this->owner->last_move_time) >= (GetDistance(this->owner->x, this->owner->y, this->owner->x_old, this->owner->y_old) * (DEFAULT_MOVE_SPEED - owner->move_speed))) &&
+	(GetTickDiff(this->owner->last_attack_time) >= this->owner->attack_speed)) /* if time passed only then we can try to perform any action */
 	{
 		if(!this->threat_list.empty() && !this->target) /* valid target was not found, wait for next tick */
 		{
@@ -128,6 +126,36 @@ bool CSimpleAI::IsHostile(CObject * obj)
 		{
 			Log.String("AI thinks for incompatible object.");
 			return false;
+		}
+	}
+	return false;
+}
+
+bool CSimpleAI::IsInAggroDistance(CObject *obj)
+{
+	if(!obj)
+	{
+		return false;
+	}
+	switch(this->owner->type)
+	{
+	case OBJECT_UNIT:
+		{
+			CUnit* unit = (CUnit*)this->owner;
+			if(GetDistance(unit->x, unit->y, obj->x, obj->y) <= unit->view_range)
+			{
+				return true;
+			}
+			break;
+		}
+	case OBJECT_BOT:
+		{
+			CBot * bot = (CBot*)this->owner;
+			if(GetDistance(bot->x, bot->y, obj->x, obj->y) <= 10)
+			{
+				return true;
+			}
+			break;
 		}
 	}
 	return false;

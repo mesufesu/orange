@@ -17,7 +17,6 @@
 
 #include "stdafx.h"
 #include ".\\DataBase.h"
-#include ".\\utils.h"
 #include ".\\WorldMap.h"
 #include ".\\ItemManager.h"
 #include ".\\protocol.h"
@@ -472,9 +471,35 @@ void Join_CreateCharacter(PMSG_CHARCREATE * data, CPlayer* player)
 	player->LoadSelectionScreen();
 }
 
-void World_Move(PMSG_MOVE* data, CPlayer* player)
+void World_Move(PMSG_MOVE* packet, CPlayer* player)
 {
-	if(((GetTickCount() - player->last_move_time) >= 100) && !player->teleporting)
+	if((GetTickDiff(player->last_move_time) >= 100) && !player->teleporting)
+	{
+		CPositionHandler::MovePoint current = player->position.GetPosition();
+		if(!player->position.CheckPacketPosition(packet->X, packet->Y) && !player->position.HandleMovement(packet->X, packet->Y, packet->Path, player->map))
+		{
+			player->SetPosition(current.x, current.y);
+		}
+		player->last_move_time = GetTicks();
+		CPositionHandler::MovePoint pt = player->position.GetDestination();
+		PMSG_RECVMOVE data;
+		data.h.c = 0xC1;
+		data.h.headcode = 0x1D;
+		data.h.size = sizeof(PMSG_RECVMOVE);
+		data.NumberH = HIBYTE(player->guid);
+		data.NumberL = LOBYTE(player->guid);
+		data.X = pt.x;
+		data.Y = pt.y;
+		data.Path = packet->Path[0] & 0xf0;
+		/*player->Send((unsigned char*)&data, data.h.size); should we sent it to us? i think no :) */
+		player->SendToViewport((unsigned char*)&data, data.h.size);
+		player->viewstate = 0;
+	}
+}
+
+/*void World_Move_(PMSG_MOVE* data, CPlayer* player)
+{
+	if((GetTickDiff(player->last_move_time) >= 100) && !player->teleporting)
 	{
 		MovePoint * old_pt;
 		if(!player->path.empty())
@@ -509,7 +534,7 @@ void World_Move(PMSG_MOVE* data, CPlayer* player)
 			n += 2;
 		}
 		MovePoint first;
-		first.time = GetTickCount();
+		first.time = GetTicks();
 		first.x = x;
 		first.y = y;
 		player->path.clear();
@@ -553,9 +578,9 @@ void World_Move(PMSG_MOVE* data, CPlayer* player)
 		player->x = x;
 		player->y = y;
 		player->viewstate = 0;
-		player->last_move_time = GetTickCount();
+		player->last_move_time = GetTicks();
 	}
-}
+}*/
 
 void World_Action(PMSG_ACTION* data, CPlayer* player)
 {

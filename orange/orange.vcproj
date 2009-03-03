@@ -249,6 +249,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\PositionHandler.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\protocol.cpp"
 				>
 			</File>
@@ -394,6 +398,10 @@
 			</File>
 			<File
 				RelativePath=".\player.h"
+				>
+			</File>
+			<File
+				RelativePath=".\PositionHandler.h"
 				>
 			</File>
 			<File

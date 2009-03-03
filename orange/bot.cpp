@@ -8,8 +8,8 @@ CBot::CBot()
 	this->status = PLAYER_EMPTY;
 	this->type = OBJECT_BOT;
 	this->guid = -1;
-	this->tick_count = GetTickCount();
-	this->last_think_time = GetTickCount();
+	this->tick_count = GetTicks();
+	this->last_think_time = GetTicks();
 	this->viewport.resize(100);
 	this->viewport.clear();
 	this->pklevel = 0;
@@ -38,9 +38,9 @@ void CBot::Kick()
 
 void CBot::UpdateAI()
 {
-	if((GetTickCount() - this->last_think_time) >= 5000)
+	if((GetTickDiff(this->last_think_time)) >= 5000)
 	{
-		init_genrand(GetTickCount());
+		init_genrand(GetTicks());
 		uint32 count = 0;
 		while(count < 1000)
 		{
@@ -70,7 +70,7 @@ void CBot::UpdateAI()
 				break;
 			}
 		}
-		this->last_think_time = GetTickCount();
+		this->last_think_time = GetTicks();
 	}
 }
 

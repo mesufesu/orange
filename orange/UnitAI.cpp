@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include ".\\packets.h"
-#include ".\\utils.h"
 #include ".\\objectmanager.h"
 #include ".\\UnitAI.h"
 #include ".\\WorldMap.h"
@@ -116,20 +115,20 @@ void CUnitAI::PerformMovementToTarget()
 	this->owner->y = ny;
 	this->owner->target_x = nx;
 	this->owner->target_y = ny;
-	this->owner->last_move_time = GetTickCount();
+	this->owner->last_move_time = GetTicks();
 	this->owner->SendToViewport((uint8*)&packet, packet.h.size);
 }
 
 void CUnitAI::PerformRandomMovement()
 {
-	if((GetTickCount() - this->owner->last_move_time) >= 5 * SECOND)
+	if(GetTickDiff(this->owner->last_move_time) >= 5 * SECOND)
 	{
 		if(GetDistance(this->owner->x, this->owner->y, ((CUnit*)this->owner)->startx, ((CUnit*)this->owner)->starty) > ((CUnit*)this->owner)->radius)
 		{
 			this->TryMoveTo(((CUnit*)this->owner)->startx, ((CUnit*)this->owner)->starty);
 			return;
 		}
-		init_genrand(GetTickCount());
+		init_genrand(GetTicks());
 		uint32 count = 0;
 		while(count < 500)
 		{
@@ -171,7 +170,7 @@ void CUnitAI::PerformRandomMovement()
 				this->owner->y = ty;
 				this->owner->target_x = tx;
 				this->owner->target_y = ty;
-				this->owner->last_move_time = GetTickCount();
+				this->owner->last_move_time = GetTicks();
 				this->owner->SendToViewport((uint8*)&packet, packet.h.size);
 				return;
 			}
@@ -206,6 +205,6 @@ void CUnitAI::TryMoveTo(uint8 x, uint8 y)
 	this->owner->y = ty;
 	this->owner->target_x = tx;
 	this->owner->target_y = ty;
-	this->owner->last_move_time = GetTickCount();
+	this->owner->last_move_time = GetTicks();
 	this->owner->SendToViewport((uint8*)&packet, packet.h.size);
 }

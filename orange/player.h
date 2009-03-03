@@ -23,6 +23,7 @@
 #include ".\\inventory.h"
 #include ".\\object.h"
 #include ".\\classdef.h"
+#include ".\\PositionHandler.h"
 
 enum PLAYER_STATUS
 {
@@ -69,13 +70,6 @@ struct SC_CHARINFO
 	//DATA_ITEM temp_inv[12];
 };
 
-struct MovePoint
-{
-	uint32 time;
-	uint8 x;
-	uint8 y;
-};
-
 struct DATA_CHARACTER
 {
 	uint32 Position; //mapx mapy map dir
@@ -109,8 +103,11 @@ public:
 	uint32 last_save_time;
 	uint32 check_time;
 
+	CPositionHandler position;
+	/* obsolete */
 	size_t path_count;
 	std::vector<MovePoint> path;
+	/* obsolete */
 
 	char account[10];
 	char name[10];
@@ -176,15 +173,14 @@ public:
 	bool LoadCharacterData(SC_CHARINFO* info);
 	//void DeleteFromViewport(void* obj);
 	void AssignItem(DATA_ITEM* item);
-	bool CheckPosition();
 	bool CheckPacketTime();
+	bool CheckPosition();
 	void SetPosition(uint8 x, uint8 y);
 	bool SavePlayer();
 	void CookCharset();
 	void LoadItemToInventory(DATA_ITEM * ditem);
 	void Calculate();
-	MovePoint * GetCurrentPosition();
-	bool CheckPacketPosition(uint8 x, uint8 y);
+	const CPositionHandler::MovePoint GetCurrentPosition();
 };
 
 #endif

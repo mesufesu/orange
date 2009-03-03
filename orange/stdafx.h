@@ -34,6 +34,7 @@
 #include ".\\mt19937.h"
 #include ".\\log.h"
 #include ".\\config.h"
+#include ".\\utils.h"
 
 typedef unsigned int uint32;
 typedef unsigned short uint16;

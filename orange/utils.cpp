@@ -16,7 +16,6 @@
 */
 
 #include "stdafx.h"
-#include <math.h>
 #include ".\\utils.h"
 #include ".\\mathlib.h"
 
@@ -238,3 +237,29 @@ uint32 GetDistance(uint32 ox, uint32 oy, uint32 tx, uint32 ty)
 	uint32 ny = abs((int)(oy - ty));
 	return (uint32)sqrt((float)(nx*nx) + (float)(ny*ny));
 }
+
+#ifdef _WINDOWS
+
+uint32 inline GetTicks()
+{
+	return GetTickCount();
+}
+
+uint32 GetTickDiff(uint32 ticks)
+{
+	return (GetTicks() - ticks);
+}
+
+#else
+
+uint32 GetTicks()
+{
+	return GetTickCount();
+}
+
+uint32 GetTickDiff()
+{
+	return (GetTicks() - ticks);
+}
+
+#endif

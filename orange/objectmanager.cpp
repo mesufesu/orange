@@ -44,7 +44,7 @@ CPlayer* CObjectManager::FindPlayerBySocket(ServerSocket *socket)
 	return player;
 }
 
-/*CPlayer* CObjectManager::FindPlayerByGuid(short guid) //deprecated
+/*CPlayer* CObjectManager::FindPlayerByGuid(short guid) //obsolete
 {
 	for(std::map<short, CObject*>::iterator it = this->container.begin(); it != this->container.end(); ++it)
 	{
@@ -70,7 +70,7 @@ CObject* CObjectManager::FindByGuid(uint32 guid)
 
 CPlayer* CObjectManager::CreatePlayer(ServerSocket* socket)
 {
-	init_genrand(GetTickCount());
+	init_genrand(GetTicks());
 	CPlayer* player = new CPlayer;
 	while(TRUE)
 	{
@@ -112,7 +112,7 @@ void CObjectManager::ActualizePlayer(CPlayer * player, uint32 new_guid)
 
 uint32 CObjectManager::GetFreePlayerGuid()
 {
-	init_genrand(GetTickCount());
+	init_genrand(GetTicks());
 	QSqlQuery q;
 	while(true)
 	{
@@ -127,7 +127,7 @@ uint32 CObjectManager::GetFreePlayerGuid()
 
 CBot* CObjectManager::CreateBot()
 {
-	init_genrand(GetTickCount());
+	init_genrand(GetTicks());
 	CBot* bot = new CBot;
 	while(true)
 	{
@@ -150,7 +150,7 @@ CBot* CObjectManager::CreateBot()
 
 CUnit * CObjectManager::CreateUnit()
 {
-	init_genrand(GetTickCount());
+	init_genrand(GetTicks());
 	CUnit* unit = new CUnit;
 	while(true)
 	{
@@ -174,10 +174,10 @@ CUnit * CObjectManager::CreateUnit()
 void CObjectThread::run()
 {
 	std::vector<CObjectManager::MapType::iterator> trash_bin;
-	uint32 tick_count = GetTickCount();
+	uint32 tick_count = GetTicks();
 	while(true)
 	{
-		if((GetTickCount() - tick_count) >= 10 * SECOND)
+		if((GetTickDiff(tick_count)) >= 10 * SECOND)
 		{
 			trash_bin.clear();
 			ObjManager.mtx.lock();
@@ -227,7 +227,7 @@ void CObjectThread::run()
 				ObjManager.container.erase(trash_bin.at(i));
 			}
 			ObjManager.mtx.unlock();
-			tick_count = GetTickCount();
+			tick_count = GetTicks();
 		}
 		this->msleep(300);
 	}

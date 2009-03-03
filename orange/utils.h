@@ -20,6 +20,10 @@
 
 #include <string>
 
+#ifndef _WINDOWS
+#define ZeroMemory(Destination,Length) memset((Destination),0,(Length))
+#endif
+
 bool isFile(const char * file);
 void MsgBox(const char * str);
 void xor3(unsigned char* ptr, unsigned int len);
@@ -31,6 +35,8 @@ void InitFrustum();
 void MakeFrustum();
 bool InViewport(uint8 type, int32 ox, int32 oy, int32 tx, int32 ty, uint32 view_range);
 uint32 GetDistance(uint32 ox, uint32 oy, uint32 tx, uint32 ty);
+uint32 GetTicks();
+uint32 GetTickDiff(uint32 ticks);
 
 extern short RoadPathTable[16];
 extern int8 RoadX[8];

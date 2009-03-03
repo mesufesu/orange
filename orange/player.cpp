@@ -16,7 +16,6 @@
 */
 
 #include "stdafx.h"
-#include ".\\utils.h"
 #include ".\\Deathway\\SimpleModulus\\SimpleModulus.h"
 #include ".\\DataBase.h"
 #include ".\\packets.h"
@@ -33,13 +32,13 @@ CPlayer::CPlayer()
 	this->type = OBJECT_PLAYER;
 	this->guid = -1;
 	this->tick_count = NULL;
-	this->last_save_time = GetTickCount();
+	this->last_save_time = GetTicks();
 	this->failed_attempts = NULL;
 	this->send_serial = NULL;
 	this->viewport.resize(100);
 	this->viewport.clear();
-	this->last_move_time = GetTickCount();
-	this->check_time = GetTickCount();
+	this->last_move_time = GetTicks();
+	this->check_time = GetTicks();
 	this->pklevel = 0;
 	this->rest = 0;
 
@@ -194,7 +193,7 @@ bool CPlayer::LoadCharacterData(SC_CHARINFO *info)
 	this->Class = info->Class;
 	this->changeup = info->ChangeUp;
 	uint32 position = q.value(0).toUInt();
-	this->x = (uint8)((position >> 24) & 0x00ffffff);
+	/*this->x = (uint8)((position >> 24) & 0x00ffffff);
 	this->x_old = this->x;
 	this->target_x = this->x;
 	this->y = (uint8)((position >> 16) & 0x0000ffff);
@@ -202,11 +201,18 @@ bool CPlayer::LoadCharacterData(SC_CHARINFO *info)
 	this->target_y = this->y;
 	this->path.clear();
 	MovePoint pt;
-	pt.time = GetTickCount();
+	pt.time = GetTicks();
 	pt.x = this->x;
 	pt.y = this->y;
-	this->path.push_back(pt);
+	this->path.push_back(pt);*/
 	this->map = (uint8)((position >> 8) & 0x000000ff);
+	uint8 tempx = ((position >> 24) & 0x00ffffff);
+	uint8 tempy = ((position >> 16) & 0x0000ffff);
+	if(!WorldMap[this->map].FreeToMove(tempx, tempy))
+	{
+		this->position.SetPosition(130, 130); /* need to make safe zones */
+	}
+	this->position.SetPosition(tempx, tempy);
 	this->dir = (uint8)((position) & 0x000000ff);
 	this->experience = q.value(1).toULongLong();
 	this->level = info->level;
@@ -296,7 +302,7 @@ bool CPlayer::CheckPosition()
 
 bool CPlayer::CheckPacketTime()
 {
-	if((GetTickCount() - this->check_time) >= 300)
+	if((GetTickDiff(this->check_time)) >= 300)
 	{
 		return true;
 	}
@@ -324,7 +330,7 @@ void CPlayer::SetPosition(uint8 _x, uint8 _y)
 	vPacket.NumberH = HIBYTE(this->guid);
 	vPacket.NumberL = LOBYTE(this->guid);
 	MovePoint pt;
-	pt.time = GetTickCount();
+	pt.time = GetTicks();
 	pt.x = _x;
 	pt.y = _y;
 	this->path.clear();
@@ -346,7 +352,7 @@ bool CPlayer::SavePlayer()
 	{
 		return false;
 	}
-	this->last_save_time = GetTickCount();
+	this->last_save_time = GetTicks();
 	uint32 position = this->dir;
 	position |= this->map * 0x100;
 	position |= this->y * 0x10000;
@@ -848,30 +854,7 @@ void CPlayer::Calculate()
 	}
 }
 
-MovePoint * CPlayer::GetCurrentPosition()
+const CPositionHandler::MovePoint CPlayer::GetCurrentPosition()
 {
-	uint32 currtime = GetTickCount();
-	uint32 current = 0;
-	for(uint32 i = 0; i < this->path.size(); ++i)
-	{
-		if(this->path.at(i).time >= currtime)
-		{
-			return &this->path.at(i - 1);
-		}
-	}
-	return NULL;
-}
-
-bool CPlayer::CheckPacketPosition(uint8 x, uint8 y)
-{
-	MovePoint * pt = this->GetCurrentPosition();
-	if(!pt)
-	{
-		return false;
-	}
-	if((abs(x - pt->x) <= 2) && (abs(y - pt->y) <= 2))
-	{
-		return true;
-	}
-	return false;
+	return this->position.GetPosition();
 }
