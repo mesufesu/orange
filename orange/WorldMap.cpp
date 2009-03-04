@@ -31,7 +31,6 @@ CWorldMap::CWorldMap()
 	this->map_number = -1;
 	this->width = -1;
 	this->height = -1;
-	this->last_update = GetTicks();
 }
 
 void CWorldMap::LoadMap(const char * filename)
@@ -55,7 +54,6 @@ void CWorldMap::LoadMap(const char * filename)
 
 void CWorldMap::UpdateMap()
 {
-	//this->guids_mutex.lock();
 	this->guids.clear();
 	ObjManager.mtx.lock();
 	for(CObjectManager::MapType::iterator it = ObjManager.container.begin(); it != ObjManager.container.end(); ++it)
@@ -67,35 +65,13 @@ void CWorldMap::UpdateMap()
 		}
 	}
 	ObjManager.mtx.unlock();
-	//this->guids_mutex.unlock();
-	//printf_s("Map %d has %d objects.\n", this->map_number, this->objects.size());
-}
 
-void CWorldMap::Run()
-{
-	this->MapThread.start();
-}
-
-void CWorldMap::Quit()
-{
-	this->MapThread.quit();
-}
-
-void CMapThread::run()
-{
-	CWorldMap * map = (CWorldMap*)lpmap;
-	uint32 sleep_time = SECOND / config.world_tick_rate;
-	while(TRUE)
+	for(uint32 i = 0; i < this->guids.size(); ++i)
 	{
-		if(GetTickDiff(map->last_update) >= SECOND)
+		CObject* object = ObjManager.FindByGuid(this->guids.at(i));
+		if((object != NULL) && (object->type == OBJECT_PLAYER))
 		{
-			map->UpdateMap();
-			for(uint32 i = 0; i < map->guids.size(); ++i)
-			{
-				CObject* object = ObjManager.FindByGuid(map->guids.at(i));
-				if((object != NULL) && (object->type == OBJECT_PLAYER))
-				{
-					map->UpdateViewport(object);
+			this->UpdateViewport(object);
 					/*if((GetTickCount() - ((CPlayer*)object)->last_save_time) >= (5 * MINUTE))
 					{
 						if(((CPlayer*)object)->status == PLAYER_PLAYING)
@@ -103,21 +79,17 @@ void CMapThread::run()
 							((CPlayer*)object)->SavePlayer();
 						}
 					}*/
-				}
-				else if((object != NULL) && (object->type == OBJECT_BOT))
-				{
-					map->UpdateViewport(object);
-					((CBot*)object)->UpdateAI();
-				}
-				else if((object != NULL) && (object->type == OBJECT_UNIT))
-				{
-					map->UpdateViewport(object);
-					((CUnit*)object)->ai->Think();
-				}
-			}
-			map->last_update = GetTicks();
 		}
-		this->msleep(sleep_time);
+		else if((object != NULL) && (object->type == OBJECT_BOT))
+		{
+			this->UpdateViewport(object);
+				((CBot*)object)->UpdateAI();
+		}
+		else if((object != NULL) && (object->type == OBJECT_UNIT))
+		{
+			this->UpdateViewport(object);
+			((CUnit*)object)->ai->Think();
+		}
 	}
 }
 

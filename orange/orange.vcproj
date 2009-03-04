@@ -225,6 +225,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\MapThread.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\mathlib.cpp"
 				>
 			</File>
@@ -370,6 +374,10 @@
 			</File>
 			<File
 				RelativePath=".\log.h"
+				>
+			</File>
+			<File
+				RelativePath=".\MapThread.h"
 				>
 			</File>
 			<File

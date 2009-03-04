@@ -195,7 +195,3 @@ void ServerSocket::COneHandler()
 	}
 	ProtocolCore(ObjManager.FindPlayerBySocket(this), packet_buffer[2], packet_buffer, packet_size, false, -1);
 }
-
-void WINAPI ServerSocketProc(port_t port)
-{
-}

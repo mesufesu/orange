@@ -22,7 +22,6 @@
 #include "ServerSocket.h"
 #include "DataBase.h"
 #include "Item.h"
-#include "WorldMap.h"
 #include "objectmanager.h"
 #include "ItemTemplate.h"
 #include "UnitTemplate.h"
@@ -31,6 +30,7 @@
 #include "unit.h"
 #include "classdef.h"
 #include "cssocket.h"
+#include "MapThread.h"
 
 int main(int argc, char* argv[])
 {
@@ -40,12 +40,12 @@ int main(int argc, char* argv[])
 	DCInfo.Init();
 	Log.Init(config.log_file_name.c_str());
 
-	if(!g_SimpleModulusCS.LoadDecryptionKey(".\\data\\Dec1.dat"))
+	if(!g_SimpleModulusCS.LoadDecryptionKey("data/Dec1.dat"))
 	{
 		Log.String("Dec1.dat file not found");
 		return 0;
 	}
-	if(!g_SimpleModulusSC.LoadEncryptionKey(".\\data\\Enc2.dat"))
+	if(!g_SimpleModulusSC.LoadEncryptionKey("data/Enc2.dat"))
 	{
 		Log.String("Enc2.dat file not found");
 		return 0;
@@ -79,13 +79,21 @@ int main(int argc, char* argv[])
 	{
 		char filename[256];
 		ZeroMemory(filename, sizeof(filename));
-		sprintf_s(filename, sizeof(filename), ".\\data\\maps\\Terrain%d.att", i + 1);
+		sprintf_s(filename, sizeof(filename), "data/maps/Terrain%d.att", i + 1);
 		WorldMap[i].map_number = i;
 		WorldMap[i].LoadMap(filename);
-		WorldMap[i].MapThread.lpmap = (void*)&WorldMap[i];
-		WorldMap[i].Run();
 	}
-	Log.String("WorldMap threads started.");
+	Log.String("%u maps loaded.", MAX_MAPS);
+	uint32 thread_child = 0;
+	for(uint32 i = 0; i < MAP_THREADS; ++i)
+	{
+		for(uint32 n = 0; n < (MAX_MAPS / MAP_THREADS); ++n)
+		{
+			MapThreads[i].AddMap(&WorldMap[thread_child++]);
+		}
+		MapThreads[i].Start();
+	}
+	Log.String("%u Map threads started.", MAP_THREADS);
 	/*CBot* test_bot = ObjManager.CreateBot();
 	test_bot->SetBot("Pwnage", 0, 130, 130);
 	test_bot->Class = 5;

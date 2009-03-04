@@ -19,7 +19,6 @@
 #define _WORLDMAP_H_
 
 #include "player.h"
-#include <QtCore/QThread>
 #include <QtCore/QMutex>
 
 #define MAX_MAPS 60
@@ -33,30 +32,18 @@ enum MAP_ATTR
 	MAP_BLOCKED2 = 0x08,
 };
 
-class CMapThread : public QThread
-{
-public:
-	void run();
-	void * lpmap;
-};
-
 class CWorldMap
 {
 public:
-	friend void CMapThread::run();
 	unsigned char map[256][256];
 	int map_number;
 	int width;
 	int height;
-	int32 last_update;
-	CMapThread MapThread;
 
 	CWorldMap();
 	void LoadMap(const char * filename);
 	void UpdateMap();
 	void UpdateViewport(CObject* pobj);
-	void Run();
-	void Quit();
 	unsigned char GetAttr(int x, int y);
 	bool FreeToMove(uint8 x, uint8 y);
 
