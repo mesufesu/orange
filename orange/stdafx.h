@@ -17,6 +17,8 @@
 
 #pragma once
 
+#ifdef _WINDOWS
+
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
@@ -31,10 +33,6 @@
 #include <unordered_map>
 #include <math.h>
 #include <assert.h>
-#include "mt19937.h"
-#include "log.h"
-#include "config.h"
-#include "utils.h"
 
 typedef unsigned int uint32;
 typedef unsigned short uint16;
@@ -46,7 +44,20 @@ typedef signed short int16;
 typedef signed char int8;
 typedef signed __int64 int64;
 
+#define UnorderedMap std::tr1::unordered_map
+
+#else
+#endif
+
+#include "mt19937.h"
+#include "log.h"
+#include "config.h"
+#include "utils.h"
+#include "timer.h"
+
 #define SECOND 1000
 #define MINUTE 60 * SECOND
+#define DEFSLEEP 3
+#define RETRIES 0x0fffffff
 
 // TODO: reference additional headers your program requires here

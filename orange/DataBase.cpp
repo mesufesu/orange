@@ -18,32 +18,56 @@
 #include "stdafx.h"
 #include "DataBase.h"
 
-CDatabaseHandler MainDB;
+CDataDB data_db;
+CAccountsDB accounts_db;
 
 CDatabaseHandler::CDatabaseHandler()
 {
 	db = QSqlDatabase::addDatabase("QMYSQL");
 }
 
-bool CDatabaseHandler::Connect()
+/*bool CDatabaseHandler::Connect()
 {
 	this->db.setHostName("localhost");
 	this->db.setUserName("root");
 	this->db.setPassword("dagal");
 	this->db.setDatabaseName("oranged");
 	return this->db.open();
-}
+}*/
 
 CDatabaseHandler::~CDatabaseHandler()
 {
 }
 
-void CDatabaseHandler::Lock()
+void CDatabaseHandler::LockForRead()
 {
-	this->mtx.lock();
+	this->rwl.lockForRead();
+}
+
+void CDatabaseHandler::LockForWrite()
+{
+	this->rwl.lockForWrite();
 }
 
 void CDatabaseHandler::Unlock()
 {
-	this->mtx.unlock();
+	this->rwl.unlock();
+}
+
+bool CDataDB::Connect()
+{
+	this->db.setHostName(config.data_db_hostname.c_str());
+	this->db.setUserName(config.data_db_username.c_str());
+	this->db.setPassword(config.data_db_password.c_str());
+	this->db.setDatabaseName(config.data_db_dbname.c_str());
+	return this->db.open();
+}
+
+bool CAccountsDB::Connect()
+{
+	this->db.setHostName(config.accounts_db_hostname.c_str());
+	this->db.setUserName(config.accounts_db_username.c_str());
+	this->db.setPassword(config.accounts_db_password.c_str());
+	this->db.setDatabaseName(config.accounts_db_dbname.c_str());
+	return this->db.open();
 }

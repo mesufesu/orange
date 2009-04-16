@@ -28,6 +28,7 @@ MainSocketThread _SocketThread;
 
 void MainSocketThread::run()
 {
+	this->shutting_down = false;
 	SocketHandler server_handler;
 	ListenSocket<ServerSocket> server_lsocket(server_handler);
 	if(server_lsocket.Bind(55901))
@@ -37,10 +38,15 @@ void MainSocketThread::run()
 	}
 	server_handler.Add(&server_lsocket);
 	server_handler.Select(1, 0);
-	while(TRUE)
+	while(!shutting_down)
 	{
 		server_handler.Select(1, 0);
 	}
+}
+
+void MainSocketThread::Shutdown()
+{
+	this->shutting_down = true;
 }
 
 ServerSocket::ServerSocket(ISocketHandler &h) : TcpSocket(h)
@@ -106,7 +112,7 @@ void ServerSocket::OnRead()
 void ServerSocket::OnDisconnect()
 {
 	Log.String("Disconnected: %s:%d", this->GetRemoteAddress().c_str(), this->GetRemotePort());
-	CPlayer* player = ObjManager.FindPlayerBySocket(this);
+	CPlayer* player = ObjManager.FindSocket(this);
 	if(player->status == PLAYER_PLAYING)
 	{
 		player->status = PLAYER_LOGGING_OUT;
@@ -160,7 +166,7 @@ void ServerSocket::CThreeHandler()
 	dec_buffer[1]--;
 	ret++;
 	//=====//
-	ProtocolCore(ObjManager.FindPlayerBySocket(this), headcode, dec_buffer, ret, true, subhead);
+	ProtocolCore(ObjManager.FindSocket(this), headcode, dec_buffer, ret, true, subhead);
 }
 
 void ServerSocket::COneHandler()
@@ -193,5 +199,5 @@ void ServerSocket::COneHandler()
 	{
 		return;
 	}
-	ProtocolCore(ObjManager.FindPlayerBySocket(this), packet_buffer[2], packet_buffer, packet_size, false, -1);
+	ProtocolCore(ObjManager.FindSocket(this), packet_buffer[2], packet_buffer, packet_size, false, -1);
 }

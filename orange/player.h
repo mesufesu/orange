@@ -97,6 +97,7 @@ struct DATA_CHARACTER
 class CPlayer : public CObject
 {
 public:
+	uint32 dbuid;
 	ServerSocket* socket;
 	PLAYER_STATUS status;
 	uint32 tick_count;

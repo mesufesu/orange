@@ -24,8 +24,12 @@
 
 class MainSocketThread : public QThread
 {
+	Q_OBJECT
 public:
 	void run();
+	void Shutdown();
+private:
+	bool shutting_down;
 };
 
 class ServerSocket : public TcpSocket
@@ -41,8 +45,6 @@ public:
 	void CloseClient();
 	static void StartThread();
 };
-
-//void WINAPI ServerSocketProc(port_t port);
 
 extern MainSocketThread _SocketThread;
 

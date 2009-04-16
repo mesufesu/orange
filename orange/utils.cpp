@@ -245,21 +245,27 @@ uint32 inline GetTicks()
 	return GetTickCount();
 }
 
-uint32 GetTickDiff(uint32 ticks)
-{
-	return (GetTicks() - ticks);
-}
-
 #else
 
 uint32 GetTicks()
 {
-	return GetTickCount();
-}
-
-uint32 GetTickDiff()
-{
-	return (GetTicks() - ticks);
+	struct timeval tv;
+    struct timezone tz;
+    gettimeofday( &tv, &tz );
+    return (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
 }
 
 #endif
+
+uint32 GetTickDiff(uint32 ticks)
+{
+	uint32 time = GetTicks();
+	if(time > ticks)
+	{
+		return ((0xFFFFFFFF - time) + ticks);
+	}
+	else
+	{
+		return (ticks - time);
+	}
+}

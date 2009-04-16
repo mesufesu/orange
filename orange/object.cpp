@@ -21,8 +21,9 @@
 
 CObject::CObject()
 {
-	this->guid = -1;
-	type = OBJECT_EMPTY;
+	this->guid.hi = 0;
+	this->guid.lo = 0;
+	this->type = OBJECT_EMPTY;
 	this->teleporting = false;
 	this->state = 1;
 	this->viewstate = 0;
@@ -74,11 +75,11 @@ CObject::CObject()
 	return false;
 }*/
 
-bool CObject::IsInViewportList(uint32 guid)
+bool CObject::IsInViewportList(GUID_LOW loguid)
 {
 	for(uint32 i = 0; i < this->viewport.size(); ++i)
 	{
-		if(this->viewport.at(i) == guid)
+		if(this->viewport.at(i).lo == loguid)
 		{
 			return true;
 		}
@@ -86,12 +87,12 @@ bool CObject::IsInViewportList(uint32 guid)
 	return false;
 }
 
-void CObject::SendToViewport(unsigned char* buffer, size_t len)
+void CObject::SendToViewport(uint8* buffer, size_t len)
 {
 	for(uint32 i = 0; i < this->viewport.size(); ++i)
 	{
-		CObject* object = ObjManager.FindByGuid(this->viewport.at(i));
-		if((object) && (object->type == OBJECT_PLAYER) && (object->IsInViewportList(this->guid)))
+		CObject* object = ObjManager.FindHigh(this->viewport.at(i).hi);
+		if((object) && (object->type == OBJECT_PLAYER) && (object->IsInViewportList(this->guid.lo)))
 		{
 			((CPlayer*)object)->Send(buffer, len);
 		}

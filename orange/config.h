@@ -16,6 +16,14 @@ class CConfigStorage
 public:
 	uint32 world_tick_rate;
 	std::string log_file_name;
+	std::string accounts_db_hostname;
+	std::string accounts_db_username;
+	std::string accounts_db_password;
+	std::string accounts_db_dbname;
+	std::string data_db_hostname;
+	std::string data_db_username;
+	std::string data_db_password;
+	std::string data_db_dbname;
 	CConfigStorage();
 	bool Read();
 };

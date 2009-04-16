@@ -22,6 +22,7 @@
 CItem::CItem()
 {
 	this->guid = 0;
+	this->dbuid = 0;
 	this->type = -1;
 	this->level = 0;
 	this->part = 0;

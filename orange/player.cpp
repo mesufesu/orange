@@ -27,10 +27,10 @@
 
 CPlayer::CPlayer()
 {
+	this->dbuid = 0;
 	this->socket = NULL;
 	this->status = PLAYER_EMPTY;
 	this->type = OBJECT_PLAYER;
-	this->guid = -1;
 	this->tick_count = NULL;
 	this->last_save_time = GetTicks();
 	this->failed_attempts = NULL;
@@ -145,20 +145,20 @@ void CPlayer::Close()
 
 void CPlayer::SetStatus(unsigned char status)
 {
-	QSqlQuery q;
-	MainDB.Lock();
+	QSqlQuery q(accounts_db.db);
+	accounts_db.LockForWrite();
 	q.exec(Query("UPDATE `accounts` SET `status` = %d WHERE `account` = '%s'", status, this->account).c_str());
-	MainDB.Unlock();
+	accounts_db.Unlock();
 }
 
 uint32 CPlayer::LoadSelectionScreen()
 {
 	ZeroMemory(this->sc_charinfo, sizeof(SC_CHARINFO) * 5);
-	QSqlQuery q;
-	MainDB.Lock();
+	QSqlQuery q(accounts_db.db);
+	accounts_db.LockForRead();
 	//q.exec(Query("SELECT `name`, `class`, `changeup`, `level`, `inventory_guids` FROM `characters` WHERE `account` = '%s';", this->account).c_str());
 	q.exec(Query("SELECT `name`, `class`, `changeup`, `level` FROM `characters` WHERE `account` = '%s';", this->account).c_str());
-	MainDB.Unlock();
+	accounts_db.Unlock();
 	SC_CHARINFO * info = NULL;
 	uint32 count = 0;
 	for(uint32 i = 0; (i < 5) && (q.next()); ++i)
@@ -180,11 +180,11 @@ bool CPlayer::LoadCharacterData(SC_CHARINFO *info)
 	{
 		return false;
 	}
-	QSqlQuery q;
-	MainDB.Lock();
-	bool result = q.exec(Query("SELECT `position`, `experience`, `leveluppoint`, `strength`, `dexterity`, `vitality`, `energy`, `leadership`, `life`, `mana`, `shield`, `bp`, `money`, `pklevel`, `addpoint`, `maxaddpoint`, `minuspoint`, `maxminuspoint`, `guid` FROM `characters` WHERE `account` = '%s' AND `name` = '%s';", this->account, info->name.c_str()).c_str());
-	MainDB.Unlock();
-	if(result == false)
+	QSqlQuery q(accounts_db.db);
+	accounts_db.LockForRead();
+	bool result = q.exec(Query("SELECT `position`, `experience`, `leveluppoint`, `strength`, `dexterity`, `vitality`, `energy`, `leadership`, `life`, `mana`, `shield`, `bp`, `money`, `pklevel`, `addpoint`, `maxaddpoint`, `minuspoint`, `maxminuspoint`, `dbuid` FROM `characters` WHERE `account` = '%s' AND `name` = '%s';", this->account, info->name.c_str()).c_str());
+	accounts_db.Unlock();
+	if(!result)
 	{
 		return false;
 	}
@@ -236,8 +236,7 @@ bool CPlayer::LoadCharacterData(SC_CHARINFO *info)
 	this->maxaddpoint = q.value(15).toUInt();
 	this->minuspoint = q.value(16).toUInt();
 	this->maxminuspoint = q.value(17).toUInt();
-	uint32 guid = q.value(18).toUInt();
-	ObjManager.ActualizePlayer(this, guid);
+	this->dbuid = q.value(18).toUInt();
 
 	return true;
 }
@@ -327,8 +326,8 @@ void CPlayer::SetPosition(uint8 _x, uint8 _y)
 	vPacket.h.size = sizeof(PMSG_RECV_POSITION_SET);
 	vPacket.X = _x;
 	vPacket.Y = _y;
-	vPacket.NumberH = HIBYTE(this->guid);
-	vPacket.NumberL = LOBYTE(this->guid);
+	vPacket.NumberH = HIBYTE(this->guid.lo);
+	vPacket.NumberL = LOBYTE(this->guid.lo);
 	MovePoint pt;
 	pt.time = GetTicks();
 	pt.x = _x;
@@ -357,40 +356,12 @@ bool CPlayer::SavePlayer()
 	position |= this->map * 0x100;
 	position |= this->y * 0x10000;
 	position |= this->x * 0x1000000;
-	QSqlQuery q;
-	MainDB.Lock();
-	bool result = q.exec(Query("UPDATE `characters` SET `class` = %u, `changeup` = %u, `position` = %u, `experience` = %I64u, `leveluppoint` = %u, `level` = %u, `strength` = %u, `dexterity` = %u, `vitality` = %u, `energy` = %u, `leadership` = %u, `life` = %u, `mana` = %u, `shield` = %u, `bp` = %u, `money` = %u, `pklevel` = %u, `addpoint` = %u, `maxaddpoint` = %u, `minuspoint` = %u, `maxminuspoint` = %u WHERE `guid` = %u;", this->Class, this->changeup, position, this->experience, this->leveluppoint, this->level, this->strength, this->dexterity, this->vitality, this->energy, this->leadership, (uint32)this->life, (uint32)this->mana, (uint32)this->shield, (uint32)this->bp, this->money, this->pklevel, this->addpoint, this->maxaddpoint, this->minuspoint, this->maxminuspoint, this->guid).c_str());
-	MainDB.Unlock();
-	/*if(result)
-	{
-		std::string inv;
-		inv.clear();
-		for(uint32 i = 0; i < 108; ++i)
-		{
-			if(this->inventory[i]->IsItem())
-			{
-				if(ItemManager.SaveItem(this->inventory[i], i))
-				{
-					char temp[16];
-					ZeroMemory(temp, sizeof(temp));
-					sprintf_s(temp, sizeof(temp), "%u ", this->inventory[i]->guid);
-					inv.append(temp);
-				}
-			}
-		}
-		MainDB.Lock();
-		result = q.exec(Query("UPDATE `characters` SET `inventory_guids` = '%s' WHERE `account` = '%s' AND `name` = '%s';", inv.c_str(), this->account, this->name).c_str());
-		MainDB.Unlock();
-		if(!result)
-		{
-			Log.String("Inventory save failed %s:%s:%u", this->account, this->name, q.lastError().type());
-		}
-	}
-	else
-	{
-		Log.String("Character save failed %s:%s", this->account, this->name);
-		return false;
-	}*/
+	QSqlQuery q(accounts_db.db);
+	accounts_db.LockForWrite();
+	bool result = q.exec(Query("UPDATE `characters` SET `class` = %u, `changeup` = %u, `position` = %u, `experience` = %I64u, `leveluppoint` = %u, `level` = %u, `strength` = %u, `dexterity` = %u, `vitality` = %u, `energy` = %u, `leadership` = %u, `life` = %u, `mana` = %u, `shield` = %u, `bp` = %u, `money` = %u, `pklevel` = %u, `addpoint` = %u, `maxaddpoint` = %u, `minuspoint` = %u, `maxminuspoint` = %u WHERE `dbuid` = %u;", this->Class, this->changeup, position, this->experience, this->leveluppoint, this->level, this->strength, this->dexterity, this->vitality, this->energy, this->leadership, (uint32)this->life, (uint32)this->mana, (uint32)this->shield, (uint32)this->bp, this->money, this->pklevel, this->addpoint, this->maxaddpoint, this->minuspoint, this->maxminuspoint, this->dbuid).c_str());
+	accounts_db.Unlock();
+	assert(result);
+	/*TODO: saving inventory and co. here */
 	return true;
 }
 

@@ -12,15 +12,15 @@ CUnitTemplate::CUnitTemplate()
 bool CUnitTemplate::Load()
 {
 	Log.String("Loading unit templates...");
-	QSqlQuery q;
-	MainDB.Lock();
+	QSqlQuery q(data_db.db);
+	data_db.LockForRead();
 	if(!q.exec("SELECT `type`, `model_id`, `rate`, `name`, `level`, `health`, `mana`, `damage_min`, `damage_max`, `defense`, `magic_defense`, `attack_rating`, `block`, `move_range`, `attack_type`, `attack_range`, `view_range`, `move_speed`, `attack_speed`, `respawn_time`, `attribute`, `item_rate`, `money_rate`, `max_item_level`, `skill`, `resistance` FROM `unit_template`;"))
 	{
 		Log.String("Something wrong with `unit_template`.");
-		MainDB.Unlock();
+		data_db.Unlock();
 		return false;
 	}
-	MainDB.Unlock();
+	data_db.Unlock();
 	UNIT_TEMPLATE ut;
 	this->mtx.lock();
 	while(q.next())

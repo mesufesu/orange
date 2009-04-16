@@ -75,12 +75,12 @@ enum _ITEM_STATUS
 	ITEM_CHANGED = 1, //item was changed, must be saved
 	ITEM_NEW = 2, //must be inserted in db
 	ITEM_DELETED = 3, //item was dropped and then vanished/sold, such item deleted by ItemProc, must be deleted from db
-	ITEM_NOTEXIST = 4, //item just disappeared, it may be already saved or just never existed in database
+	//ITEM_NOTEXIST = 4, //item just disappeared, it may be already saved or just never existed in database
 };
 
 struct DATA_ITEM
 {
-  int guid;
+  int dbuid;
   int slot;
   int type;
   int level;
@@ -120,7 +120,8 @@ typedef std::vector<uint32> OptionsList;
 typedef class CItem
 {
 public:
-	uint64 guid;
+	uint32 guid;
+	uint32 dbuid;
 	int16 type;
 	uint8 level;
 	uint8 part;

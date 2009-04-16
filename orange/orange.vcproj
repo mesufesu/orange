@@ -144,6 +144,7 @@
 				OptimizeReferences="1"
 				EnableCOMDATFolding="2"
 				TargetMachine="1"
+				Profile="true"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -225,10 +226,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\MapThread.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\mathlib.cpp"
 				>
 			</File>
@@ -242,6 +239,10 @@
 			</File>
 			<File
 				RelativePath=".\objectmanager.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ObjectThread.cpp"
 				>
 			</File>
 			<File
@@ -261,15 +262,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\ReadMe.txt"
-				>
-			</File>
-			<File
 				RelativePath=".\ServerSocket.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\SimpleAI.cpp"
 				>
 			</File>
 			<File
@@ -297,11 +290,11 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\unit.cpp"
+				RelativePath=".\timer.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\UnitAI.cpp"
+				RelativePath=".\unit.cpp"
 				>
 			</File>
 			<File
@@ -322,12 +315,40 @@
 				UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 				>
 			</Filter>
+			<Filter
+				Name="moc"
+				>
+				<File
+					RelativePath=".\moc\moc_cssocket.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\moc\moc_HeartbeatServer.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\moc\moc_ItemManager.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\moc\moc_ObjectThread.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\moc\moc_ServerSocket.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath=".\baseai.h"
+				>
+			</File>
 			<File
 				RelativePath=".\bot.h"
 				>
@@ -377,10 +398,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\MapThread.h"
-				>
-			</File>
-			<File
 				RelativePath=".\mathlib.h"
 				>
 			</File>
@@ -394,6 +411,10 @@
 			</File>
 			<File
 				RelativePath=".\objectmanager.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ObjectThread.h"
 				>
 			</File>
 			<File
@@ -421,10 +442,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\SimpleAI.h"
-				>
-			</File>
-			<File
 				RelativePath=".\Deathway\SimpleModulus\SimpleModulus.h"
 				>
 			</File>
@@ -441,11 +458,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\unit.h"
+				RelativePath=".\timer.h"
 				>
 			</File>
 			<File
-				RelativePath=".\UnitAI.h"
+				RelativePath=".\unit.h"
 				>
 			</File>
 			<File
@@ -458,6 +475,18 @@
 			</File>
 			<File
 				RelativePath=".\WorldMap.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Docs"
+			>
+			<File
+				RelativePath="..\GPL.txt"
+				>
+			</File>
+			<File
+				RelativePath=".\ReadMe.txt"
 				>
 			</File>
 		</Filter>

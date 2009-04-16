@@ -61,3 +61,5 @@ callgrind.out.*
 CS/*
 Debug/*
 Release/*
+*.vsp
+*.psess

@@ -15,30 +15,16 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _HEARTBEATSERVER_H_
-#define _HEARTBEATSERVER_H_
+#ifndef _BASEAI_H_
+#define _BASEAI_H_
 
-#include <TcpSocket.h>
-#include <ISocketHandler.h>
-#include <QtCore/QThread>
+class CObject;
 
-class HeartbeatSocket : public TcpSocket
+class BaseAI
 {
 public:
-	HeartbeatSocket(ISocketHandler& h);
-
-	void OnAccept();
-	void OnRead();
-	void OnDisconnect();
+	virtual void UpdateAI(){};
+	BaseAI(CObject * object){};
 };
-
-class HBThread : public QThread
-{
-	Q_OBJECT
-public:
-	void run();
-};
-
-extern HBThread HeartBeatThread;
 
 #endif

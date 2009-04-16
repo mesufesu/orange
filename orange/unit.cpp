@@ -5,7 +5,7 @@
 CUnit::CUnit()
 {
 	this->type = OBJECT_UNIT;
-	this->ai = new CUnitAI((CObject*)this);
+	this->ai = new BaseAI((CObject*)this);
 	this->startx = 0;
 	this->starty = 0;
 	this->state = 0;

@@ -18,22 +18,37 @@
 #ifndef _DATABASE_H_
 #define _DATABASE_H_
 
-#include <QtCore/QMutex>
+#include <QtCore/QReadWriteLock>
 #include <QtSql/QtSql>
 
 class CDatabaseHandler
 {
 public:
-	void Lock();
+	QSqlDatabase db;
+
+	void LockForRead();
+	void LockForWrite();
 	void Unlock();
 	CDatabaseHandler();
 	~CDatabaseHandler();
-	bool Connect();
-private:
-	QMutex mtx;
-	QSqlDatabase db;
+	/*bool Connect();*/
+protected:
+	QReadWriteLock rwl;
 };
 
-extern CDatabaseHandler MainDB;
+class CDataDB : public CDatabaseHandler
+{
+public:
+	bool Connect();
+};
+
+class CAccountsDB : public CDatabaseHandler
+{
+public:
+	bool Connect();
+};
+
+extern CDataDB data_db;
+extern CAccountsDB accounts_db;
 
 #endif

@@ -54,42 +54,45 @@ void CWorldMap::LoadMap(const char * filename)
 
 void CWorldMap::UpdateMap()
 {
-	this->guids.clear();
-	ObjManager.mtx.lock();
-	for(CObjectManager::MapType::iterator it = ObjManager.container.begin(); it != ObjManager.container.end(); ++it)
-	{
-		CObject* object = it->second;
-		if((object) && ((object->type > OBJECT_EMPTY) && (object->map == this->map_number)))
-		{
-			this->guids.push_back(object->guid);
-		}
-	}
-	ObjManager.mtx.unlock();
-
 	for(uint32 i = 0; i < this->guids.size(); ++i)
 	{
-		CObject* object = ObjManager.FindByGuid(this->guids.at(i));
-		if((object != NULL) && (object->type == OBJECT_PLAYER))
+		CObject* object = ObjManager.FindHigh(this->guids.at(i).hi);
+		if(object)
+		{
+			switch(object->type)
+			{
+			case OBJECT_UNIT:
+				{
+					this->UpdateViewport(object);
+					((CUnit*)object)->ai->UpdateAI();
+					break;
+				}
+			case OBJECT_PLAYER:
+				{
+					this->UpdateViewport(object);
+					break;
+				}
+			case OBJECT_BOT:
+				{
+					this->UpdateViewport(object);
+					break;
+				}
+			}
+		}
+		/*if((object != NULL) && (object->type == OBJECT_PLAYER))
 		{
 			this->UpdateViewport(object);
-					/*if((GetTickCount() - ((CPlayer*)object)->last_save_time) >= (5 * MINUTE))
-					{
-						if(((CPlayer*)object)->status == PLAYER_PLAYING)
-						{
-							((CPlayer*)object)->SavePlayer();
-						}
-					}*/
 		}
 		else if((object != NULL) && (object->type == OBJECT_BOT))
 		{
 			this->UpdateViewport(object);
-				((CBot*)object)->UpdateAI();
+			((CBot*)object)->UpdateAI();
 		}
 		else if((object != NULL) && (object->type == OBJECT_UNIT))
 		{
 			this->UpdateViewport(object);
 			((CUnit*)object)->ai->Think();
-		}
+		}*/
 	}
 }
 
@@ -98,12 +101,15 @@ void CWorldMap::UpdateViewport(CObject* pobj)
 	std::vector<uint16> view_delete;
 	std::vector<uint16> view_create;
 	view_delete.clear();
-	for(uint32 i = 0; i < pobj->viewport.size(); ++i)
+	/*for(uint32 i = 0; i < pobj->viewport.size(); ++i)
 	{
-		CObject * object = ObjManager.FindByGuid(pobj->viewport.at(i));
-		if((!object) || (object->type < OBJECT_UNIT) || (object->map != pobj->map) || /*!((abs(pobj->x - object->x) <= 9) && (abs(pobj->y - object->y) <= 9))*/ !InViewport(pobj->type, pobj->x, pobj->y, object->x, object->y, pobj->type == OBJECT_UNIT ? ((CUnit*)pobj)->view_range : 0))
+		CObject * object = ObjManager.FindHigh(pobj->viewport.at(i).hi);
+		if((!object) || 
+			(object->type < OBJECT_UNIT) || 
+			(object->map != pobj->map) || 
+			!InViewport(pobj->type, pobj->x, pobj->y, object->x, object->y, pobj->type == OBJECT_UNIT ? ((CUnit*)pobj)->view_range : 0))
 		{
-			Log.String("[VIEWPORT] %d deletes %d from viewport", pobj->guid, pobj->viewport.at(i));
+			Log.Debug("[VIEWPORT] %d:%d deletes %d:%d from viewport", pobj->guid.hi, pobj->guid.lo, pobj->viewport.at(i).hi, pobj->viewport.at(i).lo);
 			view_delete.push_back(pobj->viewport.at(i));
 			pobj->viewport.erase(pobj->viewport.begin() + i);
 		}
@@ -111,9 +117,14 @@ void CWorldMap::UpdateViewport(CObject* pobj)
 	for(uint32 i = 0; i < this->guids.size(); ++i)
 	{
 		CObject * object = ObjManager.FindByGuid(this->guids.at(i));
-		if((object) && (object->type > OBJECT_EMPTY) && (!pobj->IsInViewportList(object->guid)) && (object->map == pobj->map) && /*((abs(pobj->x - object->x) <= 9) && (abs(pobj->y - object->y) <= 9))*/ InViewport(pobj->type, pobj->x, pobj->y, object->x, object->y, pobj->type == OBJECT_UNIT ? ((CUnit*)pobj)->view_range : 0) && (object != pobj))
+		if((object) && 
+			(object->type > OBJECT_EMPTY) && 
+			(!pobj->IsInViewportList(object->guid)) && 
+			(object->map == pobj->map) && 
+			(object != pobj) &&
+			InViewport(pobj->type, pobj->x, pobj->y, object->x, object->y, pobj->type == OBJECT_UNIT ? ((CUnit*)pobj)->view_range : 0))
 		{
-			Log.String("[VIEWPORT] %d inserts in his viewport %d", pobj->guid, this->guids.at(i));
+			Log.Debug("[VIEWPORT] %d inserts in his viewport %d", pobj->guid, this->guids.at(i));
 			view_create.push_back(this->guids.at(i));
 			pobj->viewport.push_back(this->guids.at(i));
 		}
@@ -167,7 +178,7 @@ void CWorldMap::UpdateViewport(CObject* pobj)
 						packet.NumberH = HIBYTE(obj_unit->guid);
 						packet.NumberL = LOBYTE(obj_unit->guid);
 						if(obj_unit->state == 1 && !obj_unit->teleporting) /* todo: check, bcz packet dont have flags here*/
-						{
+						/*{
 							packet.NumberH |= 0x80;
 							packet.NumberH |= 0x40;
 						}
@@ -256,7 +267,7 @@ void CWorldMap::UpdateViewport(CObject* pobj)
 			memcpy(npc_buffer, &packet_npc, sizeof(PWMSG_COUNT));
 			((CPlayer*)pobj)->Send((unsigned char*)npc_buffer, size);
 		}
-	}
+	}*/
 }
 
 unsigned char CWorldMap::GetAttr(int x, int y)

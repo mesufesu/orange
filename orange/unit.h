@@ -2,7 +2,7 @@
 #define _UNIT_H_
 
 #include "object.h"
-#include "UnitAI.h"
+#include "baseai.h"
 
 class CUnit : public CObject
 {
@@ -26,7 +26,7 @@ public:
 	uint32 max_item_level;
 	uint32 skill;
 	uint32 resistance;
-	CUnitAI * ai;
+	BaseAI * ai;
 	CUnit();
 	~CUnit();
 	void SetUnit(uint32 _type, uint8 _map, uint8 _x, uint8 _y, uint8 tx, uint8 ty, uint8 ustate);

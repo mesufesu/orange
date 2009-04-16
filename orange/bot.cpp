@@ -7,7 +7,6 @@ CBot::CBot()
 {
 	this->status = PLAYER_EMPTY;
 	this->type = OBJECT_BOT;
-	this->guid = -1;
 	this->tick_count = GetTicks();
 	this->last_think_time = GetTicks();
 	this->viewport.resize(100);
@@ -36,7 +35,7 @@ void CBot::Kick()
 	this->type = VOID_BOT;
 }
 
-void CBot::UpdateAI()
+/*void CBot::UpdateAI()
 {
 	if((GetTickDiff(this->last_think_time)) >= 5000)
 	{
@@ -72,7 +71,7 @@ void CBot::UpdateAI()
 		}
 		this->last_think_time = GetTicks();
 	}
-}
+}*/
 
 void CBot::SetBot(const std::string& _name, uint8 _map, uint8 _x, uint8 _y)
 {

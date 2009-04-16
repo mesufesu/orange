@@ -9,6 +9,7 @@ public:
 	CLog();
 	~CLog();
 	void String(const char* format, ...);
+	void Debug(const char * format, ...);
 	bool Init(const char* file);
 private:
 	void _print(const std::string& log_string);

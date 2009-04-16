@@ -12,15 +12,16 @@ CItemTemplate::CItemTemplate()
 bool CItemTemplate::Load()
 {
 	Log.String("Loading item templates...");
-	QSqlQuery q;
-	MainDB.Lock();
-	if(!q.exec("SELECT `type`, `slot`, `skill`, `width`, `height`, `option`, `drop`, `name`, `level`, `reqlevel`, `durability`, `SPECIAL`, `strength`, `dexterity`, `energy`, `vitality`, `leadership`, `set_option`, `CLASS_ATTR` FROM `item_template`;"))
+	QSqlQuery q(data_db.db);
+	data_db.LockForRead();
+	bool result = q.exec("SELECT `type`, `slot`, `skill`, `width`, `height`, `option`, `drop`, `name`, `level`, `reqlevel`, `durability`, `SPECIAL`, `strength`, `dexterity`, `energy`, `vitality`, `leadership`, `set_option`, `CLASS_ATTR` FROM `item_template`;");
+	if(!result)
 	{
 		Log.String("Something wrong with `item_template`.");
-		MainDB.Unlock();
+		data_db.Unlock();
 		return false;
 	}
-	MainDB.Unlock();
+	data_db.Unlock();
 	uint16 index = 0xFF;
 	ITEM_TEMPLATE it;
 	mtx.lock();

@@ -46,6 +46,25 @@ void CLog::String(const char *format, ...)
 	this->_print(logstring);
 }
 
+void CLog::Debug(const char *format, ...)
+{
+#ifdef _DEBUG
+	va_list pArgs;
+	va_start(pArgs, format); 
+	int ret =_vscprintf(format, pArgs) + 1;
+	char * buf = new char[ret];
+	ZeroMemory(buf, ret);
+	vsprintf_s(buf, ret, format, pArgs);
+	va_end(pArgs);
+	std::string logstring;
+	logstring.append("[DEBUG] ");
+	logstring.append(buf);
+	logstring.append("\n");
+	delete [] buf;
+	this->_print(logstring);
+#endif
+}
+
 void CLog::_print(const std::string &log_string)
 {
 	this->mtx.lock();

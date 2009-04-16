@@ -19,45 +19,35 @@
 #define _OBJECTMANAGER_H_
 
 #include <vector>
+#include <QtCore/QReadWriteLock>
 #include "object.h"
 #include "player.h"
 #include "bot.h"
 #include "unit.h"
 #include "WorldMap.h"
-#include <QtCore/QMutex>
-#include <QtCore/QThread>
-
-class CObjectThread : public QThread
-{
-public:
-	void run();
-};
 
 class CObjectManager
 {
 public:
-	friend void CObjectThread::run();
-	friend void CWorldMap::UpdateMap();
-	typedef std::tr1::unordered_map<uint32, CObject*> MapType;
+	typedef UnorderedMap<GUID_HIGH, CObject*> MapType;
 	CObjectManager();
-	CPlayer* FindPlayerBySocket(ServerSocket* socket);
-	//CPlayer* FindPlayerByGuid(short guid);
-	CObject* CObjectManager::FindByGuid(uint32 guid);
+
+	CPlayer* FindSocket(ServerSocket* socket);
+	CObject* FindHigh(GUID_HIGH guid);
+	CObject* CObjectManager::FindHIGH(GUID_HIGH guid);
+
 	CPlayer* CreatePlayer(ServerSocket* socket);
-	void ActualizePlayer(CPlayer* player, uint32 new_guid);
-	static uint32 GetFreePlayerGuid();
 	CBot* CreateBot();
 	CUnit* CreateUnit();
-	//void DeletePlayer(CPlayer* player);
-	short MakeGuid(CObject* object);
-	void Run();
-	void Quit();
+
+	QReadWriteLock rwl;
+	MapType container;
 
 private:
-	QMutex mtx;
-	MapType container;
-	CObjectThread ObjThread;
+	GUID_HIGH CreateGuid();
 };
+
+typedef CObjectManager * pObjectManager;
 
 extern CObjectManager ObjManager;
 

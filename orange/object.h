@@ -30,19 +30,39 @@ enum OBJECT_TYPE
 	OBJECT_BOT = 3,
 };
 
+typedef uint32 GUID_HIGH;
+typedef uint16 GUID_LOW;
+
+struct Guid
+{
+	GUID_HIGH hi;
+	GUID_LOW lo;
+	bool operator==(Guid& g)
+	{
+		if(this->hi == g.hi && this->lo == g.lo)
+		{
+			return true;
+		}
+		return false;
+	}
+};
+
+typedef std::vector<Guid> VIEWPORT;
+
 #define DEFAULT_MOVE_SPEED 1000
 #define DEFAULT_ATTACK_SPEED 1000
+
+#define MAX_GUID 0x3fff
 
 #define MAX_UNIT_GUID 0x3fff //0 - 0x3fff, bcz flags 0x40 & 0x80 can be in higher part
 #define MAX_BOT_GUID 0x4fff //0x3fff - 0x4fff
 #define MAX_PLAYER_GUID 0x7fff //0x4fff - 0x7fff, bcz flag 0x80 can be in higher part
-#define MAX_TEMP_GUID 0x1000000 //temporary guids for a non-game connections (logging in and etc.)
-/* all written above is total foolness, players can have up to 0x7FFF, bcz in NumberH can be 0x80 flag, units can have up to 0x3FFF cuz of 0x40 and 0x80 */
+/* players can have up to 0x7FFF, bcz in NumberH can be 0x80 flag, units can have up to 0x3FFF cuz of 0x40 and 0x80 */
 
 class CObject
 {
 public:
-	uint32 guid;
+	Guid guid;
 	uint8 x;
 	uint8 y;
 	uint8 x_old;
@@ -81,12 +101,12 @@ public:
 	float bp;
 	float maxbp;
 
-	std::vector<uint32> viewport;
+	VIEWPORT viewport;
 
 	CObject();
 	/*bool InViewport(CObject* obj);*/
-	bool IsInViewportList(uint32 guid);
-	void SendToViewport(unsigned char* buffer, size_t len);
+	bool IsInViewportList(GUID_LOW loguid);
+	void SendToViewport(uint8* buffer, size_t len);
 };
 
 #endif

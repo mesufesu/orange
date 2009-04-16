@@ -19,7 +19,6 @@
 #define _WORLDMAP_H_
 
 #include "player.h"
-#include <QtCore/QMutex>
 
 #define MAX_MAPS 60
 
@@ -47,9 +46,7 @@ public:
 	unsigned char GetAttr(int x, int y);
 	bool FreeToMove(uint8 x, uint8 y);
 
-private:
-	std::vector<uint16> guids;
-	QMutex guids_mutex;
+	std::vector<Guid> guids;
 };
 
 extern CWorldMap WorldMap[MAX_MAPS];

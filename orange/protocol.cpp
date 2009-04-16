@@ -158,8 +158,8 @@ void TestJoinSend(CPlayer* player, int result)
 	data.h.headcode = 0xF1;
 	data.scode = 0;
 	data.result = LOBYTE(result);
-	data.NumberH = HIBYTE(player->guid);
-	data.NumberL = LOBYTE(player->guid);
+	data.NumberH = HIBYTE(player->guid.lo);
+	data.NumberL = LOBYTE(player->guid.lo);
 	/*char ver[] = "1.02.19";
 	char* pch = strtok(ver,".");
 	data.CliVersion[0] = pch[0];
@@ -194,10 +194,10 @@ void Join_GetCharacters(CPlayer* player)
 	ZeroMemory(acc, sizeof(acc));
 	memcpy(acc, player->account, 10);
 
-	QSqlQuery q;
-	MainDB.Lock();
+	QSqlQuery q(accounts_db.db);
+	accounts_db.LockForRead();
 	q.exec(Query("SELECT `gmlevel` FROM `accounts` WHERE `account` = '%s';", player->account).c_str());
-	MainDB.Unlock();
+	accounts_db.Unlock();
 	q.next();
 	player->gmlevel = q.value(0).toInt();
 
@@ -336,7 +336,7 @@ void Join_WorldJoin(PMSG_CHARMAPJOIN* data, CPlayer* player)
 
 void Join_LoginHandler(PMSG_IDPASS* data, CPlayer* player)
 {
-	QSqlQuery q;
+	QSqlQuery q(accounts_db.db);
 	int status = 0;
 	char pass[11];
 	char account[11];
@@ -346,7 +346,7 @@ void Join_LoginHandler(PMSG_IDPASS* data, CPlayer* player)
 	memcpy(account, data->Id, 10);
 	xor3((unsigned char*)pass, 10);
 	xor3((unsigned char*)account, 10);
-	MainDB.Lock();
+	accounts_db.LockForRead();
 	/*q.prepare("SELECT `status` FROM `accounts` WHERE `account` = '?'");
 	q.bindValue(0, "amb5");
 	q.exec();*/
@@ -357,7 +357,7 @@ void Join_LoginHandler(PMSG_IDPASS* data, CPlayer* player)
 	{
 		status = q.value(0).toInt();
 	}
-	MainDB.Unlock();
+	accounts_db.Unlock();
 	if(status != 0)
 	{
 		player->failed_attempts++;
@@ -375,7 +375,7 @@ void Join_LoginHandler(PMSG_IDPASS* data, CPlayer* player)
 	ZeroMemory(temp, sizeof(temp));
 	sprintf_s(temp, sizeof(temp), "SELECT password FROM `test_db`.`account_test` WHERE account = '%s'", account);*/
 	std::string result;
-	MainDB.Lock();
+	accounts_db.LockForRead();
 	/*q.prepare("SELECT password FROM `accounts` WHERE account = ':account'"); //INSERT IGNORE INTO `accounts` (`account`, `password`) VALUES ('amb5', 'test');
 	q.bindValue(":account", account);
 	q.exec();*/
@@ -384,7 +384,7 @@ void Join_LoginHandler(PMSG_IDPASS* data, CPlayer* player)
 	{
 		result = q.value(0).toString().toStdString();
 	}
-	MainDB.Unlock();
+	accounts_db.Unlock();
 	std::string passw;
 	passw.clear();
 	passw = pass;
@@ -425,37 +425,39 @@ void Join_CreateCharacter(PMSG_CHARCREATE * data, CPlayer* player)
 	packet.Level = 1;
 	uint8 char_class = data->ClassSkin / 16;
 	DEFAULTCLASSTYPE * cl = &DCInfo.DefClass[char_class];
-	QSqlQuery q;
+	QSqlQuery q(accounts_db.db);
 	int have_chars = 0;
-	MainDB.Lock();
-	q.exec(Query("SELECT `guid` FROM `characters` WHERE `account` = '%s'", player->account).c_str());
+	accounts_db.LockForRead();
+	q.exec(Query("SELECT `dbuid` FROM `characters` WHERE `account` = '%s'", player->account).c_str());
 	while(q.next())
 	{
 		have_chars++;
 	}
-	MainDB.Unlock();
+	accounts_db.Unlock();
 	if(have_chars >= 5)
 	{
 		packet.Result = 0;
 		player->Send((unsigned char*)&packet, packet.h.size);
 		return;
 	}
-	MainDB.Lock();
-	q.exec(Query("SELECT `guid` FROM `characters` WHERE `name` = '%s'", data->Name).c_str());
+	accounts_db.LockForRead();
+	q.exec(Query("SELECT `dbuid` FROM `characters` WHERE `name` = '%s'", data->Name).c_str());
 	bool name_used = false;
 	if(q.next())
 	{
 		name_used = true;
 	}
-	MainDB.Unlock();
+	accounts_db.Unlock();
 	if(name_used)
 	{
 		packet.Result = 2;
 		player->Send((unsigned char*)&packet, packet.h.size);
 		return;
 	}
-	bool result = q.exec(Query("INSERT INTO `characters` (`guid`, `account`, `name`, `position`, `level`, `strength`, `dexterity`, `vitality`, `energy`, `leadership`, `life`, `mana`, `shield`, `bp`, `money`, `class`) values (%u, '%s', '%s', %u, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d)",
-		CObjectManager::GetFreePlayerGuid(), player->account, data->Name, 0x82820000, 1, cl->Strength, cl->Dexterity, cl->Vitality, cl->Energy, cl->Leadership, (int)(cl->Life), (int)(cl->Mana), 90, 90, 1000, char_class).c_str());
+	accounts_db.LockForWrite();
+	bool result = q.exec(Query("INSERT INTO `characters` (`account`, `name`, `position`, `level`, `strength`, `dexterity`, `vitality`, `energy`, `leadership`, `life`, `mana`, `shield`, `bp`, `money`, `class`) values (%u, '%s', '%s', %u, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d)",
+		player->account, data->Name, 0x82820000, 1, cl->Strength, cl->Dexterity, cl->Vitality, cl->Energy, cl->Leadership, (int)(cl->Life), (int)(cl->Mana), 90, 90, 1000, char_class).c_str());
+	accounts_db.Unlock();
 	if(!result)
 	{
 		packet.Result = 2;
@@ -486,8 +488,8 @@ void World_Move(PMSG_MOVE* packet, CPlayer* player)
 		data.h.c = 0xC1;
 		data.h.headcode = 0x1D;
 		data.h.size = sizeof(PMSG_RECVMOVE);
-		data.NumberH = HIBYTE(player->guid);
-		data.NumberL = LOBYTE(player->guid);
+		data.NumberH = HIBYTE(player->guid.lo);
+		data.NumberL = LOBYTE(player->guid.lo);
 		data.X = pt.x;
 		data.Y = pt.y;
 		data.Path = packet->Path[0] & 0xf0;
@@ -593,8 +595,8 @@ void World_Action(PMSG_ACTION* data, CPlayer* player)
 	player->action = data->ActionNumber;
 	packet.Dir = player->dir;
 	packet.ActionNumber = player->action;
-	packet.NumberH = HIBYTE(player->guid);
-	packet.NumberL = LOBYTE(player->guid);
+	packet.NumberH = HIBYTE(player->guid.lo);
+	packet.NumberL = LOBYTE(player->guid.lo);
 	packet.TargetNumberH = 0;
 	packet.TargetNumberL = 0;
 	switch(player->action)

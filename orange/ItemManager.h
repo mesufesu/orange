@@ -22,10 +22,11 @@
 #include <unordered_map>
 #include "Item.h"
 #include <QtCore/QThread>
-#include <QtCore/QMutex>
+#include <QtCore/QReadWriteLock>
 
 class CItemThread : public QThread
 {
+	Q_OBJECT
 public:
 	void run();
 };
@@ -34,25 +35,24 @@ class CItemManager
 {
 public:
 	typedef std::tr1::unordered_map<uint32, CItem*> MapType;
-	const CItem* CreateItem();
-	CItem* InsertItem(uint32 guid);
+	CItem* const CreateItem();
 	CItemManager();
 	void LoadCharacterItems();
 	void Run();
 	void Quit();
 	void CleanUp();
-	static void WINAPI ItemProc(CItemManager* mang);
-	static bool LoadItemData(DATA_ITEM* item, int guid);
+
+	static bool LoadItemData(DATA_ITEM* item, int dbuid);
 	//bool Instanciate(const CItem* item);
 	//void DeleteInstance(const CItem* item);
 	bool SaveItem(CItem* item, uint32 slot);
 	bool HaveGuid(uint32 guid);
-	bool DeleteFromDB(uint32 guid); //hard
+	bool DeleteFromDB(uint32 dbuid);
 
 private:
 	CItemThread ItemThread;
 	MapType ItemMap;
-	QMutex map_mutex;
+	QReadWriteLock rwl;
 };
 
 extern CItemManager ItemManager;

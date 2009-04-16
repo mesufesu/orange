@@ -23,6 +23,7 @@
 #include "DataBase.h"
 #include "Item.h"
 #include "objectmanager.h"
+#include "ObjectThread.h"
 #include "ItemTemplate.h"
 #include "UnitTemplate.h"
 #include "log.h"
@@ -30,7 +31,6 @@
 #include "unit.h"
 #include "classdef.h"
 #include "cssocket.h"
-#include "MapThread.h"
 
 int main(int argc, char* argv[])
 {
@@ -51,29 +51,28 @@ int main(int argc, char* argv[])
 		return 0;
 	}
 
-	char ip[] = "127.0.0.1";
-
-	if(!MainDB.Connect())
+	if(!data_db.Connect())
 	{
-		Log.String("MySQL connection cannot be established. Closing.");
+		Log.String("Can't connect to %s:%s using %s:%s.", config.data_db_hostname.c_str(), config.data_db_dbname.c_str(), config.data_db_username.c_str(), config.data_db_password.c_str());
 		return 0;
 	}
-	QSqlQuery q;
+	if(!accounts_db.Connect())
+	{
+		Log.String("Can't connect to %s:%s using %s:%s.", config.accounts_db_hostname.c_str(), config.accounts_db_dbname.c_str(), config.accounts_db_username.c_str(), config.accounts_db_password.c_str());
+		return 0;
+	}
+
+	QSqlQuery q(accounts_db.db);
 	if(q.exec("UPDATE `accounts` SET `status` = 0 WHERE `status` <> 0"))
 	{
 		Log.String("Online status set to 0.");
 	}
 	ItemTemplate.Load();
 	UnitTemplate.Load();
-	//SocketMainInit();
-	//GameMainInit();
-	//JoinServerConnect(ip, 1027);
-	//DataServerCli.Connect();
 	HeartBeatThread.start();
-	_SocketThread.start((QThread::Priority)4);
+	_SocketThread.start(QThread::Priority::HighPriority);
 	CSSocketThread.start();
 	Log.String("Socket Threads created.");
-	ObjManager.Run();
 	ItemManager.Run();
 	for(uint32 i = 0; i < MAX_MAPS; ++i)
 	{
@@ -84,26 +83,19 @@ int main(int argc, char* argv[])
 		WorldMap[i].LoadMap(filename);
 	}
 	Log.String("%u maps loaded.", MAX_MAPS);
-	uint32 thread_child = 0;
-	for(uint32 i = 0; i < MAP_THREADS; ++i)
+	for(uint32 i = 0; i < 10000; ++i)
 	{
-		for(uint32 n = 0; n < (MAX_MAPS / MAP_THREADS); ++n)
-		{
-			MapThreads[i].AddMap(&WorldMap[thread_child++]);
-		}
-		MapThreads[i].Start();
+		uint32 map = genrand_int32() % 60;
+		CUnit* test_npc2 = ObjManager.CreateUnit();
+		test_npc2->SetUnit(1, map, genrand_int32() % 256, genrand_int32() % 256, genrand_int32() % 256, genrand_int32() % 256, 0);
 	}
-	Log.String("%u Map threads started.", MAP_THREADS);
-	/*CBot* test_bot = ObjManager.CreateBot();
-	test_bot->SetBot("Pwnage", 0, 130, 130);
-	test_bot->Class = 5;
-	test_bot->changeup = 2;
-	test_bot->CookCharset();
-	Log.String("Bot [Pwnage] created at 0,130,130");*/
-	/*CUnit* test_npc1 = ObjManager.CreateUnit();
-	test_npc1->SetUnit(1, 0, 136, 126, 130, 126, 1);*/
-	CUnit* test_npc2 = ObjManager.CreateUnit();
-	test_npc2->SetUnit(1, 0, 136, 128, 136, 128, 0);
-	//Log.String("Unit %u created at 0,130,130", test_npc1->guid);
-	return orange.exec();
+	Log.String("Test bots created.");
+	ObjThread.start();
+	Log.String("Object processing thread started.");
+	int32 exec = orange.exec();
+	HeartBeatThread.exit();
+	CSSocketThread.exit();
+	ObjThread.Shutdown();
+	_SocketThread.Shutdown();
+	return exec;
 }

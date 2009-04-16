@@ -1,33 +1,5 @@
-========================================================================
-    CONSOLE APPLICATION : orange Project Overview
-========================================================================
+=========
+TODO List
+=========
 
-AppWizard has created this orange application for you.
-
-This file contains a summary of what you will find in each of the files that
-make up your orange application.
-
-
-orange.vcproj
-    This is the main project file for VC++ projects generated using an Application Wizard.
-    It contains information about the version of Visual C++ that generated the file, and
-    information about the platforms, configurations, and project features selected with the
-    Application Wizard.
-
-orange.cpp
-    This is the main application source file.
-
-/////////////////////////////////////////////////////////////////////////////
-Other standard files:
-
-StdAfx.h, StdAfx.cpp
-    These files are used to build a precompiled header (PCH) file
-    named orange.pch and a precompiled types file named StdAfx.obj.
-
-/////////////////////////////////////////////////////////////////////////////
-Other notes:
-
-AppWizard uses "TODO:" comments to indicate parts of the source code you
-should add to or customize.
-
-/////////////////////////////////////////////////////////////////////////////
+- Need to make a reserve/rehash for the container to speed up object managing.
